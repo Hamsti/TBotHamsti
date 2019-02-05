@@ -5,8 +5,139 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HamstiBotWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Control HamstiBot" Height="400" Width="500" 
+        MinHeight="167" MinWidth="385" Name="mainWindow" Closing="mainWindow_Closing_StopReceiving"
+        FontFamily="Century Gothic" WindowStyle="ToolWindow">
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="AliceBlue" />
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border"
+                        CornerRadius="15"
+                        Background="OrangeRed"
+                        RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="DimGray"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MenuStyle">
+            <Setter Property="Control.Background" Value="OrangeRed" />
+            <Setter Property="Control.Foreground" Value="White" />
+            <Setter Property="Control.FontFamily" Value="Century Gothic" />
+        </Style>
+
+        <Style TargetType="MenuItem" BasedOn="{StaticResource MenuStyle}"/>
+
+        <ControlTemplate x:Key="validationFailed">
+            <StackPanel Orientation="Horizontal">
+                <Border BorderBrush="LimeGreen" BorderThickness="2">
+                    <AdornedElementPlaceholder Margin="-2"/>
+                </Border>
+                <TextBlock Foreground="White" FontWeight="Bold">!?</TextBlock>
+            </StackPanel>
+        </ControlTemplate>
+
+
+        <Style x:Key="userIdMenuStyle" BasedOn="{StaticResource MenuStyle}">
+            <Setter Property="TextBox.Width" Value="68" />
+        </Style>
+    </Window.Resources>
+
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.5*" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Menu VerticalAlignment="Top" Grid.ColumnSpan="2" Style="{StaticResource MenuStyle}">
+            <!--<Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel HorizontalAlignment="Stretch" />
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>-->
+            <MenuItem Header="UsersList" >
+                <MenuItem Header ="AllUsers" x:Name="menuUsers"/>
+                <MenuItem Header="Refresh" Click="usersMenuInput" Visibility="Collapsed"/>
+                <MenuItem Header="AddNew" >
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <!-- =============================================== -->
+                        <TextBlock Text ="idUser" Grid.Row="0" Grid.Column="0" />
+                        <TextBlock Text="locked" Grid.Row="1" Grid.Column="0" />
+                        <TextBlock Text="Nickname" Grid.Row="2" Grid.Column="0"/>
+
+                        <TextBox x:Name="txtBoxIdUser" Style="{StaticResource userIdMenuStyle}" Grid.Row="0" Grid.Column="1" PreviewTextInput="TxtBoxIdUser_PreviewTextInput" HorizontalAlignment="Left"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" >
+                            <RadioButton x:Name="radioBtnIdLocked" GroupName="IsLocked" Content="Yes"/>
+                            <RadioButton GroupName="IsLocked" Content="No" IsChecked="True" />
+                        </StackPanel>
+                        <TextBox x:Name="txtBoxNickname" Width="120" Grid.Row="2" Grid.Column="1"/>
+                    </Grid>
+                    <MenuItem Header="Confirm adding" Click="ConfirmAddingNewUser"/>
+                </MenuItem>
+
+                <MenuItem Header="AdminId" PreviewTextInput="TxtBoxIdUser_PreviewTextInput">
+                    <MenuItem>
+                        <MenuItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Id: "/>
+                                <TextBox Validation.ErrorTemplate="{StaticResource validationFailed}" Style="{StaticResource userIdMenuStyle}" BorderThickness="2" BorderBrush="White">
+                                    <TextBox.Text>
+                                        <Binding Source="{StaticResource Settings}" Path="Default.AdminId" NotifyOnValidationError="True">
+                                            <Binding.ValidationRules>
+                                                <DataErrorValidationRule/>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <MenuItem Header="SaveAdminClick" Click="saveAdminClick" />
+                    <MenuItem Header="DefaultAdmin" Click="defaultAdminClick" />
+                </MenuItem>
+            </MenuItem>
+
+            <MenuItem Header="Commands" x:Name="menuCommands" />
+
+            <MenuItem Header="ColorInterface" />
+        </Menu>
+
+        <StackPanel Grid.Column="1" Grid.Row="1">
+            <Button Content="Start" Click="startClick" Margin="3,6,3,3"/>
+            <Button Content="Stop" Click="stopClick"/>
+
+        </StackPanel>
+        <Button Content="Clear Colnsole" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" FontSize="14" Click="clearConsoleClick"/>
+
+        <ListBox x:Name="logList"  Grid.Row="1" />
     </Grid>
 </Window>

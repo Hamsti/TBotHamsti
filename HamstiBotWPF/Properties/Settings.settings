@@ -1,7 +1,15 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HamstiBotWPF.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="AdminId" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">406777030</Value>
+    </Setting>
+    <Setting Name="ApiBot" Type="System.String" Scope="User">
+      <Value Profile="(Default)">533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM</Value>
+    </Setting>
+    <Setting Name="SavePathImages" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\bos10\Pictures\HamstiBot\</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>
