@@ -151,29 +151,21 @@ namespace HamstiBotWPF
         }
 
         /// <summary>
-        /// Saving adminId in settings onButtonClick
-        /// </summary>
-        private void saveAdminClick(object sender, RoutedEventArgs e)
-        {
-            saveAdminIdSettings();
-        }
-
-        /// <summary>
         /// Restore default adminId onButtonClick
         /// </summary>
         private void defaultAdminClick(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.AdminId = 406777030;
-            saveAdminIdSettings();
+            saveAdminIdSettings(sender, e);
         }
 
         /// <summary>
         /// Saving adminId in settings
         /// </summary>
-        private void saveAdminIdSettings()
+        private void saveAdminIdSettings(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.Save();
-            GlobalUnit.authUsers[0].idUser = Properties.Settings.Default.AdminId;
+            //GlobalUnit.authUsers[0].idUser = Properties.Settings.Default.AdminId;
             Task.Run(() => ExecuteLaunchBot.reloadBot());
             logList.Items.Add("Перезапуск бота...");
             usersMenuInput();
@@ -234,6 +226,25 @@ namespace HamstiBotWPF
         private void TxtBoxIdUser_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
             e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        private void RadioButtonTheme_Checked(object sender, RoutedEventArgs e)
+        {
+            string lastThemeApply = Properties.Settings.Default.IsLightThemeApply ? "lightTheme.xaml" : "darkTheme.xaml";
+            if (((RadioButton)sender).Tag as string == "lightTheme.xaml")
+                Properties.Settings.Default.IsLightThemeApply = true;
+            else
+                Properties.Settings.Default.IsLightThemeApply = false;
+            string style = ((RadioButton)sender).Tag as string ?? lastThemeApply;
+            // определяем путь к файлу ресурсов
+            var uri = new Uri(style, UriKind.Relative);
+            // загружаем словарь ресурсов
+            ResourceDictionary resourceDict = Application.LoadComponent(uri) as ResourceDictionary;
+            // очищаем коллекцию ресурсов приложения
+            Application.Current.Resources.Clear();
+            // добавляем загруженный словарь ресурсов
+            Application.Current.Resources.MergedDictionaries.Add(resourceDict);
+            Properties.Settings.Default.Save();
         }
     }
 }

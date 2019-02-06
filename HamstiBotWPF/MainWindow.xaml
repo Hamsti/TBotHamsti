@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Control HamstiBot" Height="400" Width="500" 
         MinHeight="167" MinWidth="385" Name="mainWindow" Closing="mainWindow_Closing_StopReceiving"
-        FontFamily="Century Gothic" WindowStyle="ToolWindow">
+        FontFamily="Century Gothic" WindowStyle="ToolWindow" Style="{DynamicResource WindowStyle}">
 
     <Window.Resources>
         <Style TargetType="Button">
@@ -36,27 +36,6 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MenuStyle">
-            <Setter Property="Control.Background" Value="OrangeRed" />
-            <Setter Property="Control.Foreground" Value="White" />
-            <Setter Property="Control.FontFamily" Value="Century Gothic" />
-        </Style>
-
-        <Style TargetType="MenuItem" BasedOn="{StaticResource MenuStyle}"/>
-
-        <ControlTemplate x:Key="validationFailed">
-            <StackPanel Orientation="Horizontal">
-                <Border BorderBrush="LimeGreen" BorderThickness="2">
-                    <AdornedElementPlaceholder Margin="-2"/>
-                </Border>
-                <TextBlock Foreground="White" FontWeight="Bold">!?</TextBlock>
-            </StackPanel>
-        </ControlTemplate>
-
-
-        <Style x:Key="userIdMenuStyle" BasedOn="{StaticResource MenuStyle}">
-            <Setter Property="TextBox.Width" Value="68" />
-        </Style>
     </Window.Resources>
 
 
@@ -69,7 +48,7 @@
             <ColumnDefinition Width="2.5*" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Menu VerticalAlignment="Top" Grid.ColumnSpan="2" Style="{StaticResource MenuStyle}">
+        <Menu VerticalAlignment="Top" Grid.ColumnSpan="2" Style="{DynamicResource MenuStyle}" >
             <!--<Menu.ItemsPanel>
                 <ItemsPanelTemplate>
                     <DockPanel HorizontalAlignment="Stretch" />
@@ -79,7 +58,7 @@
                 <MenuItem Header ="AllUsers" x:Name="menuUsers"/>
                 <MenuItem Header="Refresh" Click="usersMenuInput" Visibility="Collapsed"/>
                 <MenuItem Header="AddNew" >
-                    <Grid>
+                    <Grid Margin="0,2">
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
@@ -94,7 +73,7 @@
                         <TextBlock Text="locked" Grid.Row="1" Grid.Column="0" />
                         <TextBlock Text="Nickname" Grid.Row="2" Grid.Column="0"/>
 
-                        <TextBox x:Name="txtBoxIdUser" Style="{StaticResource userIdMenuStyle}" Grid.Row="0" Grid.Column="1" PreviewTextInput="TxtBoxIdUser_PreviewTextInput" HorizontalAlignment="Left"/>
+                        <TextBox x:Name="txtBoxIdUser" Style="{DynamicResource userIdMenuStyle}" Grid.Row="0" Grid.Column="1" PreviewTextInput="TxtBoxIdUser_PreviewTextInput" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" >
                             <RadioButton x:Name="radioBtnIdLocked" GroupName="IsLocked" Content="Yes"/>
                             <RadioButton GroupName="IsLocked" Content="No" IsChecked="True" />
@@ -109,26 +88,25 @@
                         <MenuItem.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Id: "/>
-                                <TextBox Validation.ErrorTemplate="{StaticResource validationFailed}" Style="{StaticResource userIdMenuStyle}" BorderThickness="2" BorderBrush="White">
+                                <TextBox Style="{DynamicResource userIdMenuStyle}">
                                     <TextBox.Text>
-                                        <Binding Source="{StaticResource Settings}" Path="Default.AdminId" NotifyOnValidationError="True">
-                                            <Binding.ValidationRules>
-                                                <DataErrorValidationRule/>
-                                            </Binding.ValidationRules>
-                                        </Binding>
+                                        <Binding Source="{StaticResource Settings}" Path="Default.AdminId" />
                                     </TextBox.Text>
                                 </TextBox>
                             </StackPanel>
                         </MenuItem.Header>
                     </MenuItem>
-                    <MenuItem Header="SaveAdminClick" Click="saveAdminClick" />
+                    <MenuItem Header="SaveAdminClick" Click="saveAdminIdSettings" />
                     <MenuItem Header="DefaultAdmin" Click="defaultAdminClick" />
                 </MenuItem>
             </MenuItem>
 
             <MenuItem Header="Commands" x:Name="menuCommands" />
 
-            <MenuItem Header="ColorInterface" />
+            <MenuItem Header="ColorInterface">
+                <RadioButton GroupName="ChangeThemeButton" Content="Light" IsChecked="True" Checked="RadioButtonTheme_Checked" Tag="lightTheme.xaml"/>
+                <RadioButton GroupName="ChangeThemeButton" Content="Dark" Checked="RadioButtonTheme_Checked" Tag="darkTheme.xaml" />
+            </MenuItem>
         </Menu>
 
         <StackPanel Grid.Column="1" Grid.Row="1">
@@ -138,6 +116,6 @@
         </StackPanel>
         <Button Content="Clear Colnsole" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" FontSize="14" Click="clearConsoleClick"/>
 
-        <ListBox x:Name="logList"  Grid.Row="1" />
+        <ListBox x:Name="logList"  Grid.Row="1" Style="{DynamicResource LogAreaStyle}"/>
     </Grid>
 </Window>

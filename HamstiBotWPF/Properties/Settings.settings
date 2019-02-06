@@ -11,5 +11,8 @@
     <Setting Name="SavePathImages" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Users\bos10\Pictures\HamstiBot\</Value>
     </Setting>
+    <Setting Name="IsLightThemeApply" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
