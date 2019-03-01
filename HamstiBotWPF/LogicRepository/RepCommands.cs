@@ -15,6 +15,18 @@ namespace HamstiBotWPF.LogicRepository
         {
             GlobalUnit.botCommands.Add(new Core.BotCommand
             {
+                Command = "/start",
+                CountArgsCommand = 0,
+                ExampleCommand = "/start",
+                VisibleCommand = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.helpBot(message);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
                 Command = "/help",
                 CountArgsCommand = 0,
                 ExampleCommand = "/help",

@@ -65,6 +65,10 @@ namespace HamstiBotWPF
                 {
                     LogicRepository.RepBotActions.photoUploader(message);
                 }
+                else if (message.Type == MessageType.Document)
+                {
+                    LogicRepository.RepBotActions.documentUploader(message);
+                }
             }
             //User was not found in the list of authorized users
             else

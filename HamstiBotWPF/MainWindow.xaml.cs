@@ -24,8 +24,8 @@ namespace HamstiBotWPF
             subBotEvents();
             usersMenuInput();
             commandsMenuInput();         
-            menuCommands.Items.Add(new MenuItem() { Header = "Чисто для примера", Foreground = Brushes.Green });
-            menuCommands.Items.Add(new MenuItem() { Header = "Добавления элементов", Foreground = Brushes.DarkBlue });
+            //menuCommands.Items.Add(new MenuItem() { Header = "Чисто для примера", Foreground = Brushes.Green });
+            //menuCommands.Items.Add(new MenuItem() { Header = "Добавления элементов", Foreground = Brushes.DarkBlue });
         }
 
         /// <summary>
@@ -185,11 +185,13 @@ namespace HamstiBotWPF
         private void botOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
         {
             if (messageEventArgs.Message.Type == MessageType.Text)
-                Dispatcher.Invoke(() => logList.Items.Add($"Пришло сообщение: {messageEventArgs.Message.Text}"));
+                Dispatcher.Invoke(() => logList.Items.Add($"Message received: {messageEventArgs.Message.Text}"));
             else if (messageEventArgs.Message.Type == MessageType.Photo)
-                Dispatcher.Invoke(() => logList.Items.Add($"Пришло сообщение: {messageEventArgs.Message.Photo}"));
+                Dispatcher.Invoke(() => logList.Items.Add($"Image received"));
+            else if (messageEventArgs.Message.Type == MessageType.Document)
+                Dispatcher.Invoke(() => logList.Items.Add("Document received"));
             else
-                Dispatcher.Invoke(() => logList.Items.Add($"Пришло сообщение формата: {messageEventArgs.Message.Type}"));
+                Dispatcher.Invoke(() => logList.Items.Add($"Format message received: {messageEventArgs.Message.Type}"));
         }
 
         private void botOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)

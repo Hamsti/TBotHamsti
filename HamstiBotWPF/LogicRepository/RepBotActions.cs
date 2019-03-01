@@ -31,7 +31,7 @@ namespace HamstiBotWPF.LogicRepository
             try
             {
                 var file = await GlobalUnit.myBot.Api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
-                var filename = file.FileId + "." + file.FilePath.Split('.').Last();
+                var filename = file.FilePath.Split('.').First() + "." + file.FilePath.Split('.').Last();
                 using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePathImages + filename, FileMode.Create))
                 {
                     await GlobalUnit.myBot.Api.DownloadFileAsync(file.FilePath, saveImageStream);
@@ -41,6 +41,24 @@ namespace HamstiBotWPF.LogicRepository
             catch (Exception ex)
             {
                 await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"При загрузке изображения произошла ошибка: {ex.Message}");
+            }
+        }
+
+        public static async void documentUploader(Message message)
+        {
+            try
+            {
+                var file = await GlobalUnit.myBot.Api.GetFileAsync(message.Document.FileId);
+                var filename = file.FilePath.Split('.').First() + "." + file.FilePath.Split('.').Last();
+                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePathImages + filename, FileMode.Create))
+                {
+                    await GlobalUnit.myBot.Api.DownloadFileAsync(file.FilePath, saveImageStream);
+                }
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Загрузка документа успешно завершена");
+            }
+            catch (Exception ex)
+            {
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"При загрузке документа произошла ошибка: {ex.Message}");
             }
         }
 
@@ -229,10 +247,11 @@ namespace HamstiBotWPF.LogicRepository
             }
         }
     
-        private static class ControlUsers
+        public static class ControlUsers
         {
-            public static Task authNewUser(Message message, int idUser) => null;
-            public static Task deauthUser(Message message, int idUser) => null;
+            public static void authNewUser(Message message, int idUser, bool locked, string localNickname) =>
+                GlobalUnit.authUsers.Add(new Core.patternUserList { idUser = idUser, locked = locked, localNickname = localNickname });
+            private static Task deauthUser(Message message, int idUser) => null;
             public static Task changeLocalName(Message message, int idUser, string newLocalName) => null;
             public static Task lockedUser(Message message, int idUser) => null;
         }
