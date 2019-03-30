@@ -27,38 +27,7 @@ namespace HamstiBotWPF
                 //Text message received from user
                 if (message.Type == MessageType.Text)
                 {
-                    //Parsing and executing a command or errors
-
-                    var model = Core.BotCommand.ParserCommand(message.Text);
-
-                    if (model != null)
-                    {
-                        foreach (var commandList in GlobalUnit.botCommands)
-                        {
-                            if (commandList.Command == model.Command)
-                            {
-                                isCommand = true;
-                                if (commandList.CountArgsCommand == model.Args.Length)
-                                {
-                                    commandList.Execute?.Invoke(model, message);
-                                }
-                                else
-                                {
-                                    commandList.OnError?.Invoke(model, message);
-                                }
-                            }
-                        }
-                        if (!isCommand)
-                        {
-                            await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
-                            return;
-                        }
-                    }
-                    //Execute if command not found
-                    else
-                    {
-                        await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
-                    }
+                    ParserCommand(message, isCommand);                  
                 }
                 //Image received from user
                 else if (message.Type == MessageType.Photo)
@@ -70,10 +39,51 @@ namespace HamstiBotWPF
                     LogicRepository.RepBotActions.documentUploader(message);
                 }
             }
+            else if (!LogicRepository.RepUsers.isAuthUser(message.From.Id) && message.Type == MessageType.Text && message.Text == "/start")
+            {
+                ParserCommand(message, isCommand);
+            }
             //User was not found in the list of authorized users
             else
             {
                 await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Запросите у администратора бота {GlobalUnit.myBot.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей");
+            }
+        }
+
+        /// <summary>
+        /// Parsing and executing a command or errors
+        /// </summary>
+        private static async void ParserCommand(Telegram.Bot.Types.Message message, bool isCommand)
+        {
+            var model = Core.BotCommand.ParserCommand(message.Text);
+
+            if (model != null)
+            {
+                foreach (var commandList in GlobalUnit.botCommands)
+                {
+                    if (commandList.Command == model.Command)
+                    {
+                        isCommand = true;
+                        if (commandList.CountArgsCommand == model.Args.Length)
+                        {
+                            commandList.Execute?.Invoke(model, message);
+                        }
+                        else
+                        {
+                            commandList.OnError?.Invoke(model, message);
+                        }
+                    }
+                }
+                if (!isCommand)
+                {
+                    await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
+                    return;
+                }
+            }
+            //Execute if command not found
+            else
+            {
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
             }
         }
 

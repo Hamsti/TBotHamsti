@@ -21,7 +21,8 @@ namespace HamstiBotWPF.LogicRepository
                 VisibleCommand = false,
                 Execute = async (model, message) =>
                 {
-                    await RepBotActions.helpBot(message);
+                    LogicRepository.RepBotActions.ControlUsers.authNewUser(message.From.Id, true, string.Empty);
+                    //await RepBotActions.helpBot(message);
                 }
             });
 

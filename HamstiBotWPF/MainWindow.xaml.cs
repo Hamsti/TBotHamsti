@@ -108,7 +108,6 @@ namespace HamstiBotWPF
             }
         }
 
-
         /// <summary>
         /// Adding all commands in menu
         /// </summary>
@@ -205,8 +204,7 @@ namespace HamstiBotWPF
         {
             try
             {
-                GlobalUnit.authUsers.Add(new Core.patternUserList { idUser = int.Parse(txtBoxIdUser.Text), locked = (bool)radioBtnIdLocked.IsChecked, localNickname = txtBoxNickname.Text });
-                LogicRepository.RepUsers.saveInJson();
+                LogicRepository.RepBotActions.ControlUsers.authNewUser(int.Parse(txtBoxIdUser.Text), (bool)radioBtnIdLocked.IsChecked, txtBoxNickname.Text);
                 txtBoxIdUser.Text = string.Empty;
                 txtBoxNickname.Text = string.Empty;
                 usersMenuInput();

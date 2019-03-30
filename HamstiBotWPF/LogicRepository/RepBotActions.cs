@@ -249,8 +249,22 @@ namespace HamstiBotWPF.LogicRepository
     
         public static class ControlUsers
         {
-            public static void authNewUser(Message message, int idUser, bool locked, string localNickname) =>
-                GlobalUnit.authUsers.Add(new Core.patternUserList { idUser = idUser, locked = locked, localNickname = localNickname });
+            public static void authNewUser(int idUser, bool locked, string localNickname)
+            {
+                if (!GlobalUnit.authUsers.Any(_ => _.idUser == idUser))
+                {
+                    GlobalUnit.authUsers.Add(new Core.patternUserList { idUser = idUser, locked = locked, localNickname = localNickname });
+                    RepUsers.saveInJson();
+                }
+                else if (GlobalUnit.authUsers.Any(_ => _.idUser == idUser && _.locked == false))
+                {
+                    GlobalUnit.myBot.Api.SendTextMessageAsync(idUser, "Вы уже добавлены в список активных пользователй, счастливого дня.");
+                }
+                else
+                {
+                    GlobalUnit.myBot.Api.SendTextMessageAsync(idUser, "Вы уже добавлены в список пользователй, ожидайте подтверждения авторизации администратором.");
+                }
+            }
             private static Task deauthUser(Message message, int idUser) => null;
             public static Task changeLocalName(Message message, int idUser, string newLocalName) => null;
             public static Task lockedUser(Message message, int idUser) => null;
