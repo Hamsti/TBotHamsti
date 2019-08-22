@@ -81,18 +81,18 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} не удалось запустить...");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} не удалось запустить...");
                 return;
             }
 
             if (!GlobalUnit.myBot.Api.IsReceiving)
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Запущен бот {GlobalUnit.myBot.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Запущен бот {GlobalUnit.myBot.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
                 GlobalUnit.myBot.Api.StartReceiving(Array.Empty<UpdateType>());
             }
             else
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} уже запущен.");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} уже запущен.");
                 numberAttempt--;
                 await runBot(numberAttempt);
             }
@@ -107,17 +107,17 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} не удалось остановить...");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} не удалось остановить...");
                 return;
             }
             if (GlobalUnit.myBot.Api.IsReceiving)
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
                 GlobalUnit.myBot.Api.StopReceiving();
             }
             else
             {
-                await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} уже остановлен");
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} уже остановлен");
                 numberAttempt--;
                 await stopBot(numberAttempt);
             }
@@ -130,7 +130,7 @@ namespace HamstiBotWPF
         /// <returns></returns>
         public async static Task reloadBot(int numberAttempt = 2)
         {
-            await GlobalUnit.myBot.Api.SendTextMessageAsync(GlobalUnit.authUsers[0].idUser, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} выполняет перезагрузку...");
+            await GlobalUnit.myBot.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.myBot.Api.GetMeAsync().Result} выполняет перезагрузку...");
 
             if (GlobalUnit.myBot.Api.IsReceiving)
             {

@@ -219,7 +219,7 @@ namespace HamstiBotWPF.LogicRepository
                     bmp.Save(nameOfPicture);
                     using (var stream = System.IO.File.OpenRead(nameOfPicture))
                     {
-                        await GlobalUnit.myBot.Api.SendPhotoAsync(message.From.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
+                        await GlobalUnit.myBot.Api.SendDocumentAsync(message.From.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
                     }
                 }
                 catch (Exception ex)

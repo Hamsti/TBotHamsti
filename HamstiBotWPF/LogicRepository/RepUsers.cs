@@ -33,7 +33,6 @@ namespace HamstiBotWPF.LogicRepository
             {
                 GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.patternUserList>>(System.IO.File.ReadAllText("AuthUsers.json")) 
                     : new System.Collections.Generic.List<Core.patternUserList>() { new Core.patternUserList { idUser = Properties.Settings.Default.AdminId } };
-
             }
             catch (Exception ex)
             {
@@ -60,7 +59,7 @@ namespace HamstiBotWPF.LogicRepository
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Exists(idExists => userId == GlobalUnit.authUsers[0].idUser);
+        public static bool isHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Exists(idExists => userId == Properties.Settings.Default.AdminId);
 
         /// <summary>
         /// Checks if this user is in the list of authorized users.

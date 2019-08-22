@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using Telegram.Bot;
 
-namespace HamstiBotWPF
+namespace HamstiBotWPF 
 {
     /// <summary>
     /// Global variables for the entire project
     /// </summary>
-    public static class GlobalUnit
+    public static class GlobalUnit 
     {
         /// <summary>
         /// Creating a bot and working with it
         /// </summary>
         public static class myBot
         {
-            public static readonly TelegramBotClient Api = new TelegramBotClient("533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM");
+            public static readonly TelegramBotClient Api = new TelegramBotClient(Properties.Settings.Default.ApiBot);
         }
         /// <summary>
         /// List of all authorized users
