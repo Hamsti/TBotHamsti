@@ -26,13 +26,13 @@ namespace HamstiBotWPF.LogicRepository
                 return GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Вы не администратор...");
         }
 
-        public static async void photoUploader(Message message)
+        public static async void imageUploader(Message message)
         {
             try
             {
                 var file = await GlobalUnit.myBot.Api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
                 var filename = file.FileId + "." + file.FilePath.Split('.').Last();
-                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePathImages + filename, FileMode.Create))
+                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePath + @"photos\" + filename, FileMode.Create))
                 {
                     await GlobalUnit.myBot.Api.DownloadFileAsync(file.FilePath, saveImageStream);
                 }
@@ -41,6 +41,23 @@ namespace HamstiBotWPF.LogicRepository
             catch (Exception ex)
             {
                 await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"При загрузке изображения произошла ошибка: {ex.Message}");
+            }
+        }
+
+        public static async void documentUploader(Message message)
+        {
+            try
+            {
+                var file = await GlobalUnit.myBot.Api.GetFileAsync(message.Document.FileId);
+                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePath + @"documents\" + message.Document.FileName, FileMode.Create))
+                {
+                    await GlobalUnit.myBot.Api.DownloadFileAsync(file.FilePath, saveImageStream);
+                }
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Загрузка документа успешно завершена");
+            }
+            catch (Exception ex)
+            {
+                await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"При загрузке документа произошла ошибка: {ex.Message}");
             }
         }
 

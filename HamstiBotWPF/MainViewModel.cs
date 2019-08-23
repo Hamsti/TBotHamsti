@@ -96,6 +96,7 @@ namespace HamstiBotWPF
                         "HamstiBot", System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.OK)
                     {
                         await ExecuteLaunchBot.stopBot();
+                        App.Current.Shutdown(0);
                     }
                     else
                         e.Cancel = true;

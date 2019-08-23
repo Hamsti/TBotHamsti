@@ -24,49 +24,46 @@ namespace HamstiBotWPF
             //User authorization check
             if (LogicRepository.RepUsers.isAuthUser(message.From.Id))
             {
-                //Text message received from user
-                if (message.Type == MessageType.Text)
+                switch (message.Type)
                 {
-                    //Parsing and executing a command or errors
+                    //Text message received from user
+                    case MessageType.Text:
+                        //Parsing and executing a command or errors
+                        var model = Core.BotCommand.ParserCommand(message.Text);
 
-                    var model = Core.BotCommand.ParserCommand(message.Text);
-
-                    if (model != null)
-                    {
-                        foreach (var commandList in GlobalUnit.botCommands)
+                        if (model != null)
                         {
-                            if (commandList.Command == model.Command)
+                            foreach (var commandList in GlobalUnit.botCommands)
                             {
-                                isCommand = true;
-                                if (commandList.CountArgsCommand == model.Args.Length)
+                                if (commandList.Command == model.Command)
                                 {
-                                    commandList.Execute?.Invoke(model, message);
-                                }
-                                else
-                                {
-                                    commandList.OnError?.Invoke(model, message);
+                                    isCommand = true;
+                                    if (commandList.CountArgsCommand == model.Args.Length)
+                                    {
+                                        commandList.Execute?.Invoke(model, message);
+                                    }
+                                    else
+                                    {
+                                        commandList.OnError?.Invoke(model, message);
+                                    }
                                 }
                             }
                         }
-                        if (!isCommand)
+                        if (model == null || !isCommand) //Execute if command not found
                         {
                             await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
                             return;
                         }
-                    }
-                    //Execute if command not found
-                    else
-                    {
-                        await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
-                    }
-                }
-                //Image received from user
-                else if (message.Type == MessageType.Photo)
-                {
-                    LogicRepository.RepBotActions.photoUploader(message);
+                        break;
+                    //Image received from user
+                    case MessageType.Photo:
+                        LogicRepository.RepBotActions.imageUploader(message); break;
+                    //Document received from user
+                    case MessageType.Document:
+                        LogicRepository.RepBotActions.documentUploader(message); break;
                 }
             }
-            //User was not found in the list of authorized users
+            //User was not found or locked in the list of authorized users
             else
             {
                 await GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, $"Запросите у администратора бота {GlobalUnit.myBot.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей");

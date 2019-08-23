@@ -47,9 +47,9 @@ namespace HamstiBotWPF.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\Pictures\\HamstiBot\\")]
-        public string SavePathImages {
+        public string SavePath {
             get {
-                return ((string)(this["SavePathImages"]));
+                return ((string)(this["SavePath"]));
             }
         }
         

@@ -8,7 +8,7 @@
     <Setting Name="ApiBot" Type="System.String" Scope="Application">
       <Value Profile="(Default)">533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM</Value>
     </Setting>
-    <Setting Name="SavePathImages" Type="System.String" Scope="Application">
+    <Setting Name="SavePath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\Users\bos10\Pictures\HamstiBot\</Value>
     </Setting>
     <Setting Name="RecoverIdAdmin" Type="System.Int32" Scope="Application">
