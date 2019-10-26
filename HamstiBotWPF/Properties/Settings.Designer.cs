@@ -12,7 +12,7 @@ namespace HamstiBotWPF.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.2.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -35,27 +35,30 @@ namespace HamstiBotWPF.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM")]
         public string ApiBot {
             get {
                 return ((string)(this["ApiBot"]));
             }
-            set {
-                this["ApiBot"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\Pictures\\HamstiBot\\")]
+        public string SavePath {
+            get {
+                return ((string)(this["SavePath"]));
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\Pictures\\HamstiBot\\")]
-        public string SavePathImages {
+        [global::System.Configuration.DefaultSettingValueAttribute("406777030")]
+        public int RecoverIdAdmin {
             get {
-                return ((string)(this["SavePathImages"]));
-            }
-            set {
-                this["SavePathImages"] = value;
+                return ((int)(this["RecoverIdAdmin"]));
             }
         }
     }

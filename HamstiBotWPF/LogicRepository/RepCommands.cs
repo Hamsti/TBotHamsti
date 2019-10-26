@@ -24,15 +24,100 @@ namespace HamstiBotWPF.LogicRepository
                 }
             });
 
+            
+
             GlobalUnit.botCommands.Add(new Core.BotCommand
             {
                 Command = "/helpAdmin",
                 CountArgsCommand = 0,
                 ExampleCommand = "/helpAdmin",
                 VisibleCommand = false,
-                Execute = async(model,message) =>
+                Execute = async (model,message) =>
                 {
                     await RepBotActions.helpBotAdmin(message);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/messageToAdmin",
+                CountArgsCommand = -1,
+                ExampleCommand = "/messageToAdmin YourMessage",
+                Execute = (model, message) =>
+                {
+                    RepBotActions.UserSendMessageForAdmin(message);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/messageToUser",
+                CountArgsCommand = -1,
+                ExampleCommand = "/messageToUser idUser YourMessage",
+                VisibleCommand = false,
+                Execute = (model, message) =>
+                {
+                    RepBotActions.AdminSendMessageToUser(message, int.Parse(model.Args.FirstOrDefault()));
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/messageSpamToUser",
+                CountArgsCommand = 2,
+                ExampleCommand = "/messageSpamToUser idUser CountMessages",
+                VisibleCommand = false,
+                Execute = (model, message) =>
+                {
+                    RepBotActions.AdminSpamMessageToUser(message, int.Parse(model.Args.FirstOrDefault()), int.Parse(model.Args.LastOrDefault()));
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/start",
+                CountArgsCommand = 0,
+                ExampleCommand = "/start",
+                Execute = (model, message) =>
+                {
+                    RepBotActions.ControlUsers.authNewUser(message, message.From.Id);
+                    //await GlobalUnit.Api.SetChatDescriptionAsync(new Telegram.Bot.Types.ChatId(Properties.Settings.Default.AdminId));
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/ListOfUsers",
+                CountArgsCommand = 0,
+                ExampleCommand = "/ListOfUsers",
+                VisibleCommand = false,
+                Execute = async (model, message) =>
+                {
+                    await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Список пользователей бота {GlobalUnit.Api.GetMeAsync().Result}:\n\n" + RepBotActions.ControlUsers.ListOfUsers);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/addUser",
+                CountArgsCommand = 1,
+                ExampleCommand = "/addUser [idUser]",
+                VisibleCommand = false,
+                Execute = (model, message) =>
+                { 
+                    RepBotActions.ControlUsers.authNewUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new Core.BotCommand
+            {
+                Command = "/lockUser",
+                CountArgsCommand = 1,
+                ExampleCommand = "/lockUser [idUser]",
+                VisibleCommand = false,
+                Execute = (model, message) =>
+                {
+                    RepBotActions.ControlUsers.lockUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
                 }
             });
 
@@ -104,9 +189,9 @@ namespace HamstiBotWPF.LogicRepository
                 Execute = (model, message) =>
                 {
                     if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\shutdown.exe", "/a"))
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнено снятие таймера на выключение");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнено снятие таймера на выключение");
                     else
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "При снятии таймера, произошла системная ошибка");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При снятии таймера, произошла системная ошибка");
                 }
             });
 
@@ -118,9 +203,9 @@ namespace HamstiBotWPF.LogicRepository
                 Execute = (model, message) =>
                 {
                     if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\rundll32.exe", "USER32.DLL LockWorkStation"))
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Успешно заблокирована система");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно заблокирована система");
                     else
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "При блокировке системы, произошла системная ошибка");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При блокировке системы, произошла системная ошибка");
                 }
             });
 
@@ -143,9 +228,9 @@ namespace HamstiBotWPF.LogicRepository
                 Execute = (model, message) =>
                 {
                     if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\shutdown.exe", "/h"))
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнен перевод в гибернацию");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнен перевод в гибернацию");
                     else
-                        GlobalUnit.myBot.Api.SendTextMessageAsync(message.From.Id, "При переводе в гибернацию, произошла системная ошибка");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При переводе в гибернацию, произошла системная ошибка");
                 }
             });
 
