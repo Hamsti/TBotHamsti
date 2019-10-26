@@ -43,17 +43,21 @@ namespace HamstiBotWPF
 
             ListUsers = new ObservableCollection<Core.patternUserList>();
             ListUsersRefresh();
+
         }
 
         private void subBotEvents()
         {
-            GlobalUnit.myBot.Api.OnMessage += ExecuteLaunchBot.checkMessageBot;
-            GlobalUnit.myBot.Api.OnMessageEdited += ExecuteLaunchBot.checkMessageBot;
-            GlobalUnit.myBot.Api.OnMessageEdited += botOnMessageReceived;
-            GlobalUnit.myBot.Api.OnMessage += botOnMessageReceived;
-            GlobalUnit.myBot.Api.OnReceiveError += botOnReceiveError;
-            //GlobalUnit.myBot.Api.OnUpdate += (obj, e) => App.Current.Dispatcher.Invoke(() => ListLogs.Add("OnUpdate"));
+            GlobalUnit.Api.OnMessage += ExecuteLaunchBot.checkMessageBot;
+            GlobalUnit.Api.OnMessageEdited += ExecuteLaunchBot.checkMessageBot;
+            GlobalUnit.Api.OnMessageEdited += botOnMessageReceived;
+            GlobalUnit.Api.OnMessage += botOnMessageReceived;
+            GlobalUnit.Api.OnReceiveError += botOnReceiveError;
+            GlobalUnit.Api.OnReceiveGeneralError += Api_OnReceiveGeneralError;
+            //GlobalUnit.Api.OnUpdate += (obj, e) => App.Current.Dispatcher.Invoke(() => ListLogs.Add("OnUpdate"));
         }
+
+        
 
         /// <summary>
         /// Adding to the log notification of an incoming message
@@ -80,6 +84,12 @@ namespace HamstiBotWPF
             RaisePropertiesChanged("ClearLogsBot");
         }
 
+        private void Api_OnReceiveGeneralError(object sender, Telegram.Bot.Args.ReceiveGeneralErrorEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke(() => ListLogs.Add("Произошла ошибка при событии OnReceiveGeneralError:\n\n" + e.Exception.Message));
+            RaisePropertiesChanged("ClearLogsBot");
+        }
+
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
@@ -90,7 +100,7 @@ namespace HamstiBotWPF
         {
             try
             {
-                if (GlobalUnit.myBot.Api.IsReceiving)
+                if (GlobalUnit.Api.IsReceiving)
                 {
                     if (System.Windows.MessageBox.Show("The bot is still running, are you sure you want to shut down the bot and close the application?",
                         "HamstiBot", System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.OK)
@@ -111,11 +121,11 @@ namespace HamstiBotWPF
         private void ListUsersRefresh()
         {
             ListUsers.Clear();
-            GlobalUnit.authUsers.OrderBy(ord => ord.locked).ToList().ForEach(user => ListUsers.Add(new Core.patternUserList()
+            GlobalUnit.authUsers.OrderBy(ord => ord.blocked).ToList().ForEach(user => ListUsers.Add(new Core.patternUserList()
             {
                 idUser = user.idUser,
                 localNickname = user.localNickname,
-                locked = user.locked
+                blocked = user.blocked
             }));
             if (ListUsers.Count > 0 && Properties.Settings.Default.AdminId > 0)
                 ListUsers.Move(ListUsers.IndexOf(ListUsers.SingleOrDefault(s => s.idUser == Properties.Settings.Default.AdminId)), 0);
@@ -196,7 +206,7 @@ namespace HamstiBotWPF
                     GlobalUnit.authUsers.Add(new Core.patternUserList
                     {
                         idUser = SelectedUserList.idUser,
-                        locked = SelectedUserList.locked,
+                        blocked = SelectedUserList.blocked,
                         localNickname = SelectedUserList.localNickname
                     });
                     LogicRepository.RepUsers.saveInJson();
@@ -212,7 +222,7 @@ namespace HamstiBotWPF
                 return new DelegateCommand((obj) =>
                 {
                     if (SelectedUserList.IsUserAdmin)
-                        SelectedUserList.locked = false;
+                        SelectedUserList.blocked = false;
                     GlobalUnit.authUsers = ListUsers.ToList();
                     LogicRepository.RepUsers.saveInJson();
                     ListUsersRefresh();
@@ -238,15 +248,15 @@ namespace HamstiBotWPF
             }
         }
 
-        public ICommand IsLockedUserChanged
+        public ICommand IsBlockedUserChanged
         {
             get
             {
                 return new DelegateCommand((obj) =>
                 {
-                    bool IsLocked;
-                    if (bool.TryParse(obj.ToString(), out IsLocked))
-                        SelectedUserList.locked = IsLocked;
+                    bool IsBlocked;
+                    if (bool.TryParse(obj.ToString(), out IsBlocked))
+                        SelectedUserList.blocked = IsBlocked;
                 },
                 (obj) => !SelectedUserList.IsUserAdmin);
             }

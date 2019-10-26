@@ -389,7 +389,7 @@
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding idUser}" Header="Id user" />
                     <GridViewColumn DisplayMemberBinding="{Binding localNickname,TargetNullValue=null}" Header="Local nickname" />
-                    <GridViewColumn DisplayMemberBinding="{Binding locked}" Header="Locked" />
+                    <GridViewColumn DisplayMemberBinding="{Binding blocked}" Header="Blocked" />
                 </GridView>
             </ListView.View>
         </ListView>
@@ -411,7 +411,7 @@
 
             <!-- =============================================== -->
             <TextBlock Text ="Id user" />
-            <TextBlock Text="Locked" Grid.Row="1"  />
+            <TextBlock Text="Blocked" Grid.Row="1"  />
             <TextBlock Text="Nickname" Grid.Row="2" />
 
             <TextBox x:Name="txtBoxIdUser"
@@ -427,28 +427,28 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" >
-                <RadioButton GroupName="IsLocked" 
+                <RadioButton GroupName="IsBlocked" 
                              Content="Yes"
-                             Command="{Binding IsLockedUserChanged}"
+                             Command="{Binding IsBlockedUserChanged}"
                              CommandParameter="true">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.locked}" Value="True" >
+                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="True" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </RadioButton.Style>
                 </RadioButton>
-                <RadioButton GroupName="IsLocked" 
+                <RadioButton GroupName="IsBlocked" 
                              Content="No" 
-                             Command="{Binding IsLockedUserChanged}"
+                             Command="{Binding IsBlockedUserChanged}"
                              CommandParameter="false">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.locked}" Value="False" >
+                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="False" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >

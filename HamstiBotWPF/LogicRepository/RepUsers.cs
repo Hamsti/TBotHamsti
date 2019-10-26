@@ -21,7 +21,7 @@ namespace HamstiBotWPF.LogicRepository
 
             ////OtherUsers
             //GlobalUnit.authUsers.Add(new Core.patternUserList {
-            //    idUser = 492113551, locked = true, localNickname = "Эндрю"
+            //    idUser = 492113551, blocked = true, localNickname = "Эндрю"
             //});
 
             loadFromJson();
@@ -62,10 +62,17 @@ namespace HamstiBotWPF.LogicRepository
         public static bool isHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Exists(idExists => userId == Properties.Settings.Default.AdminId);
 
         /// <summary>
+        /// Checks if this user is in the list of authorized users and not blocked.
+        /// </summary>
+        /// <param name="userId">Message.From.Id</param>
+        /// <returns></returns>
+        public static bool isAuthNotBlockedUser(int userId) => GlobalUnit.authUsers.Exists(user => user.idUser == userId && user.blocked == false);
+
+        /// <summary>
         /// Checks if this user is in the list of authorized users.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isAuthUser(int userId) => GlobalUnit.authUsers.Exists(user => user.idUser == userId && user.locked == false);
+        public static bool isAuthUser(int userId) => GlobalUnit.authUsers.Exists(user => user.idUser == userId);
     }
 }

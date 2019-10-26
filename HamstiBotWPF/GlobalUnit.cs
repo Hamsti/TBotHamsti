@@ -11,10 +11,8 @@ namespace HamstiBotWPF
         /// <summary>
         /// Creating a bot and working with it
         /// </summary>
-        public static class myBot
-        {
-            public static readonly TelegramBotClient Api = new TelegramBotClient(Properties.Settings.Default.ApiBot);
-        }
+        public static readonly TelegramBotClient Api = new TelegramBotClient(Properties.Settings.Default.ApiBot);
+        
         /// <summary>
         /// List of all authorized users
         /// </summary>
