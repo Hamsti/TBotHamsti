@@ -20,10 +20,7 @@ namespace HamstiBotWPF.LogicRepository
         public static Task helpBot(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список команд у бота:\n" + string.Join("\n", GlobalUnit.botCommands.Where(v => v.VisibleCommand == true).Select(s => s.ExampleCommand)));
         public static Task helpBotAdmin(Message message)
         {
-            if (RepUsers.isHaveAccessAdmin(message.From.Id))
-                return GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список всех реализованных команд у бота:\n" + string.Join("\n", GlobalUnit.botCommands.Select(s => s.ExampleCommand)));
-            else
-                return GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы не администратор...");
+            return GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список всех реализованных команд у бота:\n" + string.Join("\n", GlobalUnit.botCommands.Select(s => s.ExampleCommand)));
         }
 
         public static async void UserSendMessageForAdmin(Message message)
@@ -141,24 +138,14 @@ namespace HamstiBotWPF.LogicRepository
 
         public static async void comStopBot(Message message)
         {
-            if (RepUsers.isHaveAccessAdmin(message.From.Id))
-            {
-                await ExecuteLaunchBot.stopBot();
-            }
-            else
-                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы не администратор...");
+            await ExecuteLaunchBot.stopBot();
         }
 
         public static async void comStopApp(Message message)
         {
-            if (RepUsers.isHaveAccessAdmin(message.From.Id))
-            {
-                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Принудительное завершение работы приложения пользователем: {Environment.UserDomainName}");
-                await ExecuteLaunchBot.stopBot();
-                Environment.Exit(0);
-            }
-            else
-                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы не администратор...");
+            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Принудительное завершение работы приложения пользователем: {Environment.UserDomainName}");
+            await ExecuteLaunchBot.stopBot();
+            Environment.Exit(0);
         }
 
         public static Task showScreenButtons(Message message, string Show)

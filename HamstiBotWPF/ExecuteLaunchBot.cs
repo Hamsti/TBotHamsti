@@ -28,27 +28,8 @@ namespace HamstiBotWPF
                     case MessageType.Text:
                         //Parsing and executing a command or errors
                         var model = Core.BotCommand.ParserCommand(message.Text);
-                        bool isCommand = false;
 
-                        if (model != null)
-                        {
-                            foreach (var command in GlobalUnit.botCommands)
-                            {
-                                if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower())
-                                {
-                                    isCommand = true;
-                                    if (command.CountArgsCommand == model.Args.Length || command.CountArgsCommand == -1 && model.Args.Length > 0)
-                                    {
-                                        command.Execute?.Invoke(model, message);
-                                    }
-                                    else
-                                    {
-                                        command.OnError?.Invoke(model, message);
-                                    }
-                                }
-                            }
-                        }
-                        if (model == null || !isCommand) //Execute if command not found
+                        if (model == null || !ExecCommand(model, message)) //Execute if command not found
                         {
                             await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
                             return;
@@ -77,6 +58,33 @@ namespace HamstiBotWPF
                     LogicRepository.RepBotActions.ControlUsers.authNewUser(message, message.From.Id);
                 }
             }
+        }
+
+        private static bool ExecCommand(Core.BotCommandStructure model, Telegram.Bot.Types.Message message)
+        {
+            bool isCommand = false;
+            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.ToLower().Equals(model.Command.ToLower())).Count
+
+            foreach (var command in GlobalUnit.botCommands)
+            {
+                if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower())
+                {
+                    isCommand = true;
+                    if (command.CountArgsCommand == model.Args.Length ||
+                        command.CountArgsCommand == -1 && model.Args.Length > 0)
+                    {
+                        if (command.VisibleCommand || !command.VisibleCommand && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                            command.Execute?.Invoke(model, message);
+                        else
+                            GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды {model.Command}, необходимы права администратора.");
+                    }
+                    else if (--CountCurrentCommand < 1)
+                    {
+                        command.OnError?.Invoke(model, message);
+                    }
+                }
+            }
+            return isCommand;
         }
 
         /// <summary>
