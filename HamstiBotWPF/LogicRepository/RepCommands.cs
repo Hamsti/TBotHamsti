@@ -13,6 +13,10 @@ namespace HamstiBotWPF.LogicRepository
         /// </summary>
         public static void AddAllCommands()
         {
+            GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.Root, Core.BotLevelCommand.LevelCommand.Root));
+            GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.Messages, Core.BotLevelCommand.LevelCommand.Root));
+            GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.ControlUsers, Core.BotLevelCommand.LevelCommand.Messages));
+
             GlobalUnit.botCommands.Add(new Core.BotCommand
             {
                 Command = "/help",
@@ -24,14 +28,12 @@ namespace HamstiBotWPF.LogicRepository
                 }
             });
 
-            
-
             GlobalUnit.botCommands.Add(new Core.BotCommand
             {
                 Command = "/helpAdmin",
                 CountArgsCommand = 0,
                 ExampleCommand = "/helpAdmin",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = async (model,message) =>
                 {
                     await RepBotActions.helpBotAdmin(message);
@@ -43,6 +45,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageToAdmin",
                 CountArgsCommand = -1,
                 ExampleCommand = "/messageToAdmin YourMessage",
+                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 Execute = (model, message) =>
                 {
                     RepBotActions.UserSendMessageForAdmin(message);
@@ -54,7 +57,8 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageToUser",
                 CountArgsCommand = -1,
                 ExampleCommand = "/messageToUser idUser YourMessage",
-                VisibleCommand = false,
+                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.AdminSendMessageToUser(message, int.Parse(model.Args.FirstOrDefault()));
@@ -66,7 +70,8 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageSpamToUser",
                 CountArgsCommand = 2,
                 ExampleCommand = "/messageSpamToUser idUser CountMessages",
-                VisibleCommand = false,
+                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.AdminSpamMessageToUser(message, int.Parse(model.Args.FirstOrDefault()), int.Parse(model.Args.LastOrDefault()));
@@ -90,7 +95,8 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/ListOfUsers",
                 CountArgsCommand = 0,
                 ExampleCommand = "/ListOfUsers",
-                VisibleCommand = false,
+                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                VisibleForUsers = false,
                 Execute = async (model, message) =>
                 {
                     await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Список пользователей бота {GlobalUnit.Api.GetMeAsync().Result}:\n\n" + RepBotActions.ControlUsers.ListOfUsers);
@@ -102,7 +108,8 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/addUser",
                 CountArgsCommand = 1,
                 ExampleCommand = "/addUser [idUser]",
-                VisibleCommand = false,
+                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 { 
                     RepBotActions.ControlUsers.authNewUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
@@ -114,7 +121,8 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/lockUser",
                 CountArgsCommand = 1,
                 ExampleCommand = "/lockUser [idUser]",
-                VisibleCommand = false,
+                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.ControlUsers.lockUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
@@ -126,7 +134,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/stopBot",
                 CountArgsCommand = 0,
                 ExampleCommand = "/stopBot",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.comStopBot(message);
@@ -138,7 +146,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/stopApp",
                 CountArgsCommand = 0,
                 ExampleCommand = "/stopApp",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.comStopApp(message);
@@ -150,7 +158,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/reloadBot",
                 CountArgsCommand = 0,
                 ExampleCommand = "/reloadBot",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     Task.Run(() => ExecuteLaunchBot.reloadBot());
@@ -173,7 +181,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/turnOff",
                 CountArgsCommand = 2,
                 ExampleCommand = "/turnOff [tMin: int, tSec: int]",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.ControlPC.turnOff(message, int.Parse(model.Args.FirstOrDefault()), int.Parse(model.Args.LastOrDefault()));
@@ -185,7 +193,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/cancelOff",
                 CountArgsCommand = 0,
                 ExampleCommand = "/cancelOff",
-                VisibleCommand = false,
+                VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
                     if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\shutdown.exe", "/a"))

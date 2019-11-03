@@ -36,7 +36,7 @@ namespace HamstiBotWPF
             GlobalUnit.botCommands.ForEach(botCom => ListCommands.Add(new System.Windows.Controls.MenuItem()
             {
                 Header = botCom.ExampleCommand,
-                Foreground = botCom.VisibleCommand ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
+                Foreground = botCom.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
             }));
 
             ListLogs = new ObservableCollection<string>();

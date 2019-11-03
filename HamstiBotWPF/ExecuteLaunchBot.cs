@@ -63,7 +63,7 @@ namespace HamstiBotWPF
         private static bool ExecCommand(Core.BotCommandStructure model, Telegram.Bot.Types.Message message)
         {
             bool isCommand = false;
-            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.ToLower().Equals(model.Command.ToLower())).Count
+            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.ToLower().Equals(model.Command.ToLower())).Count;
 
             foreach (var command in GlobalUnit.botCommands)
             {
@@ -73,14 +73,22 @@ namespace HamstiBotWPF
                     if (command.CountArgsCommand == model.Args.Length ||
                         command.CountArgsCommand == -1 && model.Args.Length > 0)
                     {
-                        if (command.VisibleCommand || !command.VisibleCommand && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
-                            command.Execute?.Invoke(model, message);
+                        if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                        {
+                            if (command.Execute != null)
+                                command.Execute?.Invoke(model, message);
+                            else
+                                ((Core.BotLevelCommand)command).Execute?.Invoke(model, message);
+                        }
                         else
                             GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды {model.Command}, необходимы права администратора.");
                     }
                     else if (--CountCurrentCommand < 1)
                     {
-                        command.OnError?.Invoke(model, message);
+                        if (((Core.BotLevelCommand)command).OnError == null)
+                            command.OnError?.Invoke(model, message);
+                        else
+                            ((Core.BotLevelCommand)command).OnError.Invoke(model, message);
                     }
                 }
             }

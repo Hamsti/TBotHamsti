@@ -1,0 +1,107 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Telegram.Bot.Types;
+
+namespace HamstiBotWPF.Core
+{
+    public class BotLevelCommand : BotCommand
+    {
+        /// <summary>
+        /// Command for change to up level
+        /// </summary>
+        public const string TOPREVLEVEL = "/..";
+
+        public BotLevelCommand(LevelCommand currentLevel, LevelCommand parrentLevel)
+        {
+            NameLevel = parrentLevel;
+            ParrentLevel = parrentLevel;
+            Command = currentLevel.ToString();
+            base.CountArgsCommand = 0;
+        }
+
+        public new int CountArgsCommand { get { return base.CountArgsCommand; } }
+        public new string ExampleCommand { get { return Command; } }
+        public new string Command 
+        { 
+            get { return base.Command; }
+            set { base.Command = value == LevelCommand.Root.ToString() ? TOPREVLEVEL : "/" + value.ToUpper(); }
+        }
+
+        /// <summary>
+        /// Previos (parrent) level for commands
+        /// </summary>
+        public LevelCommand ParrentLevel { get; private set; }
+
+        /// <summary>
+        /// Processing commands for change current level
+        /// </summary>
+        public new Action<BotCommandStructure, Message> Execute { get; } = async (model, message) =>
+        {
+            if (await WhenLevelIsRoot(message)) return;
+            if (ExecLevelUp(message)) return;
+            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Level don't changed up");
+
+            //Change currentLevel on LevelCommand
+            foreach (LevelCommand level in Enum.GetValues(typeof(LevelCommand)))
+            {
+                if (("/" + level.ToString().ToUpper()).Equals(model.Command.ToUpper()))
+                {
+                    GlobalUnit.currentLevelCommand = level;
+                }
+            }
+            SendMessageWhenLevelChanges(message);
+        };
+
+        /// <summary>
+        /// Execute if have error when change level commands
+        /// </summary>
+        public new Action<BotCommandStructure, Message> OnError { get; } = async (model, message) =>
+        {
+            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Произошла ошибка при изменении уровня команд.\nСписок комманд: /help");
+        };
+
+        public enum LevelCommand
+        {
+            Root,
+            Messages,
+            ControlUsers,
+            ControlBot,
+            ControlPC
+        }
+
+        private static async void SendMessageWhenLevelChanges(Message message)
+        {
+            string messageWhenLevelChanges = "Current level: " + GlobalUnit.currentLevelCommand + "\n\nList of commands:\n";
+
+            if (LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForAdmin);
+            else
+                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForUsers);
+        }
+
+        private static async Task<bool> WhenLevelIsRoot(Message message)
+        {
+            if (message.Text == TOPREVLEVEL && GlobalUnit.currentLevelCommand == LevelCommand.Root)
+            {
+                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы находитесь на начальном уровне.");
+                SendMessageWhenLevelChanges(message);
+                return true;
+            }
+            return false;
+        }
+
+        private static bool ExecLevelUp(Message message)
+        {
+            if (message.Text == TOPREVLEVEL && GlobalUnit.currentLevelCommand > LevelCommand.Root)
+            {
+                GlobalUnit.currentLevelCommand = ParrentLevel;
+                SendMessageWhenLevelChanges(message);
+                return true;
+            }
+            return false;
+        }       
+    }
+}

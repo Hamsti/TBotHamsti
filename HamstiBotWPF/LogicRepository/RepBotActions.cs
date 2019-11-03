@@ -17,11 +17,12 @@ namespace HamstiBotWPF.LogicRepository
     /// </summary>
     public static class RepBotActions
     {
-        public static Task helpBot(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список команд у бота:\n" + string.Join("\n", GlobalUnit.botCommands.Where(v => v.VisibleCommand == true).Select(s => s.ExampleCommand)));
-        public static Task helpBotAdmin(Message message)
-        {
-            return GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список всех реализованных команд у бота:\n" + string.Join("\n", GlobalUnit.botCommands.Select(s => s.ExampleCommand)));
-        }
+        public static string helpForUsers { get { return (GlobalUnit.currentLevelCommand != Core.BotLevelCommand.LevelCommand.Root ? "/..\n" : string.Empty) + 
+                    string.Join("\n", GlobalUnit.botCommands.Where(w => w.VisibleForUsers == true && w.NameLevel == GlobalUnit.currentLevelCommand && w.Command != "/..").Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
+        public static string helpForAdmin { get { return (GlobalUnit.currentLevelCommand != Core.BotLevelCommand.LevelCommand.Root ? "/..\n" : string.Empty) + 
+                    string.Join("\n", GlobalUnit.botCommands.Where(w => w.NameLevel == GlobalUnit.currentLevelCommand && w.Command != "/..").Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
+        public static Task helpBot(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список команд у бота:\n" + helpForUsers);
+        public static Task helpBotAdmin(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список всех реализованных команд у бота:\n" + helpForAdmin);
 
         public static async void UserSendMessageForAdmin(Message message)
         {
@@ -185,11 +186,11 @@ namespace HamstiBotWPF.LogicRepository
             {
                 if (isShow)
                 {
-                    keys = new string[GlobalUnit.botCommands.Where(x => x.VisibleCommand).Count()];
+                    keys = new string[GlobalUnit.botCommands.Where(x => x.VisibleForUsers).Count()];
                     if (RepUsers.isHaveAccessAdmin(idUser))
                         keys = GlobalUnit.botCommands.Where(x => x.CountArgsCommand == 0).Select(s => s.Command).ToArray();
                     else
-                        keys = GlobalUnit.botCommands.Where(x => x.CountArgsCommand == 0 && x.VisibleCommand).Select(s => s.Command).ToArray();
+                        keys = GlobalUnit.botCommands.Where(x => x.CountArgsCommand == 0 && x.VisibleForUsers).Select(s => s.Command).ToArray();
                 }
                 else
                     keys = new string[0];
@@ -202,7 +203,7 @@ namespace HamstiBotWPF.LogicRepository
                     if (RepUsers.isHaveAccessAdmin(idUser))
                         keys = GlobalUnit.botCommands.Where(w => w.Command != "/helpAdmin").Select(s => s.Command).ToArray();
                     else
-                        keys = GlobalUnit.botCommands.Where(w => w.VisibleCommand).Select(s => s.Command).ToArray();
+                        keys = GlobalUnit.botCommands.Where(w => w.VisibleForUsers).Select(s => s.Command).ToArray();
                 }
                 else
                     keys = null;

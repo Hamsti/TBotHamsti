@@ -22,5 +22,11 @@ namespace HamstiBotWPF
         /// List of all commands for working with the bot
         /// </summary>
         public static List<Core.BotCommand> botCommands = new List<Core.BotCommand>();
+
+        /// <summary>
+        /// Current level for commands
+        /// </summary>
+        public static Core.BotLevelCommand.LevelCommand currentLevelCommand = Core.BotLevelCommand.LevelCommand.Root;
+
     }
 }
