@@ -18,9 +18,13 @@ namespace HamstiBotWPF.LogicRepository
     public static class RepBotActions
     {
         public static string helpForUsers { get { return (GlobalUnit.currentLevelCommand != Core.BotLevelCommand.LevelCommand.Root ? "/..\n" : string.Empty) + 
-                    string.Join("\n", GlobalUnit.botCommands.Where(w => w.VisibleForUsers == true && w.NameLevel == GlobalUnit.currentLevelCommand && w.Command != "/..").Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
+                    string.Join("\n", GlobalUnit.botCommands.Where(w => (w.VisibleForUsers == true && w.Command != "/..") && 
+                    GlobalUnit.currentLevelCommand == (w.GetType().Equals(typeof(Core.BotCommand)) ? w.NameOfLevel : ((Core.BotLevelCommand)w).ParrentLevel)).
+                    Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
         public static string helpForAdmin { get { return (GlobalUnit.currentLevelCommand != Core.BotLevelCommand.LevelCommand.Root ? "/..\n" : string.Empty) + 
-                    string.Join("\n", GlobalUnit.botCommands.Where(w => w.NameLevel == GlobalUnit.currentLevelCommand && w.Command != "/..").Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
+                    string.Join("\n", GlobalUnit.botCommands.Where(w => w.Command != "/.." && 
+                    GlobalUnit.currentLevelCommand == (w.GetType().Equals(typeof(Core.BotCommand)) ? w.NameOfLevel : ((Core.BotLevelCommand)w).ParrentLevel)).
+                    Select(s => s.ExampleCommand ?? ((Core.BotLevelCommand)s).ExampleCommand)); } }
         public static Task helpBot(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список команд у бота:\n" + helpForUsers);
         public static Task helpBotAdmin(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список всех реализованных команд у бота:\n" + helpForAdmin);
 

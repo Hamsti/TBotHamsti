@@ -12,7 +12,7 @@ namespace HamstiBotWPF.Core
         public string Command { get; set; }
         public string ExampleCommand { get; set; }
         public int CountArgsCommand { get; set; }
-        public BotLevelCommand.LevelCommand NameLevel { get; set; } = BotLevelCommand.LevelCommand.Root;
+        public BotLevelCommand.LevelCommand NameOfLevel { get; set; } = BotLevelCommand.LevelCommand.Root;
         //public bool LevelDependent { get; set; } = true;
         public bool VisibleForUsers { get; set; } = true;
         public Action<BotCommandStructure, Message> Execute { get; set; }

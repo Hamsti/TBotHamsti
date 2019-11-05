@@ -16,6 +16,7 @@ namespace HamstiBotWPF.LogicRepository
             GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.Root, Core.BotLevelCommand.LevelCommand.Root));
             GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.Messages, Core.BotLevelCommand.LevelCommand.Root));
             GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.ControlUsers, Core.BotLevelCommand.LevelCommand.Messages));
+            //GlobalUnit.botCommands.Add(new Core.BotLevelCommand(Core.BotLevelCommand.LevelCommand.ControlPC, Core.BotLevelCommand.LevelCommand.ControlPC));
 
             GlobalUnit.botCommands.Add(new Core.BotCommand
             {
@@ -45,7 +46,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageToAdmin",
                 CountArgsCommand = -1,
                 ExampleCommand = "/messageToAdmin YourMessage",
-                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 Execute = (model, message) =>
                 {
                     RepBotActions.UserSendMessageForAdmin(message);
@@ -57,7 +58,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageToUser",
                 CountArgsCommand = -1,
                 ExampleCommand = "/messageToUser idUser YourMessage",
-                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
@@ -70,7 +71,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/messageSpamToUser",
                 CountArgsCommand = 2,
                 ExampleCommand = "/messageSpamToUser idUser CountMessages",
-                NameLevel = Core.BotLevelCommand.LevelCommand.Messages,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
@@ -95,7 +96,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/ListOfUsers",
                 CountArgsCommand = 0,
                 ExampleCommand = "/ListOfUsers",
-                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = async (model, message) =>
                 {
@@ -108,7 +109,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/addUser",
                 CountArgsCommand = 1,
                 ExampleCommand = "/addUser [idUser]",
-                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 { 
@@ -121,7 +122,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/lockUser",
                 CountArgsCommand = 1,
                 ExampleCommand = "/lockUser [idUser]",
-                NameLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
+                NameOfLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {

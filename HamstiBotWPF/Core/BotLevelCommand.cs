@@ -14,18 +14,19 @@ namespace HamstiBotWPF.Core
         /// </summary>
         public const string TOPREVLEVEL = "/..";
 
-        public BotLevelCommand(LevelCommand currentLevel, LevelCommand parrentLevel)
+        public enum LevelCommand
         {
-            NameLevel = parrentLevel;
-            ParrentLevel = parrentLevel;
-            Command = currentLevel.ToString();
-            base.CountArgsCommand = 0;
+            Root,
+            Messages,
+            ControlUsers,
+            ControlBot,
+            ControlPC
         }
 
         public new int CountArgsCommand { get { return base.CountArgsCommand; } }
         public new string ExampleCommand { get { return Command; } }
-        public new string Command 
-        { 
+        public new string Command
+        {
             get { return base.Command; }
             set { base.Command = value == LevelCommand.Root.ToString() ? TOPREVLEVEL : "/" + value.ToUpper(); }
         }
@@ -35,14 +36,22 @@ namespace HamstiBotWPF.Core
         /// </summary>
         public LevelCommand ParrentLevel { get; private set; }
 
+        public BotLevelCommand(LevelCommand currentLevel, LevelCommand parrentLevel)
+        {
+            Execute += (BotCommandStructure command, Message message) => ExecLevelUp(message);
+            NameOfLevel = currentLevel;
+            ParrentLevel = parrentLevel;
+            Command = currentLevel.ToString();
+            base.CountArgsCommand = 0;
+        }
+
         /// <summary>
         /// Processing commands for change current level
         /// </summary>
         public new Action<BotCommandStructure, Message> Execute { get; } = async (model, message) =>
         {
+            //first execute fuction "ExecLevelUp" (added in initialization BotLevelCommand), for next exec constraction typed down.
             if (await WhenLevelIsRoot(message)) return;
-            if (ExecLevelUp(message)) return;
-            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Level don't changed up");
 
             //Change currentLevel on LevelCommand
             foreach (LevelCommand level in Enum.GetValues(typeof(LevelCommand)))
@@ -50,9 +59,9 @@ namespace HamstiBotWPF.Core
                 if (("/" + level.ToString().ToUpper()).Equals(model.Command.ToUpper()))
                 {
                     GlobalUnit.currentLevelCommand = level;
+                    SendMessageWhenLevelChanges(message);
                 }
             }
-            SendMessageWhenLevelChanges(message);
         };
 
         /// <summary>
@@ -62,15 +71,6 @@ namespace HamstiBotWPF.Core
         {
             await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Произошла ошибка при изменении уровня команд.\nСписок комманд: /help");
         };
-
-        public enum LevelCommand
-        {
-            Root,
-            Messages,
-            ControlUsers,
-            ControlBot,
-            ControlPC
-        }
 
         private static async void SendMessageWhenLevelChanges(Message message)
         {
@@ -93,15 +93,13 @@ namespace HamstiBotWPF.Core
             return false;
         }
 
-        private static bool ExecLevelUp(Message message)
+        private void ExecLevelUp(Message message)
         {
             if (message.Text == TOPREVLEVEL && GlobalUnit.currentLevelCommand > LevelCommand.Root)
             {
                 GlobalUnit.currentLevelCommand = ParrentLevel;
                 SendMessageWhenLevelChanges(message);
-                return true;
             }
-            return false;
-        }       
+        }
     }
 }

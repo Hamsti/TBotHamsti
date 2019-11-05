@@ -75,7 +75,7 @@ namespace HamstiBotWPF
                     {
                         if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
                         {
-                            if (command.Execute != null)
+                            if (command.GetType().Equals(typeof(Core.BotCommand)))
                                 command.Execute?.Invoke(model, message);
                             else
                                 ((Core.BotLevelCommand)command).Execute?.Invoke(model, message);
@@ -85,7 +85,7 @@ namespace HamstiBotWPF
                     }
                     else if (--CountCurrentCommand < 1)
                     {
-                        if (((Core.BotLevelCommand)command).OnError == null)
+                        if (command.GetType().Equals(typeof(Core.BotCommand)))
                             command.OnError?.Invoke(model, message);
                         else
                             ((Core.BotLevelCommand)command).OnError.Invoke(model, message);
