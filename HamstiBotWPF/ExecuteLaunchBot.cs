@@ -67,7 +67,8 @@ namespace HamstiBotWPF
 
             foreach (var command in GlobalUnit.botCommands)
             {
-                if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower())
+                if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower() || 
+                    command.GetType().Equals(typeof(Core.BotLevelCommand)) && model.Command == Core.BotLevelCommand.TOPREVLEVEL && GlobalUnit.currentLevelCommand == command.NameOfLevel)
                 {
                     isCommand = true;
                     if (command.CountArgsCommand == model.Args.Length ||

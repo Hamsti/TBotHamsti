@@ -28,7 +28,8 @@ namespace HamstiBotWPF.Core
         public new string Command
         {
             get { return base.Command; }
-            set { base.Command = value == LevelCommand.Root.ToString() ? TOPREVLEVEL : "/" + value.ToUpper(); }
+            set { base.Command = "/" + value.ToUpper(); }
+            //set { base.Command = value == LevelCommand.Root.ToString() ? TOPREVLEVEL : "/" + value.ToUpper(); }
         }
 
         /// <summary>
