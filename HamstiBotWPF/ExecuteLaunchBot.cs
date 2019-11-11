@@ -71,26 +71,33 @@ namespace HamstiBotWPF
                     command.GetType().Equals(typeof(Core.BotLevelCommand)) && model.Command == Core.BotLevelCommand.TOPREVLEVEL && GlobalUnit.currentLevelCommand == command.NameOfLevel)
                 {
                     isCommand = true;
-                    if (command.CountArgsCommand == model.Args.Length ||
-                        command.CountArgsCommand == -1 && model.Args.Length > 0)
+
+                    if (command.GetType().Equals(typeof(Core.BotLevelCommand)) && ((Core.BotLevelCommand)command).ParrentLevel == GlobalUnit.currentLevelCommand ||
+                        command.NameOfLevel == GlobalUnit.currentLevelCommand)
                     {
-                        if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                        if (command.CountArgsCommand == model.Args.Length ||
+                            command.CountArgsCommand == -1 && model.Args.Length > 0)
+                        {
+                            if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                            {
+                                if (command.GetType().Equals(typeof(Core.BotCommand)))
+                                    command.Execute?.Invoke(model, message);
+                                else
+                                    ((Core.BotLevelCommand)command).Execute?.Invoke(model, message);
+                            }
+                            else
+                                GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды {model.Command}, необходимы права администратора.");
+                        }
+                        else if (--CountCurrentCommand < 1)
                         {
                             if (command.GetType().Equals(typeof(Core.BotCommand)))
-                                command.Execute?.Invoke(model, message);
+                                command.OnError?.Invoke(model, message);
                             else
-                                ((Core.BotLevelCommand)command).Execute?.Invoke(model, message);
+                                ((Core.BotLevelCommand)command).OnError.Invoke(model, message);
                         }
-                        else
-                            GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды {model.Command}, необходимы права администратора.");
                     }
-                    else if (--CountCurrentCommand < 1)
-                    {
-                        if (command.GetType().Equals(typeof(Core.BotCommand)))
-                            command.OnError?.Invoke(model, message);
-                        else
-                            ((Core.BotLevelCommand)command).OnError.Invoke(model, message);
-                    }
+                    else
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы находитесь не на том уровне");
                 }
             }
             return isCommand;
