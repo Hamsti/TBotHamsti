@@ -16,7 +16,7 @@ namespace HamstiBotWPF
         /// <summary>
         /// List of all authorized users
         /// </summary>
-        public static List<Core.patternUserList> authUsers = new List<Core.patternUserList>();
+        public static List<Core.PatternUserList> authUsers = new List<Core.PatternUserList>();
 
         /// <summary>
         /// List of all commands for working with the bot

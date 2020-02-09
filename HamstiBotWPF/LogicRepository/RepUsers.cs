@@ -16,12 +16,12 @@ namespace HamstiBotWPF.LogicRepository
         {
             ////AdminUser
             //GlobalUnit.authUsers.Add(new Core.patternUserList {
-            //    idUser = Properties.Settings.Default.AdminId
+            //    IdUser = Properties.Settings.Default.AdminId
             //});
 
             ////OtherUsers
             //GlobalUnit.authUsers.Add(new Core.patternUserList {
-            //    idUser = 492113551, blocked = true, localNickname = "Эндрю"
+            //    IdUser = 492113551, IsBlocked = true, LocalNickname = "Эндрю"
             //});
 
             loadFromJson();
@@ -31,8 +31,8 @@ namespace HamstiBotWPF.LogicRepository
         {
             try
             {
-                GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.patternUserList>>(System.IO.File.ReadAllText("AuthUsers.json")) 
-                    : new System.Collections.Generic.List<Core.patternUserList>() { new Core.patternUserList { idUser = Properties.Settings.Default.AdminId } };
+                GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.PatternUserList>>(System.IO.File.ReadAllText("AuthUsers.json")) 
+                    : new System.Collections.Generic.List<Core.PatternUserList>() { new Core.PatternUserList { IdUser = Properties.Settings.Default.AdminId } };
             }
             catch (Exception ex)
             {
@@ -62,17 +62,17 @@ namespace HamstiBotWPF.LogicRepository
         public static bool isHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Exists(idExists => userId == Properties.Settings.Default.AdminId);
 
         /// <summary>
-        /// Checks if this user is in the list of authorized users and not blocked.
+        /// Checks if this user is in the list of authorized users and not IsBlocked.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isAuthNotBlockedUser(int userId) => GlobalUnit.authUsers.Exists(user => user.idUser == userId && user.blocked == false);
+        public static bool isAuthNotIsBlockedUser(int userId) => GlobalUnit.authUsers.Exists(user => user.IdUser == userId && user.IsBlocked == false);
 
         /// <summary>
         /// Checks if this user is in the list of authorized users.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isAuthUser(int userId) => GlobalUnit.authUsers.Exists(user => user.idUser == userId);
+        public static bool isAuthUser(int userId) => GlobalUnit.authUsers.Exists(user => user.IdUser == userId);
     }
 }

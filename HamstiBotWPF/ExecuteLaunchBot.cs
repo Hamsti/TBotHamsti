@@ -13,14 +13,14 @@ namespace HamstiBotWPF
         /// <summary>
         /// Listening to all incoming messages
         /// </summary>
-        public static async void checkMessageBot(object sender, MessageEventArgs messageEventArgs)
+        public static async void CheckMessageBot(object sender, MessageEventArgs messageEventArgs)
         {
             var message = messageEventArgs.Message;
             //Check message for null
             if (message == null) return;
 
             //User authorization check
-            if (LogicRepository.RepUsers.isAuthNotBlockedUser(message.From.Id))
+            if (LogicRepository.RepUsers.isAuthNotIsBlockedUser(message.From.Id))
             {
                 switch (message.Type)
                 {
@@ -45,7 +45,7 @@ namespace HamstiBotWPF
                         await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "На данный момент, неизвестный тип сообщения."); break;
                 }
             }
-            //User was not found or blocked in the list of authorized users
+            //User was not found or IsBlocked in the list of authorized users
             else
             {
                 if (LogicRepository.RepUsers.isAuthUser(message.From.Id))
@@ -107,7 +107,7 @@ namespace HamstiBotWPF
         /// To launch this bot
         /// </summary>
         /// <param name="Attempt">The number of attempts to launch the bot</param>
-        public async static Task runBot(int numberAttempt = 1)
+        public async static Task RunBotAsync(int numberAttempt = 1)
         {
             if (numberAttempt <= 0)
             {
@@ -123,7 +123,7 @@ namespace HamstiBotWPF
             else
             {
                 await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} уже запущен.");
-                await runBot(--numberAttempt);
+                await RunBotAsync(--numberAttempt);
             }
         }
 
@@ -132,7 +132,7 @@ namespace HamstiBotWPF
         /// </summary>
         /// <param name="Attempt">The number of attempts to stop the bot</param>
         /// <returns></returns>
-        public async static Task stopBot(int numberAttempt = 1)
+        public async static Task StopBotAsync(int numberAttempt = 1)
         {
             if (numberAttempt <= 0)
             {
@@ -147,7 +147,7 @@ namespace HamstiBotWPF
             else
             {
                 await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} уже остановлен");
-                await stopBot(--numberAttempt);
+                await StopBotAsync(--numberAttempt);
             }
         }
 
@@ -156,18 +156,18 @@ namespace HamstiBotWPF
         /// </summary>
         /// <param name="numberAttempt">The number of attempts to reload the bot</param>
         /// <returns></returns>
-        public async static Task reloadBot(int numberAttempt = 2)
+        public async static Task RestartBotAsync(int numberAttempt = 2)
         {
             await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} выполняет перезагрузку...");
 
             if (GlobalUnit.Api.IsReceiving)
             {
-                await stopBot(numberAttempt);
-                await runBot(numberAttempt);
+                await StopBotAsync(numberAttempt);
+                await RunBotAsync(numberAttempt);
             }
             else
             {
-                await runBot(numberAttempt);
+                await RunBotAsync(numberAttempt);
             }
 
         }

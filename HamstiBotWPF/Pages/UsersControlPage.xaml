@@ -6,12 +6,39 @@
       xmlns:local="clr-namespace:HamstiBotWPF.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding UsersControlViewModel, Source={StaticResource ViewModelLocator}}"
       Title="UsersControlPage">
-
+    
     <Grid>
-        <TextBlock Text="Users control Page" 
-                   VerticalAlignment="Center"
+        <ListView ItemsSource="{Binding ListUsers}"
+                  SelectedItem="{Binding ChangeUserDataPageViewModel.SelectedUserList, Source={StaticResource ViewModelLocator}}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding IdUser}"
+                                    Header="Id user"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding LocalNickname, TargetNullValue=null}" 
+                                    Header="Local nickname" />
+                    <GridViewColumn DisplayMemberBinding="{Binding IsBlocked}"
+                                    Header="IsBlocked" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <TextBlock FontWeight="Light"
+                   Grid.Column="1"
+                   Text="Not found users"
                    HorizontalAlignment="Center"
-                   FontSize="40"/>
+                   VerticalAlignment="Center"
+                   FontSize="24">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ListUsers.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </Grid>
 </Page>

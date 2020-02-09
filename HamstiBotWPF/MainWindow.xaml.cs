@@ -15,8 +15,8 @@ namespace HamstiBotWPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SolidColorBrush brushNotBlocked = Brushes.White;
-        private SolidColorBrush brushBlocked = Brushes.YellowGreen;
+        private SolidColorBrush brushNotIsBlocked = Brushes.White;
+        private SolidColorBrush brushIsBlocked = Brushes.YellowGreen;
 
         public MainWindow()
         {
@@ -33,8 +33,8 @@ namespace HamstiBotWPF
         /// </summary>
         private void subBotEvents()
         {
-            GlobalUnit.Api.OnMessage += ExecuteLaunchBot.checkMessageBot;
-            GlobalUnit.Api.OnMessageEdited += ExecuteLaunchBot.checkMessageBot;
+            GlobalUnit.Api.OnMessage += ExecuteLaunchBot.CheckMessageBot;
+            GlobalUnit.Api.OnMessageEdited += ExecuteLaunchBot.CheckMessageBot;
             GlobalUnit.Api.OnMessageEdited += botOnMessageReceived;
             GlobalUnit.Api.OnMessage += botOnMessageReceived;
             GlobalUnit.Api.OnReceiveError += botOnReceiveError;
@@ -48,7 +48,7 @@ namespace HamstiBotWPF
             try
             {
                 if (GlobalUnit.Api.IsReceiving)
-                    await ExecuteLaunchBot.stopBot();
+                    await ExecuteLaunchBot.StopBotAsync();
             }
             catch (Exception ex)
             {
@@ -65,19 +65,19 @@ namespace HamstiBotWPF
             menuUsers.Items.Clear();
             for (int i = 0; i < GlobalUnit.authUsers.Count; i++)
             {
-                if (GlobalUnit.authUsers[i].localNickname != null && GlobalUnit.authUsers[i].localNickname != "")
+                if (GlobalUnit.authUsers[i].LocalNickname != null && GlobalUnit.authUsers[i].LocalNickname != "")
                 {
-                    if (GlobalUnit.authUsers[i].blocked)
-                        menuUsers.Items.Add(new MenuItem() { Header = GlobalUnit.authUsers[i].localNickname + " | " + GlobalUnit.authUsers[i].idUser, Tag = GlobalUnit.authUsers[i].idUser, Foreground = brushBlocked });
+                    if (GlobalUnit.authUsers[i].IsBlocked)
+                        menuUsers.Items.Add(new MenuItem() { Header = GlobalUnit.authUsers[i].LocalNickname + " | " + GlobalUnit.authUsers[i].IdUser, Tag = GlobalUnit.authUsers[i].IdUser, Foreground = brushIsBlocked });
                     else
-                        menuUsers.Items.Add(new MenuItem() { Header = GlobalUnit.authUsers[i].localNickname + " | " + GlobalUnit.authUsers[i].idUser, Tag = GlobalUnit.authUsers[i].idUser, Foreground = brushNotBlocked });
+                        menuUsers.Items.Add(new MenuItem() { Header = GlobalUnit.authUsers[i].LocalNickname + " | " + GlobalUnit.authUsers[i].IdUser, Tag = GlobalUnit.authUsers[i].IdUser, Foreground = brushNotIsBlocked });
                 }
                 else
                 {
-                    if (GlobalUnit.authUsers[i].blocked)
-                        menuUsers.Items.Add(new MenuItem() { Header = "Не указано | " + GlobalUnit.authUsers[i].idUser, Tag = GlobalUnit.authUsers[i].idUser, Foreground = brushBlocked });
+                    if (GlobalUnit.authUsers[i].IsBlocked)
+                        menuUsers.Items.Add(new MenuItem() { Header = "Не указано | " + GlobalUnit.authUsers[i].IdUser, Tag = GlobalUnit.authUsers[i].IdUser, Foreground = brushIsBlocked });
                     else
-                        menuUsers.Items.Add(new MenuItem() { Header = "Не указано | " + GlobalUnit.authUsers[i].idUser, Tag = GlobalUnit.authUsers[i].idUser, Foreground = brushNotBlocked });
+                        menuUsers.Items.Add(new MenuItem() { Header = "Не указано | " + GlobalUnit.authUsers[i].IdUser, Tag = GlobalUnit.authUsers[i].IdUser, Foreground = brushNotIsBlocked });
                 }
 
                 //Add in menuUsers sub menuDeleteItem
@@ -89,12 +89,12 @@ namespace HamstiBotWPF
                     usersMenuInput();
                 };
 
-                MenuItem menuBlockItem = new MenuItem() { Header = "Block", Tag = GlobalUnit.authUsers[i].idUser };
+                MenuItem menuBlockItem = new MenuItem() { Header = "Block", Tag = GlobalUnit.authUsers[i].IdUser };
                 menuBlockItem.Click += (object sender2, RoutedEventArgs e2) =>
                 {
-                    foreach (var user in GlobalUnit.authUsers.Where(w => (e2.Source as MenuItem).Tag != null && (int)(e2.Source as MenuItem).Tag == w.idUser))
+                    foreach (var user in GlobalUnit.authUsers.Where(w => (e2.Source as MenuItem).Tag != null && (int)(e2.Source as MenuItem).Tag == w.IdUser))
                     {
-                        user.blocked = user.blocked ? false : true;
+                        user.IsBlocked = user.IsBlocked ? false : true;
                     }
                     LogicRepository.RepUsers.saveInJson();
                     usersMenuInput();
@@ -126,7 +126,7 @@ namespace HamstiBotWPF
             try
             {
                 logList.Items.Add("Start bot");
-                Task.Run(()=> ExecuteLaunchBot.runBot());
+                Task.Run(()=> ExecuteLaunchBot.RunBotAsync());
             }
             catch (Exception ex)
             {
@@ -142,7 +142,7 @@ namespace HamstiBotWPF
             try
             { 
                 logList.Items.Add("Stop bot");
-                Task.Run(()=> ExecuteLaunchBot.stopBot());
+                Task.Run(()=> ExecuteLaunchBot.StopBotAsync());
             }
             catch (Exception ex)
             {
@@ -173,8 +173,8 @@ namespace HamstiBotWPF
         private void saveAdminIdSettings()
         {
             Properties.Settings.Default.Save();
-            GlobalUnit.authUsers[0].idUser = Properties.Settings.Default.AdminId;
-            Task.Run(() => ExecuteLaunchBot.reloadBot());
+            GlobalUnit.authUsers[0].IdUser = Properties.Settings.Default.AdminId;
+            Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
             logList.Items.Add("Перезапуск бота...");
             usersMenuInput();
         }
@@ -211,7 +211,7 @@ namespace HamstiBotWPF
         {
             try
             {
-                GlobalUnit.authUsers.Add(new Core.patternUserList { idUser = int.Parse(txtBoxIdUser.Text), blocked = (bool)radioBtnIdBlocked.IsChecked, localNickname = txtBoxNickname.Text });
+                GlobalUnit.authUsers.Add(new Core.PatternUserList { IdUser = int.Parse(txtBoxIdUser.Text), IsBlocked = (bool)radioBtnIdIsBlocked.IsChecked, LocalNickname = txtBoxNickname.Text });
                 LogicRepository.RepUsers.saveInJson();
                 txtBoxIdUser.Text = string.Empty;
                 txtBoxNickname.Text = string.Empty;

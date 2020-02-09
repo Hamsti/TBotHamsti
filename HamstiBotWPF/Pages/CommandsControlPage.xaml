@@ -6,12 +6,38 @@
       xmlns:local="clr-namespace:HamstiBotWPF.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding CommandsControlViewModel, Source={StaticResource ViewModelLocator}}"
       Title="CommandsControlPage">
-
+   
     <Grid>
-        <TextBlock Text="Commands control Page" 
-                   VerticalAlignment="Center"
+        <ListView ItemsSource="{Binding ListCommands}" >
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding NameOfLevel}" 
+                                    Header="Level" />
+                    <GridViewColumn DisplayMemberBinding="{Binding CountArgsCommand}" 
+                                    Header="Args" />
+                    <GridViewColumn DisplayMemberBinding="{Binding ExampleCommand}" 
+                                    Header="Example command" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <TextBlock FontWeight="Light"
+                   Grid.Column="1"
+                   Text="Not found commands"
                    HorizontalAlignment="Center"
-                   FontSize="40"/>
+                   VerticalAlignment="Center"
+                   FontSize="24">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ListCommands.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </Grid>
 </Page>

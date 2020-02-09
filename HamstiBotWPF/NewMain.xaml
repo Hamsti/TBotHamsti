@@ -5,20 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
-        xmlns:prop="clr-namespace:HamstiBotWPF.Properties" 
         xmlns:local="clr-namespace:HamstiBotWPF"
         mc:Ignorable="d"
         Title="Control HamstiBot" Height="400" Width="600" 
-        MinHeight="275" MinWidth="530" 
+        MinHeight="290" MinWidth="530" 
         FontFamily="Helvetica" 
         WindowStyle="ToolWindow" 
         BorderThickness="1"
-        BorderBrush="#ff8906">
-
-    <Window.DataContext>
-        <local:NewMainViewModel />
-    </Window.DataContext>
+        BorderBrush="#ff8906"
+        DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}">
 
     <Window.Resources>
         <SolidColorBrush x:Key="OrangeColor" Color="#ff8906" />
@@ -27,13 +22,12 @@
         <SolidColorBrush x:Key="WhiteColor" Color="#fffffe" />
         <SolidColorBrush x:Key="BlackColor" Color="#0f0e17" />
 
-
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="DemiBold" />
             <Setter Property="Foreground" Value="{StaticResource WhiteColor}" />
             <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="5,10,5,5" />
+            <Setter Property="Margin" Value="4, 5" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Background" Value="{StaticResource OrangeColor}" />
             <Setter Property="Template">
@@ -75,7 +69,7 @@
         </Style>
 
         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-            <!--<Setter Property="Foreground" Value="Black" />-->
+            <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
             <Setter Property="Margin" Value="0,0,5,0" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Background" Value="{StaticResource OrangeColor}" />
@@ -83,171 +77,13 @@
 
         <Style TargetType="ListView" BasedOn="{StaticResource {x:Type ListView}}">
             <Setter Property="FontSize" Value="15" />
-            <Setter Property="Foreground" Value="{StaticResource BlackBackground}" />
+            <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
+        </Style>
+        <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
+            <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
         </Style>
         <!--=====================================-->
 
-        <!--<Style x:Key="WindowMainStyle" TargetType="Window">
-            <Setter Property="Background" Value="White" />
-        </Style>-->
-
-        <Style x:Key="MenuStyle">
-            <Setter Property="Control.Background" Value="{StaticResource OrangeColor}" />
-            <Setter Property="Control.Foreground" Value="{StaticResource WhiteColor}" />
-            <Setter Property="Control.FontFamily" Value="Century Gothic" />
-        </Style>
-
-        <Style TargetType="MenuItem" BasedOn="{StaticResource MenuStyle}">
-            <Setter Property="BorderBrush" Value="{StaticResource WhiteColor}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="HeaderTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding}" />
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!--=====================================-->
-
-        <Storyboard x:Key="UsersShow">
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="ButtonUsersControl">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Visible}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="ButtonUsersControl" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersList">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Visible}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersList" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="logList">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="logList" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="LogsClearMessage" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersControlGrid">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersControlGrid" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="ClearLogsButton">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="ClearLogsButton" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
-
-        <Storyboard x:Key="UsersControlShow">
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="ButtonUsersControl">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="ButtonUsersControl" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersList">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersList" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersControlGrid">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Visible}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersControlGrid" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
-
-        <Storyboard x:Key="LogsShow">
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="ButtonUsersControl">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="ButtonUsersControl" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersList">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersList" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="logList">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Visible}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="logList" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="LogsClearMessage" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="UsersControlGrid">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Collapsed}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="UsersControlGrid" >
-                <LinearDoubleKeyFrame KeyTime="0" Value="1" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-            </DoubleAnimationUsingKeyFrames>
-            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" 
-                                           Storyboard.TargetName="ClearLogsButton">
-                <DiscreteObjectKeyFrame KeyTime="0:0:0:0.5" Value="{x:Static Visibility.Visible}" />
-            </ObjectAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" 
-                                           Storyboard.TargetName="ClearLogsButton" >
-                <LinearDoubleKeyFrame KeyTime="0:0:0:0.5" Value="0" />
-                <LinearDoubleKeyFrame KeyTime="0:0:0:1" Value="1" />
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
     </Window.Resources>
 
     <i:Interaction.Triggers>
@@ -256,30 +92,7 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <Window.Triggers>
-
-        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="MenuUsersShow">
-            <BeginStoryboard Storyboard="{StaticResource UsersShow}"/>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="ConfirmAddUser">
-            <BeginStoryboard Storyboard="{StaticResource UsersShow}"/>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="ModifyUser">
-            <BeginStoryboard Storyboard="{StaticResource UsersShow}"/>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="MenuLogs">
-            <BeginStoryboard Storyboard="{StaticResource LogsShow}"/>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="ButtonUsersControl">
-            <BeginStoryboard Storyboard="{StaticResource UsersControlShow}"/>
-        </EventTrigger>
-    </Window.Triggers>
-
-
     <Grid Background="{StaticResource WhiteColor}">
-        <Grid.RowDefinitions>
-            <RowDefinition />
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.75*" MaxWidth="130" MinWidth="100"/>
             <ColumnDefinition Width="2.5*" />
@@ -290,277 +103,202 @@
         <StackPanel Background="{StaticResource OrangeColor}" >
             <StackPanel.Resources>
                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}" >
-                    <Setter Property="Margin" Value="5,15,0,0" />
-                    <Style.Triggers>
-                        <Trigger Property="IsEnabled" Value="True">
-                            <Setter Property="Background" Value="{StaticResource WhiteColor}" />
-                            <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type Button}">
-                                        <Border x:Name="border"
+                    <Setter Property="Margin" Value="4,5,0,10" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border x:Name="border"
                                                 CornerRadius="12,0,0,12"
                                                 Background="{TemplateBinding Background}"
                                                 BorderBrush="{StaticResource DarkOrangeColor}"
                                                 BorderThickness="3,0,0,2">
 
-                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6,0,6,0" />
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Trigger>
+                                    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6,0,6,0" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{x:Null}" />
-                            <Setter Property="Foreground" Value="{StaticResource WhiteColor}" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type Button}">
-                                        <Border x:Name="border"
-                                            CornerRadius="12,0,0,12"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{StaticResource DarkOrangeColor}"
-                                            BorderThickness="3,0,0,2">
-                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6,0,6,0" />
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
+                            <Setter Property="Background" Value="{StaticResource WhiteColor}" />
+                            <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{StaticResource DarkOrangeColor}"/>
                             <Setter Property="Foreground" Value="{StaticResource WhiteColor}" />
                         </Trigger>
                     </Style.Triggers>
-
                 </Style>
             </StackPanel.Resources>
 
-
-            <Button x:Name="MenuLogs"
-                    Content="Logs"
-                    Margin="5,5,0,0" />
-            <Button x:Name="MenuUsersShow"
-                    Content="Users"
-                    />
+            <Button Content="Logs"
+                    Command="{Binding LogsPageChange}" />
+            <Button Content="Users"
+                    Command="{Binding UserControlPageChange}"/>
             <Button Content="Commnads"
-                    IsEnabled="False"/>
+                    Command="{Binding CommandsControlPageChange}"/>
             <Button Content="Settings"
-                    IsEnabled="False"/>
-
-
-            <Menu Visibility="Collapsed" VerticalAlignment="Stretch" Style="{DynamicResource MenuStyle}" >
-                <Menu.Resources>
-                    <Style TargetType="{x:Type StackPanel}">
-                        <Setter Property="Orientation" Value="Horizontal" />
-                        <Style.Resources>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                            </Style>
-
-                        </Style.Resources>
-                    </Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Setter Property="Foreground" Value="White" />
-                        <Setter Property="Background" Value="White" />
-                    </Style>
-                </Menu.Resources>
-                <!--<Menu.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <DockPanel HorizontalAlignment="Stretch" />
-                </ItemsPanelTemplate>
-            </Menu.ItemsPanel>-->
-                <MenuItem Header="Logs" Icon="{materialDesign:PackIcon Kind=Notes}" />
-
-                <MenuItem Header ="Users" Icon="{materialDesign:PackIcon Kind=Users}" />
-
-                <MenuItem Header="Commands" 
-                      x:Name="menuCommands" 
-                      Icon="{materialDesign:PackIcon Kind=AppleKeyboardCommand}"
-                      ItemsSource="{Binding ListCommands}">
-                </MenuItem>
-
-                <MenuItem Header="Color interface" Icon="{materialDesign:PackIcon Kind=ColorLens}">
-                    <RadioButton GroupName="ChangeThemeButton" 
-                             Content="Light"
-                             IsChecked="True" 
-                             Tag="lightTheme.xaml"
-                             Command="{Binding ChangeTheInterfaceForLightTheme}"/>
-                    <RadioButton GroupName="ChangeThemeButton" 
-                             Content="Dark" 
-                             IsChecked="True" 
-                             Tag="darkTheme.xaml" 
-                             Command="{Binding ChangeTheInterfaceForDarkTheme}"/>
-                </MenuItem>
-
-                <!--<MenuItem Header="{materialDesign:PackIcon Kind=About}" />-->
-            </Menu>
+                    Command="{Binding SettingsPageChange}"/>
         </StackPanel>
 
         <StackPanel Grid.Column="3">
-            <Button Content="Start"  Margin="5,5,5,0" Command="{Binding StartBot}"/>
+            <Button Content="Start" Command="{Binding StartBot}"/>
             <Button Content="Stop" Command="{Binding StopBot}"/>
+            <Button Content="Restart" Command="{Binding RestartBot}" Visibility="Collapsed"/>
         </StackPanel>
+
         <StackPanel VerticalAlignment="Bottom" Grid.Column="3">
+            <!--Clear logs-->
             <Button Content="Clear logs" 
-                    x:Name="ClearLogsButton" 
-                    Command="{Binding ClearLogsBot}"/>
-            <Button Content="User control" 
-                    x:Name="ButtonUsersControl" 
-                    Visibility="Collapsed"/>
-        </StackPanel>
-        <GridSplitter Grid.Column="2" 
-                      Width="2"
-                      HorizontalAlignment="Center"
-                      Background="{StaticResource OrangeColor}" />
-
-        <!--Style="{DynamicResource ListViewStyle}">-->
-
-        <Grid Grid.Column="1" x:Name="logList">
-            <ListView ItemsSource="{Binding ListLogs}" 
-                  Grid.Column="1" 
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="WrapWithOverflow" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <TextBlock x:Name="LogsClearMessage"
-                       FontWeight="Light"
-                       Grid.Column="1"
-                       Text="Logs is clear"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="24">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    Command="{Binding LogsViewModel.ClearLogsBot, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                         <Setter Property="Visibility" Value="Collapsed" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ListLogs.Count}" Value="0">
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="LogsPage">
                                 <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </TextBlock.Style>
-            </TextBlock>
-        </Grid>
-        <!--Style="{DynamicResource ListViewStyle}"-->
-        <ListView x:Name="UsersList" 
-                  Grid.Column="1" 
-                  ItemsSource="{Binding ListUsers}"
-                  Visibility="Collapsed"
-                  SelectedItem="{Binding SelectedUserList}">
-            <ListView.ContextMenu>
-                <ContextMenu Style="{x:Null}">
-                    <MenuItem Header="Delete" Command="{Binding DeleteCurrentUser}" />
-                </ContextMenu>
-            </ListView.ContextMenu>
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding idUser}" Header="Id user" />
-                    <GridViewColumn DisplayMemberBinding="{Binding localNickname,TargetNullValue=null}" Header="Local nickname" />
-                    <GridViewColumn DisplayMemberBinding="{Binding blocked}" Header="Blocked" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+                </Button.Style>
+            </Button>
+            <!--Delete selected user-->
+            <Button Content="Delete" 
+                    Command="{Binding ChangeUserDataPageViewModel.DeleteSelectedUser, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="UsersControlPage">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ChangeUserDataPageViewModel.ExitsSelectedUser, Source={StaticResource ViewModelLocator}}" Value="False">
+                                <Setter Property="IsEnabled" Value="False" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <!--Modify selected user-->
+            <Button Content="Modify" 
+                    Command="{Binding UsersControlViewModel.ModifyUserPageChange, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="UsersControlPage">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ChangeUserDataPageViewModel.ExitsSelectedUser, Source={StaticResource ViewModelLocator}}" Value="False">
+                                <Setter Property="IsEnabled" Value="False" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <!--Create new user-->
+            <Button Content="Create" 
+                    Command="{Binding UsersControlViewModel.CreateUserPageChange, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="UsersControlPage">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <!--Cancel editing user-->
+            <Button Content="Cancel" 
+                    Command="{Binding MainViewModel.UserControlPageChange, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="ChangeUserDataPage" >
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Create" 
+                    Command="{Binding ChangeUserDataPageViewModel.CreateNewUser, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="ChangeUserDataPage" />
+                                    <Condition Binding="{Binding ChangeUserDataPageViewModel.ExitsSelectedUser, Source={StaticResource ViewModelLocator}}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger.Setters>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Modify" 
+                    Command="{Binding ChangeUserDataPageViewModel.ModifySelectedUser, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="ChangeUserDataPage" />
+                                    <Condition Binding="{Binding ChangeUserDataPageViewModel.ExitsSelectedUser, Source={StaticResource ViewModelLocator}}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger.Setters>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <!--Restore default settings-->
+            <Button Content="Default" 
+                    Command="{Binding SettingsViewModel.DefaultSettingBot, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="SettingsPage">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <!--Save changes settings-->
+            <Button Content="Save" 
+                    Command="{Binding SettingsViewModel.SaveSettingsBot, Source={StaticResource ViewModelLocator}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MainViewModel.PageSourceShortName, Source={StaticResource ViewModelLocator}}" Value="SettingsPage">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <Rectangle Grid.Column="2" 
+                      Width="2"
+                      HorizontalAlignment="Center"
+                      Fill="{StaticResource OrangeColor}" />
 
-        <Grid Grid.Column="1" Margin="0,2" x:Name="UsersControlGrid" Visibility="Collapsed">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-
-            <!-- =============================================== -->
-            <TextBlock Text ="Id user" />
-            <TextBlock Text="Blocked" Grid.Row="1"  />
-            <TextBlock Text="Nickname" Grid.Row="2" />
-
-            <TextBox x:Name="txtBoxIdUser"
-                     Grid.Column="1" 
-                     HorizontalAlignment="Left"
-                     Width="77"
-                     Text="{Binding SelectedUserList.idUser}" 
-                     MaxLength="9">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewTextInput" >
-                        <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </TextBox>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" >
-                <RadioButton GroupName="IsBlocked" 
-                             Content="Yes"
-                             Command="{Binding IsBlockedUserChanged}"
-                             CommandParameter="true">
-                    <RadioButton.Style>
-                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="True" >
-                                    <Setter Property="IsChecked" Value="True" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </RadioButton.Style>
-                </RadioButton>
-                <RadioButton GroupName="IsBlocked" 
-                             Content="No" 
-                             Command="{Binding IsBlockedUserChanged}"
-                             CommandParameter="false">
-                    <RadioButton.Style>
-                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="False" >
-                                    <Setter Property="IsChecked" Value="True" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >
-                                    <Setter Property="IsChecked" Value="True" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </RadioButton.Style>
-                </RadioButton>
-            </StackPanel>
-            <TextBox Grid.Row="2" 
-                     Grid.Column="1" 
-                     Text="{Binding SelectedUserList.localNickname}"/>
-            <UniformGrid Grid.Row="3" Columns="2" Grid.ColumnSpan="2">
-                <Button Content="Confirm adding" 
-                        x:Name="ConfirmAddUser"
-                        Command="{Binding ConfirmAddNewUser}"/>
-                <Button Content="Confirm modify"
-                        x:Name="ModifyUser"
-                        Command="{Binding ModifySelectedUser}"/>
-            </UniformGrid>
-            <Rectangle Grid.Row="4"
-                          Grid.ColumnSpan="2" 
-                          Height="2" 
-                          Fill="{StaticResource OrangeColor}"
-                       Margin="0,2"/>
-            <WrapPanel Orientation="Horizontal" 
-                       Grid.Row="5"
-                       Grid.ColumnSpan="2" >
-                <TextBlock Text="Id admin: "/>
-                <!--<TextBox Width="77"/>-->
-                <ComboBox MinWidth="80"
-                          FontSize="15"
-                          ItemsSource="{Binding ListUsers}"
-                          SelectedValuePath="idUser"
-                          DisplayMemberPath="idUser_Nickname"
-                          SelectedValue="{Binding AdminId, Source={x:Static prop:Settings.Default}}" />
-                <Button Content="Save" Command="{Binding SaveSettingsBot}"/>
-                <Button Content="Default" Command="{Binding DefaultSettingBot}"/>
-            </WrapPanel>
-        </Grid>
+        <Frame Content="{Binding PageSource}"
+               Grid.Column="1"
+               NavigationUIVisibility="Hidden" />
 
     </Grid>
 </Window>

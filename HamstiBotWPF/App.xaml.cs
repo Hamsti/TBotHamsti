@@ -12,6 +12,13 @@ namespace HamstiBotWPF
             LogicRepository.RepCommands.AddAllCommands();
             LogicRepository.RepUsers.AddAllUsers();
         }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            ViewModelLocator.Init();
+
+            base.OnStartup(e);
+        }
     }
    
 }

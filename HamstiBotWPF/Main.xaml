@@ -387,9 +387,9 @@
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding idUser}" Header="Id user" />
-                    <GridViewColumn DisplayMemberBinding="{Binding localNickname,TargetNullValue=null}" Header="Local nickname" />
-                    <GridViewColumn DisplayMemberBinding="{Binding blocked}" Header="Blocked" />
+                    <GridViewColumn DisplayMemberBinding="{Binding IdUser}" Header="Id user" />
+                    <GridViewColumn DisplayMemberBinding="{Binding LocalNickname,TargetNullValue=null}" Header="Local nickname" />
+                    <GridViewColumn DisplayMemberBinding="{Binding IsBlocked}" Header="IsBlocked" />
                 </GridView>
             </ListView.View>
         </ListView>
@@ -411,14 +411,14 @@
 
             <!-- =============================================== -->
             <TextBlock Text ="Id user" />
-            <TextBlock Text="Blocked" Grid.Row="1"  />
+            <TextBlock Text="IsBlocked" Grid.Row="1"  />
             <TextBlock Text="Nickname" Grid.Row="2" />
 
             <TextBox x:Name="txtBoxIdUser"
                      Grid.Column="1" 
                      HorizontalAlignment="Left"
                      Width="77"
-                     Text="{Binding SelectedUserList.idUser}" 
+                     Text="{Binding SelectedUserList.IdUser}" 
                      MaxLength="9">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewTextInput" >
@@ -427,28 +427,28 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" >
-                <RadioButton GroupName="IsBlocked" 
+                <RadioButton GroupName="IsIsBlocked" 
                              Content="Yes"
-                             Command="{Binding IsBlockedUserChanged}"
+                             Command="{Binding IsIsBlockedUserChanged}"
                              CommandParameter="true">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="True" >
+                                <DataTrigger Binding="{Binding SelectedUserList.IsBlocked}" Value="True" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </RadioButton.Style>
                 </RadioButton>
-                <RadioButton GroupName="IsBlocked" 
+                <RadioButton GroupName="IsIsBlocked" 
                              Content="No" 
-                             Command="{Binding IsBlockedUserChanged}"
+                             Command="{Binding IsIsBlockedUserChanged}"
                              CommandParameter="false">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedUserList.blocked}" Value="False" >
+                                <DataTrigger Binding="{Binding SelectedUserList.IsBlocked}" Value="False" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >
@@ -461,7 +461,7 @@
             </StackPanel>
             <TextBox Grid.Row="2" 
                      Grid.Column="1" 
-                     Text="{Binding SelectedUserList.localNickname}"/>
+                     Text="{Binding SelectedUserList.LocalNickname}"/>
             <UniformGrid Grid.Row="3" Columns="2" Grid.ColumnSpan="2">
                 <Button Content="Confirm adding" 
                         x:Name="ConfirmAddUser"
@@ -482,8 +482,8 @@
                 <!--<TextBox Width="77"/>-->
                 <ComboBox MinWidth="80"
                           ItemsSource="{Binding ListUsers}"
-                          SelectedValuePath="idUser"
-                          DisplayMemberPath="idUser_Nickname"
+                          SelectedValuePath="IdUser"
+                          DisplayMemberPath="IdUser_Nickname"
                           SelectedValue="{Binding AdminId, Source={x:Static prop:Settings.Default}}" />
                 <Button Content="Save" Command="{Binding SaveSettingsBot}"/>
                 <Button Content="Default" Command="{Binding DefaultSettingBot}"/>

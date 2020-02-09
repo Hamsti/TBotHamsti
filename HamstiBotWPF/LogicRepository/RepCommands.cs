@@ -57,7 +57,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/messageToUser",
                 CountArgsCommand = -1,
-                ExampleCommand = "/messageToUser idUser YourMessage",
+                ExampleCommand = "/messageToUser IdUser YourMessage",
                 NameOfLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
@@ -70,7 +70,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/messageSpamToUser",
                 CountArgsCommand = 2,
-                ExampleCommand = "/messageSpamToUser idUser CountMessages",
+                ExampleCommand = "/messageSpamToUser IdUser CountMessages",
                 NameOfLevel = Core.BotLevelCommand.LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
@@ -108,7 +108,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/addUser",
                 CountArgsCommand = 1,
-                ExampleCommand = "/addUser [idUser]",
+                ExampleCommand = "/addUser [IdUser]",
                 NameOfLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
@@ -121,7 +121,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/lockUser",
                 CountArgsCommand = 1,
-                ExampleCommand = "/lockUser [idUser]",
+                ExampleCommand = "/lockUser [IdUser]",
                 NameOfLevel = Core.BotLevelCommand.LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
@@ -162,7 +162,7 @@ namespace HamstiBotWPF.LogicRepository
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    Task.Run(() => ExecuteLaunchBot.reloadBot());
+                    Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
                 }
             });
 

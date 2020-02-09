@@ -6,12 +6,27 @@
       xmlns:local="clr-namespace:HamstiBotWPF.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding SettingsViewModel, Source={StaticResource ViewModelLocator}}"
       Title="SettingsPage">
 
     <Grid>
-        <TextBlock Text="Settings Page" 
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontSize="40"/>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Button Content="Dark theme" 
+                Tag="darkTheme.xaml" 
+                Command="{Binding ChangeTheInterfaceForDarkTheme}"/>
+        <Button Content="Light theme" 
+                Grid.Column="1" 
+                Tag="lightTheme.xaml"
+                Command="{Binding ChangeTheInterfaceForLightTheme}"/>
     </Grid>
 </Page>

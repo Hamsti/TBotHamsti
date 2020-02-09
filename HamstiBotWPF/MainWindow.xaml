@@ -90,14 +90,14 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <!-- =============================================== -->
-                        <TextBlock Text ="idUser" Grid.Row="0" Grid.Column="0" />
-                        <TextBlock Text="blocked" Grid.Row="1" Grid.Column="0" />
+                        <TextBlock Text ="IdUser" Grid.Row="0" Grid.Column="0" />
+                        <TextBlock Text="IsBlocked" Grid.Row="1" Grid.Column="0" />
                         <TextBlock Text="Nickname" Grid.Row="2" Grid.Column="0"/>
 
                         <TextBox x:Name="txtBoxIdUser" Style="{StaticResource userIdMenuStyle}" Grid.Row="0" Grid.Column="1" PreviewTextInput="TxtBoxIdUser_PreviewTextInput" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" >
-                            <RadioButton x:Name="radioBtnIdBlocked" GroupName="IsBlocked" Content="Yes"/>
-                            <RadioButton GroupName="IsBlocked" Content="No" IsChecked="True" />
+                            <RadioButton x:Name="radioBtnIdIsBlocked" GroupName="IsIsBlocked" Content="Yes"/>
+                            <RadioButton GroupName="IsIsBlocked" Content="No" IsChecked="True" />
                         </StackPanel>
                         <TextBox x:Name="txtBoxNickname" Width="120" Grid.Row="2" Grid.Column="1"/>
                     </Grid>
