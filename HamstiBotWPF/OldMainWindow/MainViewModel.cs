@@ -8,45 +8,42 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace HamstiBotWPF
+namespace HamstiBotWPF.OldMainWindow
 {
-    public class NewMainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
-        static int idAdminForStartApp;
-        static Core.PatternUserList selectedUserList;
-        public static List<System.Windows.Controls.MenuItem> ListCommands { get; }
-        public static ObservableCollection<string> ListLogs { get; }
-        public static ObservableCollection<Core.PatternUserList> ListUsers { get; }
-        public Core.PatternUserList SelectedUserList
+        private int IdAdminForStartApp { get; set; } = Properties.Settings.Default.AdminId;
+        public List<System.Windows.Controls.MenuItem> ListCommands { get; private set; }
+        public ObservableCollection<string> ListLogs { get; private set; }
+        public ObservableCollection<Core.PatternUser> ListUsers { get; private set; }
+
+        private Core.PatternUser _SelectedUserList = new Core.PatternUser();
+        public Core.PatternUser SelectedUserList
         {
-            get { return selectedUserList == null ? new Core.PatternUserList() : selectedUserList; }
+            get { return _SelectedUserList == null ? new Core.PatternUser() : _SelectedUserList; }
             set
             {
-                selectedUserList = value;
+                _SelectedUserList = value;
                 RaisePropertiesChanged();
             }
         }
 
-        static NewMainViewModel()
-        {
-            idAdminForStartApp = Properties.Settings.Default.AdminId;
-            ListCommands = new List<System.Windows.Controls.MenuItem>();
-            ListLogs = new ObservableCollection<string>();
-            ListUsers = new ObservableCollection<Core.PatternUserList>();
-            selectedUserList = new Core.PatternUserList();
-        }
 
-
-        public NewMainViewModel()
+        public MainViewModel()
         {
             subBotEvents();
+            ListCommands = new List<System.Windows.Controls.MenuItem>();
             GlobalUnit.botCommands.ForEach(botCom => ListCommands.Add(new System.Windows.Controls.MenuItem()
             {
                 Header = botCom.ExampleCommand,
-                Foreground = System.Windows.Media.Brushes.White
-                //Foreground = botCom.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
+                Foreground = botCom.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
             }));
+
+            ListLogs = new ObservableCollection<string>();
+
+            ListUsers = new ObservableCollection<Core.PatternUser>();
             ListUsersRefresh();
+
         }
 
         private void subBotEvents()
@@ -70,11 +67,11 @@ namespace HamstiBotWPF
             switch (messageEventArgs.Message.Type)
             {
                 case Telegram.Bot.Types.Enums.MessageType.Text:
-                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Получено сообщение: {messageEventArgs.Message.Text}")); break;
+                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Пришло сообщение: {messageEventArgs.Message.Text}")); break;
                 case Telegram.Bot.Types.Enums.MessageType.Photo:
-                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Получено изображение: {messageEventArgs.Message.Photo}")); break;
+                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Пришло сообщение: {messageEventArgs.Message.Photo}")); break;
                 default:
-                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Получено сообщение формата: {messageEventArgs.Message.Type}")); break;
+                    App.Current.Dispatcher.Invoke(() => ListLogs.Add($"Пришло сообщение формата: {messageEventArgs.Message.Type}")); break;
             }
             RaisePropertiesChanged("ClearLogsBot");
         }
@@ -89,7 +86,7 @@ namespace HamstiBotWPF
 
         private void Api_OnReceiveGeneralError(object sender, Telegram.Bot.Args.ReceiveGeneralErrorEventArgs e)
         {
-            App.Current.Dispatcher.Invoke(() => ListLogs.Add("Произошла ошибка при обработке события OnReceiveGeneralError:\n\n" + e.Exception.Message));
+            App.Current.Dispatcher.Invoke(() => ListLogs.Add("Произошла ошибка при событии OnReceiveGeneralError:\n\n" + e.Exception.Message));
             RaisePropertiesChanged("ClearLogsBot");
         }
 
@@ -124,7 +121,7 @@ namespace HamstiBotWPF
         private void ListUsersRefresh()
         {
             ListUsers.Clear();
-            GlobalUnit.authUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new Core.PatternUserList()
+            GlobalUnit.authUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new Core.PatternUser()
             {
                 IdUser = user.IdUser,
                 LocalNickname = user.LocalNickname,
@@ -177,21 +174,21 @@ namespace HamstiBotWPF
             (obj) =>
             {
                 Properties.Settings.Default.Save();
-                Core.PatternUserList newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+                Core.PatternUser newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
                 ListLogs.Add($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"); ;
-                idAdminForStartApp = Properties.Settings.Default.AdminId;
+                IdAdminForStartApp = Properties.Settings.Default.AdminId;
                 ListUsersRefresh();
             },
-            (obj) => idAdminForStartApp != Properties.Settings.Default.AdminId);
+            (obj) => IdAdminForStartApp != Properties.Settings.Default.AdminId);
 
         public ICommand DefaultSettingBot => new DelegateCommand(
             (obj) =>
             {
                 Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
                 Properties.Settings.Default.Save();
-                Core.PatternUserList newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+                Core.PatternUser newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
                 ListLogs.Add($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"); ;
-                idAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
+                IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
                 ListUsersRefresh();
             },
             (obj) => Properties.Settings.Default.AdminId != Properties.Settings.Default.RecoverIdAdmin);
@@ -205,8 +202,8 @@ namespace HamstiBotWPF
                 return new DelegateCommand((obj) =>
                 {
                     if (SelectedUserList == null)
-                        SelectedUserList = new Core.PatternUserList();
-                    GlobalUnit.authUsers.Add(new Core.PatternUserList
+                        SelectedUserList = new Core.PatternUser();
+                    GlobalUnit.authUsers.Add(new Core.PatternUser
                     {
                         IdUser = SelectedUserList.IdUser,
                         IsBlocked = SelectedUserList.IsBlocked,
@@ -245,7 +242,7 @@ namespace HamstiBotWPF
                     GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser));
                     LogicRepository.RepUsers.saveInJson();
                     ListUsersRefresh();
-                    SelectedUserList = new Core.PatternUserList();
+                    SelectedUserList = new Core.PatternUser();
                 },
                 (obj) => !SelectedUserList.IsUserAdmin);
             }

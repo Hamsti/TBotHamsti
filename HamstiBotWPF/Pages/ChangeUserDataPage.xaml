@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:HamstiBotWPF.Pages"
+      xmlns:coreHamsti="clr-namespace:HamstiBotWPF.Core"
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
       xmlns:prop="clr-namespace:HamstiBotWPF.Properties"
@@ -12,6 +13,10 @@
       DataContext="{Binding ChangeUserDataPageViewModel, Source={StaticResource ViewModelLocator}}"
       Title="ChangeUserDataPage">
 
+    <Page.Resources>
+        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}" />
+    </Page.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -30,12 +35,11 @@
         <TextBlock Text="IsBlocked" Grid.Row="1"  />
         <TextBlock Text="Nickname" Grid.Row="2" />
 
-        <TextBox x:Name="txtBoxIdUser"
-                 Grid.Column="1" 
+        <TextBox Grid.Column="1" 
                  HorizontalAlignment="Left"
-                 Width="77"
+                 Width="77" 
                  Text="{Binding SelectedUserList.IdUser}" 
-                 MaxLength="9">
+                 MaxLength="{Binding SelectedUserList.MaxLenghtIdUser}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="PreviewTextInput" >
                     <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
@@ -77,7 +81,7 @@
         </StackPanel>
         <TextBox Grid.Row="2" 
                  Grid.Column="1" 
-                 Text="{Binding SelectedUserList.LocalNickname}"/>
+                 Text="{Binding SelectedUserList.LocalNickname}" />
         <WrapPanel Orientation="Horizontal" 
                    Grid.Row="5"
                    Grid.ColumnSpan="2" >
@@ -89,10 +93,6 @@
                       SelectedValuePath="IdUser"
                       DisplayMemberPath="IdUser_Nickname"
                       SelectedValue="{Binding AdminId, Source={x:Static prop:Settings.Default}}" />
-            <Button Content="Save" 
-                    Command="{Binding SaveSettingsBot}"/>
-            <Button Content="Default" 
-                    Command="{Binding DefaultSettingBot}"/>
         </WrapPanel>
     </Grid>
 </Page>

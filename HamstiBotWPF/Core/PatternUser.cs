@@ -1,12 +1,13 @@
 ﻿namespace HamstiBotWPF.Core
 {
-    public class PatternUserList
+    public class PatternUser
     {
-        private string localNickname;
+        public static int MaxLenghtIdUser => 9;
+
         /// <summary>
         /// Id user in Telegram
         /// </summary>
-        public int IdUser { get; set; } 
+        public int IdUser { get; set; }  
 
         /// <summary>
         /// User lock status
@@ -16,17 +17,16 @@
         /// <summary>
         /// Local nickname for the bot
         /// </summary>
-        public string LocalNickname { get => localNickname ?? "null";
-                                      set => localNickname = value; }
+        public string LocalNickname { get; set; }
 
         public string IdUser_Nickname => IdUser.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname); 
 
         public bool IsUserAdmin => IdUser == Properties.Settings.Default.AdminId;
 
-        public PatternUserList()
+        public PatternUser()
         {
             IsBlocked = false;
-            localNickname = null;
+            LocalNickname = null;
         }
 
         //Waring, needed retype class in list: https://stackoverflow.com/questions/580202/how-do-i-override-listts-add-method-in-c

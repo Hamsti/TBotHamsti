@@ -8,9 +8,9 @@
       d:DesignHeight="450" d:DesignWidth="800"
       DataContext="{Binding CommandsControlViewModel, Source={StaticResource ViewModelLocator}}"
       Title="CommandsControlPage">
-   
+
     <Grid>
-        <ListView ItemsSource="{Binding ListCommands}" >
+        <ListView ItemsSource="{Binding ListCommands}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding NameOfLevel}" 
@@ -22,14 +22,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock FontWeight="Light"
-                   Grid.Column="1"
-                   Text="Not found commands"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="24">
+        <TextBlock Text="Not found commands">
             <TextBlock.Style>
-                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockMessageStyle}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding ListCommands.Count}" Value="0">

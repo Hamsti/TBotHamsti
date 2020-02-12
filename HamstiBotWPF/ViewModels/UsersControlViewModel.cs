@@ -13,14 +13,14 @@ namespace HamstiBotWPF.ViewModels
     {
         private readonly PageService pageService;
         private readonly EventBus eventBus;
-        public static ObservableCollection<PatternUserList> ListUsers { get; private set; }
+        public static ObservableCollection<PatternUser> ListUsers { get; private set; }
 
         public UsersControlViewModel(PageService pageService, EventBus eventBus)
         {
             this.pageService = pageService;
             this.eventBus = eventBus;
 
-            ListUsers = new ObservableCollection<PatternUserList>();
+            ListUsers = new ObservableCollection<PatternUser>();
             ListUsersRefresh();
 
             this.eventBus.Subscribe<RefreshUsersListEvent>(async _ => ListUsersRefresh());
@@ -29,7 +29,7 @@ namespace HamstiBotWPF.ViewModels
         private void ListUsersRefresh()
         {
             ListUsers.Clear();
-            GlobalUnit.authUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new PatternUserList()
+            GlobalUnit.authUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new PatternUser()
             {
                 IdUser = user.IdUser,
                 LocalNickname = user.LocalNickname,

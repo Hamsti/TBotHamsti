@@ -23,14 +23,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock FontWeight="Light"
-                   Grid.Column="1"
-                   Text="Not found users"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="24">
+        <TextBlock Text="Not found users">
             <TextBlock.Style>
-                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockMessageStyle}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding ListUsers.Count}" Value="0">

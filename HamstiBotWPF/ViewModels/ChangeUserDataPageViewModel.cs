@@ -15,14 +15,14 @@ namespace HamstiBotWPF.ViewModels
         private readonly MessageBus messageBus;
         private readonly EventBus eventBus;
         private readonly System.Text.RegularExpressions.Regex regex;
-        private PatternUserList selectedUserList;
-        private PatternUserList selectedUserBeforeModify;
+        private PatternUser selectedUserList;
+        private PatternUser selectedUserBeforeModify;
 
         public bool ExitsSelectedUser => UsersControlViewModel.ListUsers.Count(c => c == SelectedUserList) > 0; 
 
-        public PatternUserList SelectedUserList
+        public PatternUser SelectedUserList
         {
-            get { return selectedUserList ?? new PatternUserList(); }
+            get { return selectedUserList ?? new PatternUser(); }
             set
             {
                 selectedUserList = value;
@@ -35,10 +35,10 @@ namespace HamstiBotWPF.ViewModels
             this.pageService = pageService;
             this.messageBus = messageBus;
             this.eventBus = eventBus;
-            this.eventBus.Subscribe<ResetSelectedUserEvent>(async _ => SelectedUserList = new PatternUserList());
+            this.eventBus.Subscribe<ResetSelectedUserEvent>(async _ => SelectedUserList = new PatternUser());
             this.eventBus.Subscribe<ModifySelectedUser>(async _ =>
             {
-                selectedUserBeforeModify = new PatternUserList()
+                selectedUserBeforeModify = new PatternUser()
                 {
                     IdUser = SelectedUserList.IdUser,
                     LocalNickname = SelectedUserList.LocalNickname,
@@ -46,13 +46,13 @@ namespace HamstiBotWPF.ViewModels
                 };
             });
             regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
-            selectedUserList = new PatternUserList();
+            selectedUserList = new PatternUser();
         }
 
         public ICommand CreateNewUser => new AsyncCommand(async () =>
         {
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserList.IdUser} | {SelectedUserList.LocalNickname}"));
-            GlobalUnit.authUsers.Add(new PatternUserList
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserList.IdUser_Nickname}"));
+            GlobalUnit.authUsers.Add(new PatternUser
             {
                 IdUser = SelectedUserList.IdUser,
                 IsBlocked = SelectedUserList.IsBlocked,
@@ -65,7 +65,7 @@ namespace HamstiBotWPF.ViewModels
 
         public ICommand ModifySelectedUser => new AsyncCommand(async () =>
         {
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.IdUser} | {selectedUserBeforeModify.LocalNickname} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserList.IdUser} | {SelectedUserList.LocalNickname} | {SelectedUserList.IsBlocked})"));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.IdUser_Nickname} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserList.IdUser_Nickname} | {SelectedUserList.IsBlocked})"));
             GlobalUnit.authUsers = UsersControlViewModel.ListUsers.ToList();
             LogicRepository.RepUsers.saveInJson();
             await eventBus.Publish(new RefreshUsersListEvent());
@@ -76,11 +76,11 @@ namespace HamstiBotWPF.ViewModels
         {
             // if the selected or default (new) user not found and if selected user is admin, then return
             if (GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser) < 0) return;
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserList.IdUser} | {SelectedUserList.LocalNickname} | {SelectedUserList.IsBlocked}"));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserList.IdUser_Nickname} | {SelectedUserList.IsBlocked}"));
             GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser));
             LogicRepository.RepUsers.saveInJson();
             await eventBus.Publish(new RefreshUsersListEvent());
-            SelectedUserList = new PatternUserList();
+            SelectedUserList = new PatternUser();
         }, (obj) => !SelectedUserList.IsUserAdmin);
 
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e)

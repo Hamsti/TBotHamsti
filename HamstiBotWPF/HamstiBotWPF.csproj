@@ -171,16 +171,15 @@
     <Compile Include="Events\IEvent.cs" />
     <Compile Include="Events\ModifySelectedUser.cs" />
     <Compile Include="Events\ResetSelectedUserEvent.cs" />
-    <Compile Include="Main.xaml.cs">
+    <Compile Include="OldMainWindow\Main.xaml.cs">
       <DependentUpon>Main.xaml</DependentUpon>
     </Compile>
     <Compile Include="Messages\ImageMessage.cs" />
     <Compile Include="Messages\IMessage.cs" />
     <Compile Include="Messages\TextMessage.cs" />
-    <Compile Include="NewMainViewModel.cs" />
-    <Compile Include="MainViewModel.cs" />
-    <Compile Include="NewMain.xaml.cs">
-      <DependentUpon>NewMain.xaml</DependentUpon>
+    <Compile Include="OldMainWindow\MainViewModel.cs" />
+    <Compile Include="Main.xaml.cs">
+      <DependentUpon>Main.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ChangeUserDataPage.xaml.cs">
       <DependentUpon>ChangeUserDataPage.xaml</DependentUpon>
@@ -213,21 +212,9 @@
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\UsersControlViewModel.cs" />
-    <Page Include="darkTheme.xaml">
+    <Page Include="OldMainWindow\Main.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="lightTheme.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Main.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -235,17 +222,13 @@
     </Compile>
     <Compile Include="Core\BotCommand.cs" />
     <Compile Include="Core\BotCommandStructure.cs" />
-    <Compile Include="Core\PatternUserList.cs" />
+    <Compile Include="Core\PatternUser.cs" />
     <Compile Include="ExecuteLaunchBot.cs" />
     <Compile Include="GlobalUnit.cs" />
     <Compile Include="LogicRepository\RepBotActions.cs" />
     <Compile Include="LogicRepository\RepCommands.cs" />
     <Compile Include="LogicRepository\RepUsers.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="NewMain.xaml">
+    <Page Include="Main.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -266,6 +249,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\UsersControlPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\CommonDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Light.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

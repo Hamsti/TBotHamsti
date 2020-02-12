@@ -14,5 +14,8 @@
     <Setting Name="RecoverIdAdmin" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">406777030</Value>
     </Setting>
+    <Setting Name="UsedDarkTheme" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -340,7 +340,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 try
                 {
-                    GlobalUnit.authUsers.Add(new Core.PatternUserList() { IdUser = IdUser });
+                    GlobalUnit.authUsers.Add(new Core.PatternUser() { IdUser = IdUser });
                     await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Пользователь c id:{IdUser} был успешно добавлен в список пользователей.\n\nСписок пользоватей бота:\n" + ListOfUsers);
                     await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
                 }

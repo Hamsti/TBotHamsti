@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 namespace HamstiBotWPF
 {
     /// <summary>
-    /// Логика взаимодействия для Main.xaml
+    /// Логика взаимодействия для NewMainWindow.xaml
     /// </summary>
     public partial class Main : Window
     {
@@ -23,6 +23,5 @@ namespace HamstiBotWPF
         {
             InitializeComponent();
         }
-
     }
 }

@@ -31,8 +31,8 @@ namespace HamstiBotWPF.LogicRepository
         {
             try
             {
-                GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.PatternUserList>>(System.IO.File.ReadAllText("AuthUsers.json")) 
-                    : new System.Collections.Generic.List<Core.PatternUserList>() { new Core.PatternUserList { IdUser = Properties.Settings.Default.AdminId } };
+                GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.PatternUser>>(System.IO.File.ReadAllText("AuthUsers.json")) 
+                    : new System.Collections.Generic.List<Core.PatternUser>() { new Core.PatternUser { IdUser = Properties.Settings.Default.AdminId } };
             }
             catch (Exception ex)
             {
