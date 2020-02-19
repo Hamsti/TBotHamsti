@@ -23,6 +23,8 @@ namespace HamstiBotWPF.ViewModels
             GlobalUnit.Api.OnMessage += BotOnMessageReceived;
             GlobalUnit.Api.OnReceiveError += BotOnReceiveError;
             GlobalUnit.Api.OnReceiveGeneralError += Api_OnReceiveGeneralError;
+            GlobalUnit.Api.OnMessage += ExecuteLaunchBot.CheckMessageBot;
+            GlobalUnit.Api.OnMessageEdited += ExecuteLaunchBot.CheckMessageBot;
         }
 
         public ICommand ClearLogsBot => new DelegateCommand((obj) => ListLogs.Clear(), (obj) => ListLogs.Count > 0);

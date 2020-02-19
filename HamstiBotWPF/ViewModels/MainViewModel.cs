@@ -27,9 +27,6 @@ namespace HamstiBotWPF.ViewModels
 
             this.pageService.OnPageChanged += (page) => PageSource = page;
             this.pageService.ChangePage(new LogsPage());
-
-            GlobalUnit.Api.OnMessage += ExecuteLaunchBot.CheckMessageBot;
-            GlobalUnit.Api.OnMessageEdited += ExecuteLaunchBot.CheckMessageBot;
         }
 
         public ICommand LogsPageChange => new DelegateCommand((obj) =>

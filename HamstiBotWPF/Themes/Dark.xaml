@@ -3,6 +3,7 @@
                     xmlns:local="clr-namespace:HamstiBotWPF.Themes">
 
     <SolidColorBrush x:Key="BackgroundColor" Color="#0f0e17" />
-    <SolidColorBrush x:Key="ForegroundColor" Color="#fffffe" />  
-    
+    <SolidColorBrush x:Key="ForegroundColor" Color="#fffffe" />
+    <SolidColorBrush x:Key="ShadowColor" Color="#fffbb464" />
+
 </ResourceDictionary>

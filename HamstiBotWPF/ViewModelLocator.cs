@@ -14,7 +14,7 @@ namespace HamstiBotWPF
 
             services.AddTransient<CommandsControlViewModel>();
             services.AddTransient<SettingsViewModel>();
-            services.AddTransient<ViewModels.MainViewModel>();
+            services.AddTransient<MainViewModel>();
             services.AddScoped<ChangeUserDataPageViewModel>();
             services.AddScoped<UsersControlViewModel>();
             services.AddScoped<LogsViewModel>();
@@ -31,7 +31,7 @@ namespace HamstiBotWPF
             }
         }
 
-        public ViewModels.MainViewModel MainViewModel => _provider.GetRequiredService<ViewModels.MainViewModel>();
+        public MainViewModel MainViewModel => _provider.GetRequiredService<MainViewModel>();
         public CommandsControlViewModel CommandsControlViewModel => _provider.GetRequiredService<CommandsControlViewModel>();
         public LogsViewModel LogsViewModel => _provider.GetRequiredService<LogsViewModel>();
         public SettingsViewModel SettingsViewModel => _provider.GetRequiredService<SettingsViewModel>();
