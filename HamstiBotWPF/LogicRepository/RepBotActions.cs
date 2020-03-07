@@ -9,6 +9,7 @@ using System.Drawing;
 using Screen = System.Windows.Forms.Screen;
 using System.Runtime.InteropServices;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Collections.ObjectModel;
 
 namespace HamstiBotWPF.LogicRepository
 {
@@ -33,7 +34,7 @@ namespace HamstiBotWPF.LogicRepository
             if (message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
             {
                 await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId,
-                    $"Сообщение от пользователя \n(id: {message.From.Id} || IsBlocked: {!RepUsers.isAuthNotIsBlockedUser(message.From.Id)}):\n{String.Join(" ", Core.BotCommand.ParserCommand(message.Text).Args)}");
+                    $"Сообщение от пользователя \n(id: {message.From.Id} || IsBlocked: {!RepUsers.IsAuthNotIsBlockedUser(message.From.Id)}):\n{String.Join(" ", Core.BotCommand.ParserCommand(message.Text).Args)}");
                 await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Сообщение успешно отправлено админу бота " + GlobalUnit.Api.GetMeAsync().Result);
             }
             else
@@ -44,7 +45,7 @@ namespace HamstiBotWPF.LogicRepository
 
         public static async void AdminSendMessageToUser(Message message, int IdUser)
         {
-            if (RepUsers.isAuthUser(IdUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+            if (RepUsers.IsAuthUser(IdUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
             {
                 try
                 {
@@ -69,7 +70,7 @@ namespace HamstiBotWPF.LogicRepository
         }
         public static async void AdminSpamMessageToUser(Message message, int IdUser, int CountMessages)
         {
-            if (RepUsers.isAuthUser(IdUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+            if (RepUsers.IsAuthUser(IdUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
             {
                 try
                 {
@@ -191,7 +192,7 @@ namespace HamstiBotWPF.LogicRepository
                 if (isShow)
                 {
                     keys = new string[GlobalUnit.botCommands.Where(x => x.VisibleForUsers).Count()];
-                    if (RepUsers.isHaveAccessAdmin(IdUser))
+                    if (RepUsers.IsHaveAccessAdmin(IdUser))
                         keys = GlobalUnit.botCommands.Where(x => x.CountArgsCommand == 0).Select(s => s.Command).ToArray();
                     else
                         keys = GlobalUnit.botCommands.Where(x => x.CountArgsCommand == 0 && x.VisibleForUsers).Select(s => s.Command).ToArray();
@@ -204,7 +205,7 @@ namespace HamstiBotWPF.LogicRepository
                 if (Show.ToLower() == "all")
                 {
                     keys = new string[GlobalUnit.botCommands.Count()];
-                    if (RepUsers.isHaveAccessAdmin(IdUser))
+                    if (RepUsers.IsHaveAccessAdmin(IdUser))
                         keys = GlobalUnit.botCommands.Where(w => w.Command != "/helpAdmin").Select(s => s.Command).ToArray();
                     else
                         keys = GlobalUnit.botCommands.Where(w => w.VisibleForUsers).Select(s => s.Command).ToArray();
@@ -319,19 +320,21 @@ namespace HamstiBotWPF.LogicRepository
 
         public static class ControlUsers
         {
+            private static ObservableCollection<Core.PatternUser> ListUsers => GlobalUnit.authUsers;
             public static int StrToInt(string IdUserString)
             {
-                int idNewUser;
-                int.TryParse(IdUserString, out idNewUser);
+                int.TryParse(IdUserString, out int idNewUser);
                 return idNewUser;
             }
 
-            public static string ListOfUsers
+            public static string ListOfUsersParseString
             {
                 get
                 {
                     System.Text.StringBuilder messageText = new System.Text.StringBuilder();
-                    GlobalUnit.authUsers.ForEach(f => messageText.Append(f.IdUser_Nickname + " | IsBlocked: " + f.IsBlocked + "\n"));
+                    RepUsers.Sort();
+                    foreach (var user in ListUsers)
+                        messageText.Append(user.IdUser_Nickname + " | IsBlocked: " + user.IsBlocked + "\n");
                     return messageText.ToString();
                 }
             }
@@ -340,8 +343,8 @@ namespace HamstiBotWPF.LogicRepository
             {
                 try
                 {
-                    GlobalUnit.authUsers.Add(new Core.PatternUser() { IdUser = IdUser });
-                    await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Пользователь c id:{IdUser} был успешно добавлен в список пользователей.\n\nСписок пользоватей бота:\n" + ListOfUsers);
+                    App.Current.Dispatcher.Invoke(() => ListUsers.Add(new Core.PatternUser() { IdUser = IdUser }));
+                    await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Пользователь c id:{IdUser} был успешно добавлен в список пользователей.\n\nСписок пользоватей бота:\n" + ListOfUsersParseString);
                     await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
                 }
                 catch (Exception ex)
@@ -351,11 +354,11 @@ namespace HamstiBotWPF.LogicRepository
                 //GlobalUnit.authUsers.Ad
             }
 
-            public static void deauthUser(Message message, int IdUser) => GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex(f => f.IdUser == IdUser));
-            public static void deauthUser(Message message, string LocalNickname) => GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex(f => f.LocalNickname == LocalNickname));
-            public static void changeLocalName(Message message, int IdUser, string LocalNickname) => GlobalUnit.authUsers[GlobalUnit.authUsers.FindIndex(f => f.IdUser == IdUser)].LocalNickname = LocalNickname;
-            public static void lockUser(Message message, int IdUser) => GlobalUnit.authUsers[GlobalUnit.authUsers.FindIndex(f => f.IdUser == IdUser)].IsBlocked = true;
-            public static void lockUser(Message message, string LocalNickname) => GlobalUnit.authUsers[GlobalUnit.authUsers.FindIndex(f => f.LocalNickname == LocalNickname)].IsBlocked = true;
+            public static void deauthUser(Message message, int IdUser) => ListUsers.Remove(ListUsers.Where(f => f.IdUser == IdUser).FirstOrDefault());
+            public static void deauthUser(Message message, string LocalNickname) => ListUsers.Remove(ListUsers.Where(f => f.LocalNickname == LocalNickname).FirstOrDefault() );
+            public static void changeLocalName(Message message, int IdUser, string LocalNickname) => ListUsers.Where(f => f.IdUser == IdUser).Select(s => s.LocalNickname = LocalNickname);
+            public static void lockUser(Message message, int IdUser) => ListUsers.Where(f => f.IdUser == IdUser).Select(s => s.IsBlocked = true);
+            public static void lockUser(Message message, string LocalNickname) => ListUsers.Where(f => f.LocalNickname == LocalNickname).Select(s => s.IsBlocked = true);
         }
     }
 }

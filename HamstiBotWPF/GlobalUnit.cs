@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using Telegram.Bot;
+using HamstiBotWPF.Core;
+using System.Collections.ObjectModel;
 
 namespace HamstiBotWPF 
 {
@@ -11,22 +13,21 @@ namespace HamstiBotWPF
         /// <summary>
         /// Creating a bot and working with it
         /// </summary>
-        public static readonly TelegramBotClient Api = new TelegramBotClient(Properties.Settings.Default.ApiBot);
+        public static TelegramBotClient Api { get; } = new TelegramBotClient(Properties.Settings.Default.ApiBot);
         
         /// <summary>
         /// List of all authorized users
         /// </summary>
-        public static List<Core.PatternUser> authUsers = new List<Core.PatternUser>();
+        public static ObservableCollection<PatternUser> authUsers = new ObservableCollection<PatternUser>();
 
         /// <summary>
         /// List of all commands for working with the bot
         /// </summary>
-        public static List<Core.BotCommand> botCommands = new List<Core.BotCommand>();
+        public static List<BotCommand> botCommands = new List<BotCommand>();
 
         /// <summary>
         /// Current level for commands
         /// </summary>
-        public static Core.BotLevelCommand.LevelCommand currentLevelCommand = Core.BotLevelCommand.LevelCommand.Root;
-
+        public static BotLevelCommand.LevelCommand currentLevelCommand = BotLevelCommand.LevelCommand.Root;
     }
 }

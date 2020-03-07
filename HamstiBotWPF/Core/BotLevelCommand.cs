@@ -28,7 +28,7 @@ namespace HamstiBotWPF.Core
         public new string Command
         {
             get { return base.Command; }
-            set { base.Command = "/" + value.ToUpper(); }
+            private set { base.Command = "/" + value.ToUpper(); }
             //set { base.Command = value == LevelCommand.Root.ToString() ? TOPREVLEVEL : "/" + value.ToUpper(); }
         }
 
@@ -37,12 +37,12 @@ namespace HamstiBotWPF.Core
         /// </summary>
         public LevelCommand ParrentLevel { get; private set; }
 
-        public BotLevelCommand(LevelCommand currentLevel, LevelCommand parrentLevel)
+        public BotLevelCommand(LevelCommand NameOfLevel, LevelCommand ParrentLevel = LevelCommand.Root)
         {
             Execute += (BotCommandStructure command, Message message) => ExecLevelUp(message);
-            NameOfLevel = currentLevel;
-            ParrentLevel = parrentLevel;
-            Command = currentLevel.ToString();
+            base.NameOfLevel = NameOfLevel;
+            this.ParrentLevel = ParrentLevel;
+            Command = NameOfLevel.ToString();
             base.CountArgsCommand = 0;
         }
 
@@ -77,7 +77,7 @@ namespace HamstiBotWPF.Core
         {
             string messageWhenLevelChanges = "Current level: " + GlobalUnit.currentLevelCommand + "\n\nList of commands:\n";
 
-            if (LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+            if (LogicRepository.RepUsers.IsHaveAccessAdmin(message.From.Id))
                 await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForAdmin);
             else
                 await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForUsers);

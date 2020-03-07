@@ -1,11 +1,11 @@
 ﻿using DevExpress.Mvvm;
-using System.Linq;
-using HamstiBotWPF.Services;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
+using HamstiBotWPF.Services;
 using HamstiBotWPF.Core;
 using HamstiBotWPF.Events;
 using HamstiBotWPF.Pages;
-using System.Windows.Input;
+using HamstiBotWPF.LogicRepository;
 
 namespace HamstiBotWPF.ViewModels
 {
@@ -13,31 +13,16 @@ namespace HamstiBotWPF.ViewModels
     {
         private readonly PageService pageService;
         private readonly EventBus eventBus;
-        public static ObservableCollection<PatternUser> ListUsers { get; private set; }
+        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.authUsers;
 
         public UsersControlViewModel(PageService pageService, EventBus eventBus)
         {
             this.pageService = pageService;
             this.eventBus = eventBus;
+            
+            RepUsers.Sort();
 
-            ListUsers = new ObservableCollection<PatternUser>();
-            ListUsersRefresh();
-
-            this.eventBus.Subscribe<RefreshUsersListEvent>(async _ => ListUsersRefresh());
-        }
-
-        private void ListUsersRefresh()
-        {
-            ListUsers.Clear();
-            GlobalUnit.authUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new PatternUser()
-            {
-                IdUser = user.IdUser,
-                LocalNickname = user.LocalNickname,
-                IsBlocked = user.IsBlocked
-            }));
-            if (ListUsers.Count > 0 && Properties.Settings.Default.AdminId > 0)
-                ListUsers.Move(ListUsers.IndexOf(ListUsers.SingleOrDefault(s => s.IdUser == Properties.Settings.Default.AdminId)), 0);
-            Properties.Settings.Default.Reload();
+            this.eventBus.Subscribe<RefreshUsersListEvent>(async _ => RepUsers.Sort());
         }
 
         public ICommand CreateUserPageChange => new AsyncCommand(async () =>
@@ -50,7 +35,6 @@ namespace HamstiBotWPF.ViewModels
         {
             pageService.ChangePage(new ChangeUserDataPage());
             await eventBus.Publish(new ModifySelectedUser());
-
         });  
     }
 }

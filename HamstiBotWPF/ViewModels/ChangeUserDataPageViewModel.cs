@@ -6,6 +6,7 @@ using HamstiBotWPF.Pages;
 using HamstiBotWPF.Events;
 using System.Windows.Input;
 using HamstiBotWPF.Messages;
+using System.Collections.ObjectModel;
 
 namespace HamstiBotWPF.ViewModels
 {
@@ -17,8 +18,9 @@ namespace HamstiBotWPF.ViewModels
         private readonly System.Text.RegularExpressions.Regex regex;
         private PatternUser selectedUserList;
         private PatternUser selectedUserBeforeModify;
+        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.authUsers;
 
-        public bool ExitsSelectedUser => UsersControlViewModel.ListUsers.Count(c => c == SelectedUserList) > 0; 
+        public bool ExitsSelectedUser => ListUsers.Count(c => c == SelectedUserList) > 0; 
 
         public PatternUser SelectedUserList
         {
@@ -58,7 +60,7 @@ namespace HamstiBotWPF.ViewModels
                 IsBlocked = SelectedUserList.IsBlocked,
                 LocalNickname = SelectedUserList.LocalNickname
             });
-            LogicRepository.RepUsers.saveInJson();
+            LogicRepository.RepUsers.Update();
             await eventBus.Publish(new RefreshUsersListEvent());
             pageService.ChangePage(new UsersControlPage());
         }, () => !ExitsSelectedUser);
@@ -66,8 +68,7 @@ namespace HamstiBotWPF.ViewModels
         public ICommand ModifySelectedUser => new AsyncCommand(async () =>
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.IdUser_Nickname} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserList.IdUser_Nickname} | {SelectedUserList.IsBlocked})"));
-            GlobalUnit.authUsers = UsersControlViewModel.ListUsers.ToList();
-            LogicRepository.RepUsers.saveInJson();
+            LogicRepository.RepUsers.Update();
             await eventBus.Publish(new RefreshUsersListEvent());
             pageService.ChangePage(new UsersControlPage());
         }, () => ExitsSelectedUser);
@@ -75,30 +76,20 @@ namespace HamstiBotWPF.ViewModels
         public ICommand DeleteSelectedUser => new DelegateCommand(async (obj) =>
         {
             // if the selected or default (new) user not found and if selected user is admin, then return
-            if (GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser) < 0) return;
+            if (ListUsers.Count((f) => f.IdUser == SelectedUserList.IdUser) < 0) return;
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserList.IdUser_Nickname} | {SelectedUserList.IsBlocked}"));
-            GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser));
-            LogicRepository.RepUsers.saveInJson();
+            ListUsers.Remove(ListUsers.Where((f) => f.IdUser == SelectedUserList.IdUser).FirstOrDefault());
+            LogicRepository.RepUsers.Update();
             await eventBus.Publish(new RefreshUsersListEvent());
             SelectedUserList = new PatternUser();
         }, (obj) => !SelectedUserList.IsUserAdmin);
 
-        public void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = regex.IsMatch(e.Text);
-        }
+        public void NumberValidationTextBox(object sender, TextCompositionEventArgs e) => e.Handled = regex.IsMatch(e.Text);
 
-        public ICommand IsIsBlockedUserChanged
+        public ICommand IsIsBlockedUserChanged => new DelegateCommand((obj) =>
         {
-            get
-            {
-                return new DelegateCommand((obj) =>
-                {
-                    if (bool.TryParse(obj.ToString(), out bool isIsBlocked))
-                        SelectedUserList.IsBlocked = isIsBlocked;
-                },
-                (obj) => !SelectedUserList.IsUserAdmin);
-            }
-        }
+            if (bool.TryParse(obj.ToString(), out bool isIsBlocked))
+                SelectedUserList.IsBlocked = isIsBlocked;
+        }, (obj) => !SelectedUserList.IsUserAdmin);
     }
 }

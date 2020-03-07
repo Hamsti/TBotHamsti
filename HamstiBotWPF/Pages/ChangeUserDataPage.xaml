@@ -32,7 +32,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Text ="Id user" />
-        <TextBlock Text="IsBlocked" Grid.Row="1"  />
+        <TextBlock Text="Is blocked" Grid.Row="1"  />
         <TextBlock Text="Nickname" Grid.Row="2" />
 
         <TextBox Grid.Column="1" 
@@ -88,7 +88,6 @@
             <TextBlock Text="Id admin: "/>
 
             <ComboBox MinWidth="80"
-                      FontSize="15"
                       ItemsSource="{Binding UsersControlViewModel.ListUsers, Source={StaticResource ViewModelLocator}}"
                       SelectedValuePath="IdUser"
                       DisplayMemberPath="IdUser_Nickname"

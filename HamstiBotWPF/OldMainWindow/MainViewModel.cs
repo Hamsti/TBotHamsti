@@ -15,7 +15,7 @@ namespace HamstiBotWPF.OldMainWindow
         private int IdAdminForStartApp { get; set; } = Properties.Settings.Default.AdminId;
         public List<System.Windows.Controls.MenuItem> ListCommands { get; private set; }
         public ObservableCollection<string> ListLogs { get; private set; }
-        public ObservableCollection<Core.PatternUser> ListUsers { get; private set; }
+        public ObservableCollection<Core.PatternUser> ListUsers => GlobalUnit.authUsers;
 
         private Core.PatternUser _SelectedUserList = new Core.PatternUser();
         public Core.PatternUser SelectedUserList
@@ -31,17 +31,22 @@ namespace HamstiBotWPF.OldMainWindow
 
         public MainViewModel()
         {
+            LogicRepository.RepCommands.Refresh();
+            LogicRepository.RepUsers.Refresh();
             subBotEvents();
             ListCommands = new List<System.Windows.Controls.MenuItem>();
-            GlobalUnit.botCommands.ForEach(botCom => ListCommands.Add(new System.Windows.Controls.MenuItem()
+            foreach (var command in GlobalUnit.botCommands)
             {
-                Header = botCom.ExampleCommand,
-                Foreground = botCom.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
-            }));
+                ListCommands.Add(new System.Windows.Controls.MenuItem()
+                {
+                    Header = command.ExampleCommand,
+                    Foreground = command.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
+                });
+            }
 
             ListLogs = new ObservableCollection<string>();
 
-            ListUsers = new ObservableCollection<Core.PatternUser>();
+            //ListUsers = new ObservableCollection<Core.PatternUser>();
             ListUsersRefresh();
 
         }
@@ -209,7 +214,7 @@ namespace HamstiBotWPF.OldMainWindow
                         IsBlocked = SelectedUserList.IsBlocked,
                         LocalNickname = SelectedUserList.LocalNickname
                     });
-                    LogicRepository.RepUsers.saveInJson();
+                    LogicRepository.RepUsers.Update();
                     ListUsersRefresh();
                 });
             }
@@ -223,8 +228,8 @@ namespace HamstiBotWPF.OldMainWindow
                 {
                     if (SelectedUserList.IsUserAdmin)
                         SelectedUserList.IsBlocked = false;
-                    GlobalUnit.authUsers = ListUsers.ToList();
-                    LogicRepository.RepUsers.saveInJson();
+                    //GlobalUnit.authUsers = ListUsers.ToList();
+                    LogicRepository.RepUsers.Update();
                     ListUsersRefresh();
                 });
             }
@@ -238,9 +243,9 @@ namespace HamstiBotWPF.OldMainWindow
                 return new DelegateCommand((obj) =>
                 {
                     // if the selected or default (new) user not found and if selected user is admin, then return
-                    if (GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser) < 0) return;
-                    GlobalUnit.authUsers.RemoveAt(GlobalUnit.authUsers.FindIndex((f) => f.IdUser == SelectedUserList.IdUser));
-                    LogicRepository.RepUsers.saveInJson();
+                    if (GlobalUnit.authUsers.Count((f) => f.IdUser == SelectedUserList.IdUser) < 0) return;
+                    GlobalUnit.authUsers.Remove(GlobalUnit.authUsers.Where((f) => f.IdUser == SelectedUserList.IdUser).FirstOrDefault());
+                    LogicRepository.RepUsers.Update();
                     ListUsersRefresh();
                     SelectedUserList = new Core.PatternUser();
                 },

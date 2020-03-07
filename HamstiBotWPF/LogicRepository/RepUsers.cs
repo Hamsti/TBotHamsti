@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using HamstiBotWPF.Core;
 
 namespace HamstiBotWPF.LogicRepository
 {
@@ -12,27 +15,12 @@ namespace HamstiBotWPF.LogicRepository
         /// <summary>
         /// Add all users to the list of authorized users.
         /// </summary>
-        public static void AddAllUsers()
-        {
-            ////AdminUser
-            //GlobalUnit.authUsers.Add(new Core.patternUserList {
-            //    IdUser = Properties.Settings.Default.AdminId
-            //});
-
-            ////OtherUsers
-            //GlobalUnit.authUsers.Add(new Core.patternUserList {
-            //    IdUser = 492113551, IsBlocked = true, LocalNickname = "Эндрю"
-            //});
-
-            loadFromJson();
-        }
-
-        public static void loadFromJson()
+        public static void Refresh()
         {
             try
             {
-                GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<System.Collections.Generic.List<Core.PatternUser>>(System.IO.File.ReadAllText("AuthUsers.json")) 
-                    : new System.Collections.Generic.List<Core.PatternUser>() { new Core.PatternUser { IdUser = Properties.Settings.Default.AdminId } };
+               GlobalUnit.authUsers = System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<ObservableCollection<PatternUser>>(System.IO.File.ReadAllText("AuthUsers.json")) 
+                    : new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.AdminId } };
             }
             catch (Exception ex)
             {
@@ -40,7 +28,7 @@ namespace HamstiBotWPF.LogicRepository
             }
         }
 
-        public static void saveInJson()
+        public static void Update()
         {
             try
             {
@@ -54,25 +42,27 @@ namespace HamstiBotWPF.LogicRepository
             }
         }
 
+        public static void Sort() => GlobalUnit.authUsers = new ObservableCollection<PatternUser>(GlobalUnit.authUsers.OrderByDescending(o => o.IsUserAdmin).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
+
         /// <summary>
         /// Checks if this user is an administrator.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Exists(idExists => userId == Properties.Settings.Default.AdminId);
+        public static bool IsHaveAccessAdmin(int userId) => GlobalUnit.authUsers.Count(_ => userId == Properties.Settings.Default.AdminId) > 0;
 
         /// <summary>
         /// Checks if this user is in the list of authorized users and not IsBlocked.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isAuthNotIsBlockedUser(int userId) => GlobalUnit.authUsers.Exists(user => user.IdUser == userId && user.IsBlocked == false);
+        public static bool IsAuthNotIsBlockedUser(int userId) => GlobalUnit.authUsers.Count(user => user.IdUser == userId && user.IsBlocked == false) > 0;
 
         /// <summary>
         /// Checks if this user is in the list of authorized users.
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
         /// <returns></returns>
-        public static bool isAuthUser(int userId) => GlobalUnit.authUsers.Exists(user => user.IdUser == userId);
+        public static bool IsAuthUser(int userId) => GlobalUnit.authUsers.Count(user => user.IdUser == userId) > 0;
     }
 }

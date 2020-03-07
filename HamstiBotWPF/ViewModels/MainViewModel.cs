@@ -36,8 +36,8 @@ namespace HamstiBotWPF.ViewModels
        
         public ICommand UserControlPageChange => new AsyncCommand(async () =>
         {
-            pageService.ChangePage(new UsersControlPage());
             await eventBus.Publish(new RefreshUsersListEvent());
+            pageService.ChangePage(new UsersControlPage());
         }, () => PageSourceShortName != "UsersControlPage");
 
         public ICommand CommandsControlPageChange => new DelegateCommand((obj) =>
@@ -78,6 +78,8 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Start bot"));
                 await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
+                if (GlobalUnit.Api.IsReceiving)
+                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot launched successfully"));
             }
             catch (Exception ex)
             {
@@ -91,6 +93,8 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Stop bot"));
                 await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
+                if (!GlobalUnit.Api.IsReceiving)
+                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot successfully stopped"));
             }
             catch (Exception ex)
             {
@@ -104,6 +108,8 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Restart bot"));
                 await Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
+                if (GlobalUnit.Api.IsReceiving)
+                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot successfully restarted"));
             }
             catch (Exception ex)
             {

@@ -20,7 +20,7 @@ namespace HamstiBotWPF
             if (message == null) return;
 
             //User authorization check
-            if (LogicRepository.RepUsers.isAuthNotIsBlockedUser(message.From.Id))
+            if (LogicRepository.RepUsers.IsAuthNotIsBlockedUser(message.From.Id))
             {
                 switch (message.Type)
                 {
@@ -48,7 +48,7 @@ namespace HamstiBotWPF
             //User was not found or IsBlocked in the list of authorized users
             else
             {
-                if (LogicRepository.RepUsers.isAuthUser(message.From.Id))
+                if (LogicRepository.RepUsers.IsAuthUser(message.From.Id))
                 {
                     await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
                 }
@@ -78,7 +78,7 @@ namespace HamstiBotWPF
                         if (command.CountArgsCommand == model.Args.Length ||
                             command.CountArgsCommand == -1 && model.Args.Length > 0)
                         {
-                            if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.isHaveAccessAdmin(message.From.Id))
+                            if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.IsHaveAccessAdmin(message.From.Id))
                             {
                                 if (command.GetType().Equals(typeof(Core.BotCommand)))
                                     command.Execute?.Invoke(model, message);

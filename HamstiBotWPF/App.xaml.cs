@@ -7,16 +7,11 @@ namespace HamstiBotWPF
     /// </summary>
     public partial class App : Application
     {
-        App()
-        {
-            LogicRepository.RepCommands.AddAllCommands();
-            LogicRepository.RepUsers.AddAllUsers();
-        }
-
         protected override void OnStartup(StartupEventArgs e)
         {
             ViewModelLocator.Init();
-
+            LogicRepository.RepCommands.Refresh();
+            LogicRepository.RepUsers.Refresh();
             base.OnStartup(e);
         }
     }
