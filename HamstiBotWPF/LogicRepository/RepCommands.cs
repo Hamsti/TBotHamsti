@@ -20,7 +20,7 @@ namespace HamstiBotWPF.LogicRepository
         {
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.Root));
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.Messages));
-            GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.ControlUsers));
+            GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.ControlUsers) { VisibleForUsers = false });
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.ControlPC));
 
             GlobalUnit.botCommands.Add(new BotCommand
@@ -29,7 +29,7 @@ namespace HamstiBotWPF.LogicRepository
                 ExampleCommand = "/help",
                 Execute = async (model, message) =>
                 {
-                    await RepBotActions.helpBot(message);
+                    await RepBotActions.HelpBot(message);
                 }
             });
 
@@ -38,9 +38,9 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/helpAdmin",
                 ExampleCommand = "/helpAdmin",
                 VisibleForUsers = false,
-                Execute = async (model,message) =>
+                Execute = async (model, message) =>
                 {
-                    await RepBotActions.helpBotAdmin(message);
+                    await RepBotActions.HelpBotAdmin(message);
                 }
             });
 
@@ -48,11 +48,11 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/messageToAdmin",
                 CountArgsCommand = -1,
-                ExampleCommand = "/messageToAdmin YourMessage",
+                ExampleCommand = "/messageToAdmin [Message text]",
                 NameOfLevel = LevelCommand.Messages,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.UserSendMessageForAdmin(message);
+                    RepBotActions.Messages.UserSentToAdmin(message, model.Args);
                 }
             });
 
@@ -60,12 +60,12 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/messageToUser",
                 CountArgsCommand = -1,
-                ExampleCommand = "/messageToUser IdUser YourMessage",
+                ExampleCommand = "/messageToUser [Id user] [Message text]",
                 NameOfLevel = LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.AdminSendMessageToUser(message, int.Parse(model.Args.FirstOrDefault()));
+                    RepBotActions.Messages.AdminSentToUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), model.Args);
                 }
             });
 
@@ -73,12 +73,12 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/messageSpamToUser",
                 CountArgsCommand = 2,
-                ExampleCommand = "/messageSpamToUser IdUser CountMessages",
+                ExampleCommand = "/messageSpamToUser [Id user] [Count of messages]",
                 NameOfLevel = LevelCommand.Messages,
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.AdminSpamMessageToUser(message, int.Parse(model.Args.FirstOrDefault()), int.Parse(model.Args.LastOrDefault()));
+                    RepBotActions.Messages.UserSpamFromAdmin(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), RepBotActions.ControlUsers.StrToInt(model.Args.LastOrDefault()));
                 }
             });
 
@@ -86,22 +86,33 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/start",
                 ExampleCommand = "/start",
-                Execute = (model, message) =>
+                Execute = async (model, message) =>
                 {
-                    RepBotActions.ControlUsers.authNewUser(message, message.From.Id);
-                    //await GlobalUnit.Api.SetChatDescriptionAsync(new Telegram.Bot.Types.ChatId(Properties.Settings.Default.AdminId));
+                    await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);
                 }
             });
 
             GlobalUnit.botCommands.Add(new BotCommand
             {
-                Command = "/ListOfUsers",
-                ExampleCommand = "/ListOfUsers",
+                Command = "/listOfUsers",
+                ExampleCommand = "/listOfUsers",
                 NameOfLevel = LevelCommand.ControlUsers,
                 VisibleForUsers = false,
                 Execute = async (model, message) =>
                 {
-                    await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Список пользователей бота {GlobalUnit.Api.GetMeAsync().Result}:\n\n" + RepBotActions.ControlUsers.ListOfUsersParseString);
+                    await RepBotActions.ControlUsers.SendListOfUsers(message);
+                }
+            });
+            
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/listOfUsers",
+                ExampleCommand = "/listOfUsers",
+                NameOfLevel = LevelCommand.Messages,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.SendListOfUsers(message);
                 }
             });
 
@@ -109,12 +120,25 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/addUser",
                 CountArgsCommand = 1,
-                ExampleCommand = "/addUser [IdUser]",
+                ExampleCommand = "/addUser [Id user]",
                 NameOfLevel = LevelCommand.ControlUsers,
                 VisibleForUsers = false,
-                Execute = (model, message) =>
-                { 
-                    RepBotActions.ControlUsers.authNewUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.AuthNewUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/addUser",
+                CountArgsCommand = 2,
+                ExampleCommand = "/addUser [Id user] [Nickname]",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.AuthNewUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), model.Args.LastOrDefault());
                 }
             });
 
@@ -122,12 +146,93 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/lockUser",
                 CountArgsCommand = 1,
-                ExampleCommand = "/lockUser [IdUser]",
+                ExampleCommand = "/lockUser [Id user]",
                 NameOfLevel = LevelCommand.ControlUsers,
                 VisibleForUsers = false,
-                Execute = (model, message) =>
+                Execute = async (model, message) =>
                 {
-                    RepBotActions.ControlUsers.lockUser(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()));
+                    if (int.TryParse(model.Args.FirstOrDefault(), out int IdUser))
+                        await RepBotActions.ControlUsers.LockUser(message, IdUser);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/lockUser",
+                CountArgsCommand = -1,
+                ExampleCommand = "/lockUser [Nickname]",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.LockUser(message, model.Args);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/deauthUser",
+                CountArgsCommand = 1,
+                ExampleCommand = "/deauthUser [Id user]",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    if (int.TryParse(model.Args.FirstOrDefault(), out int IdUser))
+                        await RepBotActions.ControlUsers.DeauthUser(message, IdUser);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/deauthUser",
+                CountArgsCommand = -1,
+                ExampleCommand = "/deauthUser [Nickname]",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.DeauthUser(message, model.Args);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/changeNickname",
+                CountArgsCommand = -1,
+                ExampleCommand = "/changeNickname [Id user] [New nickname]",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    if (model.Args.Length >= 2)
+                        await RepBotActions.ControlUsers.ChangeLocalName(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), model.Args);
+                    else
+                        await RepBotActions.SendMessageWrongNumberOfArgs(message);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/saveChanges",
+                ExampleCommand = "/saveChanges",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.SaveChanges(message);
+                }
+            });
+
+            GlobalUnit.botCommands.Add(new BotCommand
+            {
+                Command = "/cancelChanges",
+                ExampleCommand = "/cancelChanges",
+                NameOfLevel = LevelCommand.ControlUsers,
+                VisibleForUsers = false,
+                Execute = async (model, message) =>
+                {
+                    await RepBotActions.ControlUsers.CancelChanges(message);
                 }
             });
 
@@ -138,7 +243,7 @@ namespace HamstiBotWPF.LogicRepository
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.comStopBot(message);
+                    RepBotActions.ComStopBot();
                 }
             });
 
@@ -149,7 +254,7 @@ namespace HamstiBotWPF.LogicRepository
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.comStopApp(message);
+                    RepBotActions.ComStopApp(message);
                 }
             });
 
@@ -172,7 +277,7 @@ namespace HamstiBotWPF.LogicRepository
                 NameOfLevel = LevelCommand.ControlPC,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.ControlPC.executeUrl(message, model.Command, model.Args.FirstOrDefault());
+                    RepBotActions.ControlPC.ExecuteUrl(message, model.Args.FirstOrDefault());
                 }
             });
 
@@ -180,12 +285,12 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/turnOff",
                 CountArgsCommand = 2,
-                ExampleCommand = "/turnOff [tMin: int, tSec: int]",
+                ExampleCommand = "/turnOff [tMin: int] [tSec: int]",
                 NameOfLevel = LevelCommand.ControlPC,
                 VisibleForUsers = false,
-                Execute = (model, message) =>
+                Execute = async (model, message) =>
                 {
-                    RepBotActions.ControlPC.turnOff(message, int.Parse(model.Args.FirstOrDefault()), int.Parse(model.Args.LastOrDefault()));
+                    await RepBotActions.ControlPC.TurnOff(message, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), RepBotActions.ControlUsers.StrToInt(model.Args.LastOrDefault()));
                 }
             });
 
@@ -197,7 +302,7 @@ namespace HamstiBotWPF.LogicRepository
                 VisibleForUsers = false,
                 Execute = (model, message) =>
                 {
-                    if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\shutdown.exe", "/a"))
+                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/a"))
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнено снятие таймера на выключение");
                     else
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При снятии таймера, произошла системная ошибка");
@@ -211,7 +316,7 @@ namespace HamstiBotWPF.LogicRepository
                 NameOfLevel = LevelCommand.ControlPC,
                 Execute = (model, message) =>
                 {
-                    if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\rundll32.exe", "USER32.DLL LockWorkStation"))
+                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\rundll32.exe", "USER32.DLL LockWorkStation"))
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно заблокирована система");
                     else
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При блокировке системы, произошла системная ошибка");
@@ -225,7 +330,7 @@ namespace HamstiBotWPF.LogicRepository
                 NameOfLevel = LevelCommand.ControlPC,
                 Execute = (model, message) =>
                 {
-                    RepBotActions.ControlPC.getScreenshot(message);
+                    RepBotActions.ControlPC.GetScreenshot(message);
                 }
             });
 
@@ -236,7 +341,7 @@ namespace HamstiBotWPF.LogicRepository
                 NameOfLevel = LevelCommand.ControlPC,
                 Execute = (model, message) =>
                 {
-                    if (RepBotActions.ControlPC.cmdCommands(message, @"C:\Windows\System32\shutdown.exe", "/h"))
+                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/h"))
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнен перевод в гибернацию");
                     else
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "При переводе в гибернацию, произошла системная ошибка");
@@ -247,7 +352,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/volume",
                 CountArgsCommand = 1,
-                ExampleCommand = "/volume [int value[-100..100, mute]]",
+                ExampleCommand = "/volume [int [-100..100]; mute]",
                 NameOfLevel = LevelCommand.ControlPC,
                 Execute = (model, message) =>
                 {
@@ -259,10 +364,10 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/keyboard",
                 CountArgsCommand = 1,
-                ExampleCommand = "/keyboard [true;false;all]",
+                ExampleCommand = "/keyboard [true; false; all]",
                 Execute = (model, message) =>
                 {
-                    RepBotActions.showScreenButtons(message, model.Args.FirstOrDefault()); 
+                    RepBotActions.ShowScreenButtons(message, model.Args.FirstOrDefault());
                 }
             });
 

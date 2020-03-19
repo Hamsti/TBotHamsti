@@ -11,7 +11,7 @@ namespace HamstiBotWPF
         {
             ViewModelLocator.Init();
             LogicRepository.RepCommands.Refresh();
-            LogicRepository.RepUsers.Refresh();
+            LogicRepository.RepUsers.Upload();
             base.OnStartup(e);
         }
     }

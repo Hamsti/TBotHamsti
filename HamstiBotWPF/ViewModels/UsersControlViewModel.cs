@@ -13,16 +13,16 @@ namespace HamstiBotWPF.ViewModels
     {
         private readonly PageService pageService;
         private readonly EventBus eventBus;
-        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.authUsers;
+        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.AuthUsers;
 
         public UsersControlViewModel(PageService pageService, EventBus eventBus)
         {
             this.pageService = pageService;
             this.eventBus = eventBus;
             
-            RepUsers.Sort();
+            RepUsers.RefreshAndSort();
 
-            this.eventBus.Subscribe<RefreshUsersListEvent>(async _ => RepUsers.Sort());
+            this.eventBus.Subscribe<RefreshUsersListEvent>(async _ => RepUsers.RefreshAndSort());
         }
 
         public ICommand CreateUserPageChange => new AsyncCommand(async () =>

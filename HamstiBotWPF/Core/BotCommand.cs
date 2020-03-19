@@ -18,7 +18,7 @@ namespace HamstiBotWPF.Core
         public Action<BotCommandStructure, Message> Execute { get; set; }
         public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) =>
         {
-            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Не верное кол-во агрументов\nСписок комманд: /help");
+            await LogicRepository.RepBotActions.SendMessageWrongNumberOfArgs(message);
         };
 
         /// <summary>

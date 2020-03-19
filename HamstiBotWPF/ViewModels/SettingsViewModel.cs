@@ -11,13 +11,11 @@ namespace HamstiBotWPF.ViewModels
     public class SettingsViewModel : BindableBase
     {
         private readonly MessageBus messageBus;
-        private readonly EventBus eventBus;
         private int IdAdminForStartApp { get; set; }
 
-        public SettingsViewModel(MessageBus messageBus, EventBus eventBus)
+        public SettingsViewModel(MessageBus messageBus)
         {
             this.messageBus = messageBus;
-            this.eventBus = eventBus;
             if (Properties.Settings.Default.UsedDarkTheme)
                 ChangeTheInterfaceForDarkTheme();
             else
@@ -39,7 +37,7 @@ namespace HamstiBotWPF.ViewModels
         public ICommand SaveSettingsBot => new AsyncCommand(async () =>
         {
             Properties.Settings.Default.Save();
-            PatternUser newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+            PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
             await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
             IdAdminForStartApp = Properties.Settings.Default.AdminId;
             //await eventBus.Publish(new RefreshUsersListEvent());
@@ -50,7 +48,7 @@ namespace HamstiBotWPF.ViewModels
         {
             Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
             Properties.Settings.Default.Save();
-            PatternUser newAdminUser = GlobalUnit.authUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+            PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
             await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
             IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
             //await eventBus.Publish(new RefreshUsersListEvent());

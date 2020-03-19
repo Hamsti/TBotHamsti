@@ -12,7 +12,7 @@ namespace HamstiBotWPF.Core
         /// <summary>
         /// Command for change to up level
         /// </summary>
-        public const string TOPREVLEVEL = "/..";
+        public const string TOPREVLEVEL = "/UP";
 
         public enum LevelCommand
         {
@@ -78,17 +78,16 @@ namespace HamstiBotWPF.Core
             string messageWhenLevelChanges = "Current level: " + GlobalUnit.currentLevelCommand + "\n\nList of commands:\n";
 
             if (LogicRepository.RepUsers.IsHaveAccessAdmin(message.From.Id))
-                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForAdmin);
+                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.HelpForAdmin);
             else
-                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.helpForUsers);
+                await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, messageWhenLevelChanges + LogicRepository.RepBotActions.HelpForUsers);
         }
 
         private static async Task<bool> WhenLevelIsRoot(Message message)
         {
-            if (message.Text == TOPREVLEVEL && GlobalUnit.currentLevelCommand == LevelCommand.Root)
+            if (message.Text.ToUpper() == TOPREVLEVEL && GlobalUnit.currentLevelCommand == LevelCommand.Root)
             {
                 await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы находитесь на начальном уровне.");
-                SendMessageWhenLevelChanges(message);
                 return true;
             }
             return false;
@@ -96,7 +95,7 @@ namespace HamstiBotWPF.Core
 
         private void ExecLevelUp(Message message)
         {
-            if (message.Text == TOPREVLEVEL && GlobalUnit.currentLevelCommand > LevelCommand.Root)
+            if (message.Text.ToUpper() == TOPREVLEVEL && GlobalUnit.currentLevelCommand > LevelCommand.Root)
             {
                 GlobalUnit.currentLevelCommand = ParrentLevel;
                 SendMessageWhenLevelChanges(message);

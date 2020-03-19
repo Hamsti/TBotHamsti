@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
+using HamstiBotWPF.Core;
+using HamstiBotWPF.LogicRepository;
 
 namespace HamstiBotWPF
 {
@@ -20,14 +22,14 @@ namespace HamstiBotWPF
             if (message == null) return;
 
             //User authorization check
-            if (LogicRepository.RepUsers.IsAuthNotIsBlockedUser(message.From.Id))
+            if (RepUsers.IsAuthNotIsBlockedUser(message.From.Id))
             {
                 switch (message.Type)
                 {
                     //Text message received from user
                     case MessageType.Text:
                         //Parsing and executing a command or errors
-                        var model = Core.BotCommand.ParserCommand(message.Text);
+                        var model = BotCommand.ParserCommand(message.Text);
 
                         if (model == null || !ExecCommand(model, message)) //Execute if command not found
                         {
@@ -37,67 +39,63 @@ namespace HamstiBotWPF
                         break;
                     //Image received from user
                     case MessageType.Photo:
-                        LogicRepository.RepBotActions.imageUploader(message); break;
+                        RepBotActions.ImageUploader(message); break;
                     //Document received from user
                     case MessageType.Document:
-                        LogicRepository.RepBotActions.documentUploader(message); break;
+                        RepBotActions.DocumentUploader(message); break;
                     default:
-                        await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "На данный момент, неизвестный тип сообщения."); break;
+                        await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"На данный момент, \"{message.Type.ToString()}\" - неизвестный тип сообщения."); break;
                 }
             }
             //User was not found or IsBlocked in the list of authorized users
             else
             {
-                if (LogicRepository.RepUsers.IsAuthUser(message.From.Id))
-                {
+                if (RepUsers.IsAuthUser(message.From.Id))
                     await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
-                }
                 else
-                {
-                    await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
-                    LogicRepository.RepBotActions.ControlUsers.authNewUser(message, message.From.Id);
-                }
+                    await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);
             }
         }
 
-        private static bool ExecCommand(Core.BotCommandStructure model, Telegram.Bot.Types.Message message)
+        private static bool ExecCommand(BotCommandStructure model, Telegram.Bot.Types.Message message)
         {
+            bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
             bool isCommand = false;
             int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.ToLower().Equals(model.Command.ToLower())).Count;
 
             foreach (var command in GlobalUnit.botCommands)
             {
                 if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower() || 
-                    command.GetType().Equals(typeof(Core.BotLevelCommand)) && model.Command == Core.BotLevelCommand.TOPREVLEVEL && GlobalUnit.currentLevelCommand == command.NameOfLevel)
+                    IsBotLevelCommand(command) && model.Command.ToUpper() == BotLevelCommand.TOPREVLEVEL && GlobalUnit.currentLevelCommand == command.NameOfLevel)
                 {
                     isCommand = true;
 
-                    if (command.GetType().Equals(typeof(Core.BotLevelCommand)) && ((Core.BotLevelCommand)command).ParrentLevel == GlobalUnit.currentLevelCommand ||
+                    if (IsBotLevelCommand(command) && ((BotLevelCommand)command).ParrentLevel == GlobalUnit.currentLevelCommand ||
                         command.NameOfLevel == GlobalUnit.currentLevelCommand)
                     {
                         if (command.CountArgsCommand == model.Args.Length ||
                             command.CountArgsCommand == -1 && model.Args.Length > 0)
                         {
-                            if (command.VisibleForUsers || !command.VisibleForUsers && LogicRepository.RepUsers.IsHaveAccessAdmin(message.From.Id))
+                            if (command.VisibleForUsers || !command.VisibleForUsers && RepUsers.IsHaveAccessAdmin(message.From.Id))
                             {
-                                if (command.GetType().Equals(typeof(Core.BotCommand)))
-                                    command.Execute?.Invoke(model, message);
+                                if (IsBotLevelCommand(command))
+                                    ((BotLevelCommand)command).Execute?.Invoke(model, message);
                                 else
-                                    ((Core.BotLevelCommand)command).Execute?.Invoke(model, message);
+                                    command.Execute?.Invoke(model, message);
                             }
                             else
-                                GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды {model.Command}, необходимы права администратора.");
+                                GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходимы права администратора.");
                         }
                         else if (--CountCurrentCommand < 1)
                         {
-                            if (command.GetType().Equals(typeof(Core.BotCommand)))
-                                command.OnError?.Invoke(model, message);
+                            if (IsBotLevelCommand(command))
+                                ((BotLevelCommand)command).OnError.Invoke(model, message);
                             else
-                                ((Core.BotLevelCommand)command).OnError.Invoke(model, message);
+                                command.OnError?.Invoke(model, message);
                         }
                     }
                     else
-                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Вы находитесь не на том уровне");
+                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Текущий уровень \"{GlobalUnit.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
                 }
             }
             return isCommand;
@@ -117,8 +115,8 @@ namespace HamstiBotWPF
 
             if (!GlobalUnit.Api.IsReceiving)
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Запущен бот {GlobalUnit.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
                 GlobalUnit.Api.StartReceiving(Array.Empty<UpdateType>());
+                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Запущен бот {GlobalUnit.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
             }
             else
             {
@@ -131,7 +129,6 @@ namespace HamstiBotWPF
         /// To stop this bot
         /// </summary>
         /// <param name="Attempt">The number of attempts to stop the bot</param>
-        /// <returns></returns>
         public async static Task StopBotAsync(int numberAttempt = 1)
         {
             if (numberAttempt <= 0)
@@ -155,7 +152,6 @@ namespace HamstiBotWPF
         /// To reload this bot
         /// </summary>
         /// <param name="numberAttempt">The number of attempts to reload the bot</param>
-        /// <returns></returns>
         public async static Task RestartBotAsync(int numberAttempt = 2)
         {
             await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} выполняет перезагрузку...");
@@ -166,10 +162,7 @@ namespace HamstiBotWPF
                 await RunBotAsync(numberAttempt);
             }
             else
-            {
                 await RunBotAsync(numberAttempt);
-            }
-
         }
     }
 }
