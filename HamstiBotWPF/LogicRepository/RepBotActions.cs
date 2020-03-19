@@ -20,12 +20,12 @@ namespace HamstiBotWPF.LogicRepository
     /// </summary>
     public static class RepBotActions
     {
-        public static string HelpForUsers => (GlobalUnit.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL + "\n" : string.Empty) +
-            string.Join("\n", GlobalUnit.botCommands.Where(w => (w.VisibleForUsers == true && w.Command != "/" + LevelCommand.Root.ToString().ToUpper()) &&
+        public static string HelpForUsers => (GlobalUnit.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
+            string.Join("\n", GlobalUnit.botCommands.Where(w => (w.VisibleForUsers == true && w.Command != BotLevelCommand.TOPREVLEVEL) &&
             GlobalUnit.currentLevelCommand == (w.GetType().Equals(typeof(BotCommand)) ? w.NameOfLevel : ((BotLevelCommand)w).ParrentLevel)).
             Select(s => s.ExampleCommand ?? ((BotLevelCommand)s).ExampleCommand));
-        public static string HelpForAdmin => (GlobalUnit.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL + "\n" : string.Empty) +
-            string.Join("\n", GlobalUnit.botCommands.Where(w => w.Command != "/" + LevelCommand.Root.ToString().ToUpper() &&
+        public static string HelpForAdmin => (GlobalUnit.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
+            string.Join("\n", GlobalUnit.botCommands.Where(w => w.Command != BotLevelCommand.TOPREVLEVEL &&
             GlobalUnit.currentLevelCommand == (w.GetType().Equals(typeof(BotCommand)) ? w.NameOfLevel : ((BotLevelCommand)w).ParrentLevel)).
             Select(s => s.ExampleCommand ?? ((BotLevelCommand)s).ExampleCommand));
         public static Task HelpBot(Message message) => GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Список команд у бота:\n" + HelpForUsers);

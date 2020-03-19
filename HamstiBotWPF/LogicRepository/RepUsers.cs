@@ -14,6 +14,14 @@ namespace HamstiBotWPF.LogicRepository
     /// </summary>
     public static class RepUsers
     {
+        //public enum StatusUser
+        //{
+        //    Admin,
+        //    Moderator,
+        //    User,
+        //    NotDefined
+        //}
+
         /// <summary>
         /// Adding all authorized users from a file, including sorting
         /// </summary>

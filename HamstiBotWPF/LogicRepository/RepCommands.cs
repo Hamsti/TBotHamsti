@@ -18,7 +18,7 @@ namespace HamstiBotWPF.LogicRepository
         /// </summary>
         public static void Refresh()
         {
-            GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.Root));
+            GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.Root) { Command = BotLevelCommand.TOPREVLEVEL, LevelDependent = false });
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.Messages));
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.ControlUsers) { VisibleForUsers = false });
             GlobalUnit.botCommands.Add(new BotLevelCommand(LevelCommand.ControlPC));
@@ -27,6 +27,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/help",
                 ExampleCommand = "/help",
+                LevelDependent = false,
                 Execute = async (model, message) =>
                 {
                     await RepBotActions.HelpBot(message);
@@ -38,6 +39,7 @@ namespace HamstiBotWPF.LogicRepository
                 Command = "/helpAdmin",
                 ExampleCommand = "/helpAdmin",
                 VisibleForUsers = false,
+                LevelDependent = false,
                 Execute = async (model, message) =>
                 {
                     await RepBotActions.HelpBotAdmin(message);
@@ -50,6 +52,7 @@ namespace HamstiBotWPF.LogicRepository
                 CountArgsCommand = -1,
                 ExampleCommand = "/messageToAdmin [Message text]",
                 NameOfLevel = LevelCommand.Messages,
+                LevelDependent = false,
                 Execute = (model, message) =>
                 {
                     RepBotActions.Messages.UserSentToAdmin(message, model.Args);
@@ -86,6 +89,7 @@ namespace HamstiBotWPF.LogicRepository
             {
                 Command = "/start",
                 ExampleCommand = "/start",
+                LevelDependent = false,
                 Execute = async (model, message) =>
                 {
                     await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);

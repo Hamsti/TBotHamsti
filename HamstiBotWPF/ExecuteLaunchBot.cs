@@ -61,17 +61,17 @@ namespace HamstiBotWPF
         {
             bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
             bool isCommand = false;
-            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.ToLower().Equals(model.Command.ToLower())).Count;
+            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.Equals(model.Command)).Count;
+            int CountCurrentCommand2 = CountCurrentCommand;
 
             foreach (var command in GlobalUnit.botCommands)
             {
-                if (command.Command == model.Command || command.Command.ToLower() == model.Command.ToLower() || 
-                    IsBotLevelCommand(command) && model.Command.ToUpper() == BotLevelCommand.TOPREVLEVEL && GlobalUnit.currentLevelCommand == command.NameOfLevel)
+                if (command.Command == model.Command)
                 {
                     isCommand = true;
 
                     if (IsBotLevelCommand(command) && ((BotLevelCommand)command).ParrentLevel == GlobalUnit.currentLevelCommand ||
-                        command.NameOfLevel == GlobalUnit.currentLevelCommand)
+                        command.NameOfLevel == GlobalUnit.currentLevelCommand || !command.LevelDependent)
                     {
                         if (command.CountArgsCommand == model.Args.Length ||
                             command.CountArgsCommand == -1 && model.Args.Length > 0)
@@ -80,7 +80,7 @@ namespace HamstiBotWPF
                             {
                                 if (IsBotLevelCommand(command))
                                     ((BotLevelCommand)command).Execute?.Invoke(model, message);
-                                else
+                                else 
                                     command.Execute?.Invoke(model, message);
                             }
                             else
@@ -94,7 +94,7 @@ namespace HamstiBotWPF
                                 command.OnError?.Invoke(model, message);
                         }
                     }
-                    else
+                    else if (--CountCurrentCommand2 < 1)
                         GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Текущий уровень \"{GlobalUnit.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
                 }
             }

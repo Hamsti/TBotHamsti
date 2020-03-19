@@ -9,11 +9,17 @@ namespace HamstiBotWPF.Core
     /// </summary>
     public class BotCommand
     {
-        public string Command { get; set; }
+        private string command;
+
+        public string Command 
+        { 
+            get => command;
+            set => command = value.ToLower();
+        }
         public string ExampleCommand { get; set; }
         public int CountArgsCommand { get; set; } = 0;
         public BotLevelCommand.LevelCommand NameOfLevel { get; set; } = BotLevelCommand.LevelCommand.Root;
-        //public bool LevelDependent { get; set; } = true;
+        public bool LevelDependent { get; set; } = true;
         public bool VisibleForUsers { get; set; } = true;
         public Action<BotCommandStructure, Message> Execute { get; set; }
         public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) =>
@@ -31,7 +37,7 @@ namespace HamstiBotWPF.Core
             if (messageText.StartsWith("/"))
             {
                 var splits = messageText.Split(' ');
-                var command = splits?.FirstOrDefault();
+                var command = splits?.FirstOrDefault().ToLower();
                 var args = splits.Skip(1).Take(splits.Count()).ToArray();
 
                 return new BotCommandStructure
