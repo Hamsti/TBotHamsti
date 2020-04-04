@@ -23,18 +23,6 @@ namespace HamstiBotWPF.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("406777030")]
-        public int AdminId {
-            get {
-                return ((int)(this["AdminId"]));
-            }
-            set {
-                this["AdminId"] = value;
-            }
-        }
-        
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM")]

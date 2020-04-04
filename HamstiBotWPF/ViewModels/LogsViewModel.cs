@@ -10,14 +10,14 @@ namespace HamstiBotWPF.ViewModels
     public class LogsViewModel : BindableBase
     {
         private readonly MessageBus messageBus;
-        public ObservableCollection<string> ListLogs { get; private set; }
+        public ObservableCollection<TextMessage> ListLogs { get; private set; }
 
         public LogsViewModel(MessageBus messageBus)
         {
             this.messageBus = messageBus;
-            ListLogs = new ObservableCollection<string>();
+            ListLogs = new ObservableCollection<TextMessage>();
 
-            this.messageBus.Receive<TextMessage>(this, async message => ListLogs.Insert(0, message.Text));
+            this.messageBus.Receive<TextMessage>(this, async message => ListLogs.Insert(0, new TextMessage(message.Text, message.HorizontalAlignment)));
 
             GlobalUnit.Api.OnMessageEdited += BotOnMessageReceived;
             GlobalUnit.Api.OnMessage += BotOnMessageReceived;
@@ -37,26 +37,26 @@ namespace HamstiBotWPF.ViewModels
             switch (messageEventArgs.Message.Type)
             {
                 case Telegram.Bot.Types.Enums.MessageType.Text:
-                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, $"Получено сообщение: {messageEventArgs.Message.Text}")); break;
+                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage($"Получено сообщение: {messageEventArgs.Message.Text}"))); break;
                 case Telegram.Bot.Types.Enums.MessageType.Photo:
-                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, $"Получено изображение: {messageEventArgs.Message.Photo}")); break;
+                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage($"Получено изображение: {messageEventArgs.Message.Photo}"))); break;
                 case Telegram.Bot.Types.Enums.MessageType.Document:
-                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, $"Получен документ: {messageEventArgs.Message.Document}")); break;
+                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage($"Получен документ: {messageEventArgs.Message.Document}"))); break;
                 default:
-                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, $"Пришло сообщение формата: {messageEventArgs.Message.Type}")); break;
+                    Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage($"Пришло сообщение формата: {messageEventArgs.Message.Type}"))); break;
             }
         }
 
         private void BotOnReceiveError(object sender, Telegram.Bot.Args.ReceiveErrorEventArgs receiveErrorEventArgs)
         {
-            Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, string.Format("Произошла ошибка при прослушивании: {0} — {1}",
+            Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage(string.Format("Произошла ошибка при прослушивании: {0} — {1}",
                 receiveErrorEventArgs.ApiRequestException.ErrorCode,
-                receiveErrorEventArgs.ApiRequestException.Message)));
+                receiveErrorEventArgs.ApiRequestException.Message), HorizontalAlignment.Right)));
         }
 
         private void Api_OnReceiveGeneralError(object sender, Telegram.Bot.Args.ReceiveGeneralErrorEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, "Произошла ошибка при событии OnReceiveGeneralError:\n\n" + e.Exception.Message));
+            Application.Current.Dispatcher.Invoke(() => ListLogs.Insert(0, new TextMessage("Произошла ошибка при событии OnReceiveGeneralError:\n\n" + e.Exception.Message, HorizontalAlignment.Right)));
         }
     }
 }

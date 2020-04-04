@@ -1,4 +1,6 @@
-﻿namespace HamstiBotWPF.Messages
+﻿using System.Windows;
+
+namespace HamstiBotWPF.Messages
 {
     public class TextMessage : IMessage
     {
@@ -7,6 +9,13 @@
             Text = text;
         }
 
+        public TextMessage(string text, HorizontalAlignment horizontalAlignment) : this(text)
+        {
+            HorizontalAlignment = horizontalAlignment;
+        }
+
         public string Text { get; set; }
+
+        public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Stretch;
     }
 }

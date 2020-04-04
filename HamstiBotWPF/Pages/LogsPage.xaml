@@ -11,12 +11,16 @@
 
     <Grid>
         <ListView ItemsSource="{Binding ListLogs}" 
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                  HorizontalContentAlignment="Stretch">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding}" TextWrapping="WrapWithOverflow" />
+                    <TextBlock Text="{Binding Text}"
+                               HorizontalAlignment="{Binding HorizontalAlignment}"
+                               TextWrapping="WrapWithOverflow" />
                 </DataTemplate>
             </ListView.ItemTemplate>
+            
         </ListView>
         <TextBlock Text="Logs is clear">
             <TextBlock.Style>

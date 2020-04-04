@@ -18,7 +18,8 @@
                     <GridViewColumn DisplayMemberBinding="{Binding CountArgsCommand}" 
                                     Header="Args" />
                     <GridViewColumn DisplayMemberBinding="{Binding ExampleCommand}" 
-                                    Header="Example command" />
+                                    Header="Example command" 
+                                    Width="225"/>
                 </GridView>
             </ListView.View>
         </ListView>

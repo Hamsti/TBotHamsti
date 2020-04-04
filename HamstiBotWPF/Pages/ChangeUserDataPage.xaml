@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:HamstiBotWPF.Pages"
-      xmlns:coreHamsti="clr-namespace:HamstiBotWPF.Core"
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
       xmlns:prop="clr-namespace:HamstiBotWPF.Properties"
@@ -34,7 +33,8 @@
         <TextBlock Text ="Id user" />
         <TextBlock Text="Is blocked" Grid.Row="1"  />
         <TextBlock Text="Nickname" Grid.Row="2" />
-
+        <TextBlock Text="Status" Grid.Row="3" />
+        
         <TextBox Grid.Column="1" 
                  HorizontalAlignment="Left"
                  Width="77" 
@@ -82,7 +82,70 @@
         <TextBox Grid.Row="2" 
                  Grid.Column="1" 
                  Text="{Binding SelectedUserList.LocalNickname}" />
-        <WrapPanel Orientation="Horizontal" 
+        
+        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" >
+            <RadioButton GroupName="StatusUser" 
+                         Content="Admin"
+                         Command="{Binding IsStatusUserChanged}"
+                         CommandParameter="Admin">
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="Admin" >
+                                <Setter Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton GroupName="StatusUser" 
+                         Content="Moderator"
+                         Command="{Binding IsStatusUserChanged}"
+                         CommandParameter="Moderator">
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="Moderator" >
+                                <Setter Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton GroupName="StatusUser" 
+                         Content="User"
+                         Command="{Binding IsStatusUserChanged}"
+                         CommandParameter="User">
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="User" >
+                                <Setter Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton GroupName="StatusUser" 
+                         Content="Not defined" 
+                         Command="{Binding IsStatusUserChanged}"
+                         CommandParameter="NotDefined">
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="NotDefined" >
+                                <Setter Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >
+                                <Setter Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+        </WrapPanel>
+
+        <!--<WrapPanel Orientation="Horizontal" 
                    Grid.Row="5"
                    Grid.ColumnSpan="2" >
             <TextBlock Text="Id admin: "/>
@@ -92,6 +155,6 @@
                       SelectedValuePath="IdUser"
                       DisplayMemberPath="IdUser_Nickname"
                       SelectedValue="{Binding AdminId, Source={x:Static prop:Settings.Default}}" />
-        </WrapPanel>
+        </WrapPanel>-->
     </Grid>
 </Page>

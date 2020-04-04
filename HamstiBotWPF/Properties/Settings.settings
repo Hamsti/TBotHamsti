@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HamstiBotWPF.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="AdminId" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">406777030</Value>
-    </Setting>
     <Setting Name="ApiBot" Type="System.String" Scope="Application">
       <Value Profile="(Default)">533190991:AAGHPQhmjcy-JEaZEnRYUhERtX16rM9xUQM</Value>
     </Setting>

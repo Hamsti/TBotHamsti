@@ -12,7 +12,7 @@ namespace HamstiBotWPF.OldMainWindow
 {
     public class MainViewModel : ViewModelBase
     {
-        private int IdAdminForStartApp { get; set; } = Properties.Settings.Default.AdminId;
+        private int IdAdminForStartApp { get; set; } = Properties.Settings.Default.RecoverIdAdmin;
         public List<System.Windows.Controls.MenuItem> ListCommands { get; private set; }
         public ObservableCollection<string> ListLogs { get; private set; }
         public ObservableCollection<Core.PatternUser> ListUsers => GlobalUnit.AuthUsers;
@@ -40,7 +40,7 @@ namespace HamstiBotWPF.OldMainWindow
                 ListCommands.Add(new System.Windows.Controls.MenuItem()
                 {
                     Header = command.ExampleCommand,
-                    Foreground = command.VisibleForUsers ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
+                    Foreground = command.StatusUser == LogicRepository.RepUsers.StatusUser.User ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(97, 216, 162))
                 });
             }
 
@@ -126,14 +126,9 @@ namespace HamstiBotWPF.OldMainWindow
         private void ListUsersRefresh()
         {
             ListUsers.Clear();
-            GlobalUnit.AuthUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new Core.PatternUser()
-            {
-                IdUser = user.IdUser,
-                LocalNickname = user.LocalNickname,
-                IsBlocked = user.IsBlocked
-            }));
-            if (ListUsers.Count > 0 && Properties.Settings.Default.AdminId > 0)
-                ListUsers.Move(ListUsers.IndexOf(ListUsers.SingleOrDefault(s => s.IdUser == Properties.Settings.Default.AdminId)), 0);
+            GlobalUnit.AuthUsers.OrderBy(ord => ord.IsBlocked).ToList().ForEach(user => ListUsers.Add(new Core.PatternUser(user)));
+            if (ListUsers.Count > 0 && Properties.Settings.Default.RecoverIdAdmin > 0)
+                ListUsers.Move(ListUsers.IndexOf(ListUsers.SingleOrDefault(s => s.IdUser == Properties.Settings.Default.RecoverIdAdmin)), 0);
             Properties.Settings.Default.Reload();
         }
 
@@ -179,24 +174,24 @@ namespace HamstiBotWPF.OldMainWindow
             (obj) =>
             {
                 Properties.Settings.Default.Save();
-                Core.PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+                Core.PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.RecoverIdAdmin);
                 ListLogs.Add($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"); ;
-                IdAdminForStartApp = Properties.Settings.Default.AdminId;
+                IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
                 ListUsersRefresh();
             },
-            (obj) => IdAdminForStartApp != Properties.Settings.Default.AdminId);
+            (obj) => IdAdminForStartApp != Properties.Settings.Default.RecoverIdAdmin);
 
         public ICommand DefaultSettingBot => new DelegateCommand(
             (obj) =>
             {
-                Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
+                //Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
                 Properties.Settings.Default.Save();
-                Core.PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+                Core.PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.RecoverIdAdmin);
                 ListLogs.Add($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"); ;
                 IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
                 ListUsersRefresh();
             },
-            (obj) => Properties.Settings.Default.AdminId != Properties.Settings.Default.RecoverIdAdmin);
+            (obj) => Properties.Settings.Default.RecoverIdAdmin != Properties.Settings.Default.RecoverIdAdmin);
 
         public ICommand ClearLogsBot => new DelegateCommand((obj) => ListLogs.Clear(), (obj) => ListLogs.Count > 0);
 
@@ -208,12 +203,7 @@ namespace HamstiBotWPF.OldMainWindow
                 {
                     if (SelectedUserList == null)
                         SelectedUserList = new Core.PatternUser();
-                    GlobalUnit.AuthUsers.Add(new Core.PatternUser
-                    {
-                        IdUser = SelectedUserList.IdUser,
-                        IsBlocked = SelectedUserList.IsBlocked,
-                        LocalNickname = SelectedUserList.LocalNickname
-                    });
+                    GlobalUnit.AuthUsers.Add(new Core.PatternUser(SelectedUserList));
                     LogicRepository.RepUsers.Save();
                     ListUsersRefresh();
                 });
@@ -226,7 +216,7 @@ namespace HamstiBotWPF.OldMainWindow
             {
                 return new DelegateCommand((obj) =>
                 {
-                    if (SelectedUserList.IsUserAdmin)
+                    if (SelectedUserList.Status == LogicRepository.RepUsers.StatusUser.Admin)
                         SelectedUserList.IsBlocked = false;
                     //GlobalUnit.authUsers = ListUsers.ToList();
                     LogicRepository.RepUsers.Save();
@@ -249,7 +239,7 @@ namespace HamstiBotWPF.OldMainWindow
                     ListUsersRefresh();
                     SelectedUserList = new Core.PatternUser();
                 },
-                (obj) => !SelectedUserList.IsUserAdmin);
+                (obj) => SelectedUserList.Status != LogicRepository.RepUsers.StatusUser.Admin);
             }
         }
 
@@ -263,7 +253,7 @@ namespace HamstiBotWPF.OldMainWindow
                     if (bool.TryParse(obj.ToString(), out IsIsBlocked))
                         SelectedUserList.IsBlocked = IsIsBlocked;
                 },
-                (obj) => !SelectedUserList.IsUserAdmin);
+                (obj) => SelectedUserList.Status != LogicRepository.RepUsers.StatusUser.Admin);
             }
         }
 

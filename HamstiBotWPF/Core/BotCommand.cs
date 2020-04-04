@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Telegram.Bot.Types;
+using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
 
 namespace HamstiBotWPF.Core
 {
@@ -20,7 +21,7 @@ namespace HamstiBotWPF.Core
         public int CountArgsCommand { get; set; } = 0;
         public BotLevelCommand.LevelCommand NameOfLevel { get; set; } = BotLevelCommand.LevelCommand.Root;
         public bool LevelDependent { get; set; } = true;
-        public bool VisibleForUsers { get; set; } = true;
+        public StatusUser StatusUser { get; set; } = StatusUser.User;
         public Action<BotCommandStructure, Message> Execute { get; set; }
         public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) =>
         {

@@ -11,7 +11,7 @@ namespace HamstiBotWPF.ViewModels
     public class SettingsViewModel : BindableBase
     {
         private readonly MessageBus messageBus;
-        private int IdAdminForStartApp { get; set; }
+        //private int IdAdminForStartApp { get; set; }
 
         public SettingsViewModel(MessageBus messageBus)
         {
@@ -21,7 +21,7 @@ namespace HamstiBotWPF.ViewModels
             else
                 ChangeTheInterfaceForLightTheme();
 
-            IdAdminForStartApp = Properties.Settings.Default.AdminId;
+            //IdAdminForStartApp = Properties.Settings.Default.AdminId;
         }
 
         public ICommand ChangeForDarkTheme => new DelegateCommand((obj) =>
@@ -34,26 +34,26 @@ namespace HamstiBotWPF.ViewModels
             ChangeTheInterfaceForLightTheme();
         }, (obj) => Properties.Settings.Default.UsedDarkTheme);
 
-        public ICommand SaveSettingsBot => new AsyncCommand(async () =>
-        {
-            Properties.Settings.Default.Save();
-            PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
-            await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
-            IdAdminForStartApp = Properties.Settings.Default.AdminId;
-            //await eventBus.Publish(new RefreshUsersListEvent());
-        });
-        //() => IdAdminForStartApp != Properties.Settings.Default.AdminId);
+        //public ICommand SaveSettingsBot => new AsyncCommand(async () =>
+        //{
+        //    Properties.Settings.Default.Save();
+        //    PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+        //    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
+        //    IdAdminForStartApp = Properties.Settings.Default.AdminId;
+        //    //await eventBus.Publish(new RefreshUsersListEvent());
+        //});
+        ////() => IdAdminForStartApp != Properties.Settings.Default.AdminId);
 
-        public ICommand DefaultSettingBot => new AsyncCommand(async () =>
-        {
-            Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
-            Properties.Settings.Default.Save();
-            PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
-            await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
-            IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
-            //await eventBus.Publish(new RefreshUsersListEvent());
-        });
-        //() => Properties.Settings.Default.AdminId != Properties.Settings.Default.RecoverIdAdmin);
+        //public ICommand DefaultSettingBot => new AsyncCommand(async () =>
+        //{
+        //    Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
+        //    Properties.Settings.Default.Save();
+        //    PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
+        //    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
+        //    IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
+        //    //await eventBus.Publish(new RefreshUsersListEvent());
+        //});
+        ////() => Properties.Settings.Default.AdminId != Properties.Settings.Default.RecoverIdAdmin);
 
         private void ChangeTheInterfaceForDarkTheme()
         {

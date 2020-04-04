@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using HamstiBotWPF.Core;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace HamstiBotWPF.LogicRepository
 {
@@ -14,13 +16,33 @@ namespace HamstiBotWPF.LogicRepository
     /// </summary>
     public static class RepUsers
     {
-        //public enum StatusUser
-        //{
-        //    Admin,
-        //    Moderator,
-        //    User,
-        //    NotDefined
-        //}
+        public enum StatusUser
+        {
+            NotDefined,
+            User,
+            Moderator,
+            Admin
+        }
+
+        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin) => await SendMessage(GlobalUnit.AuthUsers.Where(user => user.Status == status), message);
+
+        public static async Task SendMessage(int idUser, string message)
+        {
+            try
+            {
+                await GlobalUnit.Api.SendTextMessageAsync(idUser, message);
+            }
+            catch (Exception ex)
+            {
+                _ = Task.Run(() => MessageBox.Show(ex.Message));
+            };
+        }
+
+        private static async Task SendMessage(IEnumerable<PatternUser> findedUsers, string message)
+        {
+            foreach (var user in findedUsers)
+                await SendMessage(user.IdUser, message);
+        }
 
         /// <summary>
         /// Adding all authorized users from a file, including sorting
@@ -31,7 +53,7 @@ namespace HamstiBotWPF.LogicRepository
             try
             {
                 Update(System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<ObservableCollection<PatternUser>>(System.IO.File.ReadAllText("AuthUsers.json"))
-                     : new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.AdminId }});
+                     : new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.RecoverIdAdmin } });
 
                 RefreshAndSort();
                 return true;
@@ -79,7 +101,7 @@ namespace HamstiBotWPF.LogicRepository
             try
             {
                 if (GlobalUnit.AuthUsers == null) return false;
-               
+
                 System.IO.File.WriteAllText("AuthUsers.json", JsonConvert.SerializeObject(GlobalUnit.AuthUsers));
 
                 RefreshAndSort();
@@ -95,27 +117,24 @@ namespace HamstiBotWPF.LogicRepository
         /// <summary>
         /// Sorting and refresh users without of save
         /// </summary>
-        public static void RefreshAndSort() => Update(GlobalUnit.AuthUsers.OrderByDescending(o => o.IsUserAdmin).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
-
-        /// <summary>
-        /// Checks if this user is an administrator
-        /// </summary>
-        /// <param name="userId">Message.From.Id</param>
-        /// <returns></returns>
-        public static bool IsHaveAccessAdmin(int userId) => GlobalUnit.AuthUsers.Count(_ => userId == Properties.Settings.Default.AdminId) > 0;
+        public static void RefreshAndSort() => Update(GlobalUnit.AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
 
         /// <summary>
         /// Checks if this user is in the list of authorized users and not IsBlocked
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
-        /// <returns></returns>
         public static bool IsAuthNotIsBlockedUser(int userId) => GlobalUnit.AuthUsers.Count(user => user.IdUser == userId && user.IsBlocked == false) > 0;
 
         /// <summary>
         /// Checks if this user is in the list of authorized users
         /// </summary>
         /// <param name="userId">Message.From.Id</param>
-        /// <returns></returns>
         public static bool IsAuthUser(int userId) => GlobalUnit.AuthUsers.Count(user => user.IdUser == userId) > 0;
+
+        /// <summary>
+        /// Find user status
+        /// </summary>
+        /// <param name="userId">Message.From.Id</param>
+        public static StatusUser GetStatusUser(int userId) => GlobalUnit.AuthUsers.Where(w => w.IdUser == userId).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
     }
 }

@@ -19,7 +19,9 @@
                     <GridViewColumn DisplayMemberBinding="{Binding LocalNickname, TargetNullValue=null}" 
                                     Header="Local nickname" />
                     <GridViewColumn DisplayMemberBinding="{Binding IsBlocked}"
-                                    Header="IsBlocked" />
+                                    Header="Blocked" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Status}"
+                                    Header="Status" />
                 </GridView>
             </ListView.View>
         </ListView>

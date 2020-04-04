@@ -4,6 +4,8 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using HamstiBotWPF.Core;
 using HamstiBotWPF.LogicRepository;
+using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using System.Linq;
 
 namespace HamstiBotWPF
 {
@@ -31,9 +33,9 @@ namespace HamstiBotWPF
                         //Parsing and executing a command or errors
                         var model = BotCommand.ParserCommand(message.Text);
 
-                        if (model == null || !ExecCommand(model, message)) //Execute if command not found
+                        if (model == null || !ExecCommand(model, message).Result) //Execute if command not found
                         {
-                            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
+                            await RepUsers.SendMessage(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
                             return;
                         }
                         break;
@@ -44,20 +46,20 @@ namespace HamstiBotWPF
                     case MessageType.Document:
                         RepBotActions.DocumentUploader(message); break;
                     default:
-                        await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"На данный момент, \"{message.Type.ToString()}\" - неизвестный тип сообщения."); break;
+                        await RepUsers.SendMessage(message.From.Id, $"На данный момент, \"{message.Type.ToString()}\" - неизвестный тип сообщения."); break;
                 }
             }
             //User was not found or IsBlocked in the list of authorized users
             else
             {
                 if (RepUsers.IsAuthUser(message.From.Id))
-                    await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
+                    await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
                 else
                     await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);
             }
         }
 
-        private static bool ExecCommand(BotCommandStructure model, Telegram.Bot.Types.Message message)
+        private static async Task<bool> ExecCommand(BotCommandStructure model, Telegram.Bot.Types.Message message)
         {
             bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
             bool isCommand = false;
@@ -76,7 +78,7 @@ namespace HamstiBotWPF
                         if (command.CountArgsCommand == model.Args.Length ||
                             command.CountArgsCommand == -1 && model.Args.Length > 0)
                         {
-                            if (command.VisibleForUsers || !command.VisibleForUsers && RepUsers.IsHaveAccessAdmin(message.From.Id))
+                            if (command.StatusUser <= RepUsers.GetStatusUser(message.From.Id))
                             {
                                 if (IsBotLevelCommand(command))
                                     ((BotLevelCommand)command).Execute?.Invoke(model, message);
@@ -84,7 +86,7 @@ namespace HamstiBotWPF
                                     command.Execute?.Invoke(model, message);
                             }
                             else
-                                GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходимы права администратора.");
+                                await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{command.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)command.StatusUser ? " и выше" : string.Empty)}.");
                         }
                         else if (--CountCurrentCommand < 1)
                         {
@@ -95,7 +97,7 @@ namespace HamstiBotWPF
                         }
                     }
                     else if (--CountCurrentCommand2 < 1)
-                        GlobalUnit.Api.SendTextMessageAsync(message.From.Id, $"Текущий уровень \"{GlobalUnit.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
+                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{GlobalUnit.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
                 }
             }
             return isCommand;
@@ -109,18 +111,18 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось запустить...");
+                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось запустить...");
                 return;
             }
 
             if (!GlobalUnit.Api.IsReceiving)
             {
                 GlobalUnit.Api.StartReceiving(Array.Empty<UpdateType>());
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Запущен бот {GlobalUnit.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
+                await RepUsers.SendMessage($"Запущен бот {GlobalUnit.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
             }
             else
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} уже запущен.");
+                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} уже запущен.");
                 await RunBotAsync(--numberAttempt);
             }
         }
@@ -133,17 +135,17 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось остановить...");
+                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось остановить...");
                 return;
             }
             if (GlobalUnit.Api.IsReceiving)
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
+                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
                 GlobalUnit.Api.StopReceiving();
             }
             else
             {
-                await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} уже остановлен");
+                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} уже остановлен");
                 await StopBotAsync(--numberAttempt);
             }
         }
@@ -152,9 +154,9 @@ namespace HamstiBotWPF
         /// To reload this bot
         /// </summary>
         /// <param name="numberAttempt">The number of attempts to reload the bot</param>
-        public async static Task RestartBotAsync(int numberAttempt = 2)
+        public static async Task RestartBotAsync(int numberAttempt = 2)
         {
-            await GlobalUnit.Api.SendTextMessageAsync(Properties.Settings.Default.AdminId, $"Бот {GlobalUnit.Api.GetMeAsync().Result} выполняет перезагрузку...");
+            await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} выполняет перезагрузку...");
 
             if (GlobalUnit.Api.IsReceiving)
             {

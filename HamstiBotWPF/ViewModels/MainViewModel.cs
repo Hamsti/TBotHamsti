@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using HamstiBotWPF.Services;
 using HamstiBotWPF.Pages;
 using HamstiBotWPF.Events;
+using HamstiBotWPF.Messages;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows;
 
 namespace HamstiBotWPF.ViewModels
 {
@@ -76,14 +78,14 @@ namespace HamstiBotWPF.ViewModels
         {
             try
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Start bot"));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
                 if (GlobalUnit.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot launched successfully"));
+                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot launched successfully", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"При запуске бота произошла ошибка: {ex.Message}"));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage($"При запуске бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
             }
         }, () => !GlobalUnit.Api.IsReceiving);
 
@@ -91,14 +93,14 @@ namespace HamstiBotWPF.ViewModels
         {
             try
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Stop bot"));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
                 if (!GlobalUnit.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot successfully stopped"));
+                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully stopped", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"При остановке бота произошла ошибка: {ex.Message}"));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage($"При остановке бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
             }
         }, () => GlobalUnit.Api.IsReceiving);
 
@@ -106,14 +108,14 @@ namespace HamstiBotWPF.ViewModels
         {
             try
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Restart bot"));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("Restart bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
                 if (GlobalUnit.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("Bot successfully restarted"));
+                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully restarted", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage("При попытке перезапуска бота произошла ошибка:" + ex.Message));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("При попытке перезапуска бота произошла ошибка:" + ex.Message, HorizontalAlignment.Right));
             }
         }, () => GlobalUnit.Api.IsReceiving);
     }

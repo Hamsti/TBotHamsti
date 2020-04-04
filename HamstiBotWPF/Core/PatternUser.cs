@@ -1,4 +1,5 @@
-﻿namespace HamstiBotWPF.Core
+﻿using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+namespace HamstiBotWPF.Core
 {
     public class PatternUser
     {
@@ -19,17 +20,23 @@
         /// </summary>
         public string LocalNickname { get; set; }
 
-        public string IdUser_Nickname => IdUser.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname); 
+        public StatusUser Status { get; set; }
 
-        public bool IsUserAdmin => IdUser == Properties.Settings.Default.AdminId;
+        public string IdUser_Nickname => IdUser.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname); 
 
         public PatternUser()
         {
             IsBlocked = false;
             LocalNickname = null;
+            Status = StatusUser.NotDefined;
         }
 
-        //Waring, needed retype class in list: https://stackoverflow.com/questions/580202/how-do-i-override-listts-add-method-in-c
-        //Overide add, delete and others methods for more good control users.
+        public PatternUser(PatternUser user)
+        {
+            IdUser = user.IdUser;
+            IsBlocked = user.IsBlocked;
+            LocalNickname = user.LocalNickname;
+            Status = user.Status;
+        }
     }
 }
