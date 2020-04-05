@@ -166,7 +166,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Core\BotLevelCommand.cs" />
-    <Compile Include="DelegateCommand.cs" />
     <Compile Include="Events\RefreshUsersListEvent.cs" />
     <Compile Include="Events\IEvent.cs" />
     <Compile Include="Events\ModifySelectedUser.cs" />
@@ -224,7 +223,6 @@
     <Compile Include="Core\BotCommandStructure.cs" />
     <Compile Include="Core\PatternUser.cs" />
     <Compile Include="ExecuteLaunchBot.cs" />
-    <Compile Include="GlobalUnit.cs" />
     <Compile Include="LogicRepository\RepBotActions.cs" />
     <Compile Include="LogicRepository\RepCommands.cs" />
     <Compile Include="LogicRepository\RepUsers.cs" />

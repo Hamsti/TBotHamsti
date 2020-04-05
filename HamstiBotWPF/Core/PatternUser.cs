@@ -1,8 +1,12 @@
 ﻿using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+
 namespace HamstiBotWPF.Core
 {
     public class PatternUser
     {
+        /// <summary>
+        /// Used on page "ChangeUserDataPage"
+        /// </summary>
         public static int MaxLenghtIdUser => 9;
 
         /// <summary>

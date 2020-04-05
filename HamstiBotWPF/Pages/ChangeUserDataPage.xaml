@@ -47,9 +47,9 @@
             </i:Interaction.Triggers>
         </TextBox>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" >
-            <RadioButton GroupName="IsIsBlocked" 
+            <RadioButton GroupName="IsBlocked" 
                          Content="Yes"
-                         Command="{Binding IsIsBlockedUserChanged}"
+                         Command="{Binding IsBlockedUserChanged}"
                          CommandParameter="true">
                 <RadioButton.Style>
                     <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
@@ -61,9 +61,9 @@
                     </Style>
                 </RadioButton.Style>
             </RadioButton>
-            <RadioButton GroupName="IsIsBlocked" 
+            <RadioButton GroupName="IsBlocked" 
                          Content="No" 
-                         Command="{Binding IsIsBlockedUserChanged}"
+                         Command="{Binding IsBlockedUserChanged}"
                          CommandParameter="false">
                 <RadioButton.Style>
                     <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">

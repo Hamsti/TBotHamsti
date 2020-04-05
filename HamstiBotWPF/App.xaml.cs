@@ -14,6 +14,11 @@ namespace HamstiBotWPF
             LogicRepository.RepUsers.Upload();
             base.OnStartup(e);
         }
+
+        /// <summary>
+        /// Creating a bot and working with it
+        /// </summary>
+        public static Telegram.Bot.TelegramBotClient Api { get; } = new Telegram.Bot.TelegramBotClient(HamstiBotWPF.Properties.Settings.Default.ApiBot);
     }
    
 }

@@ -1,14 +1,14 @@
 ﻿using DevExpress.Mvvm;
 using System;
 using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Controls;
 using System.Threading.Tasks;
 using HamstiBotWPF.Services;
 using HamstiBotWPF.Pages;
 using HamstiBotWPF.Events;
 using HamstiBotWPF.Messages;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows;
 
 namespace HamstiBotWPF.ViewModels
 {
@@ -31,10 +31,10 @@ namespace HamstiBotWPF.ViewModels
             this.pageService.ChangePage(new LogsPage());
         }
 
-        public ICommand LogsPageChange => new DelegateCommand((obj) =>
+        public ICommand LogsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new LogsPage());
-        }, (obj) => PageSourceShortName != "LogsPage");
+        }, () => PageSourceShortName != "LogsPage");
        
         public ICommand UserControlPageChange => new AsyncCommand(async () =>
         {
@@ -42,27 +42,26 @@ namespace HamstiBotWPF.ViewModels
             pageService.ChangePage(new UsersControlPage());
         }, () => PageSourceShortName != "UsersControlPage");
 
-        public ICommand CommandsControlPageChange => new DelegateCommand((obj) =>
+        public ICommand CommandsControlPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new CommandsControlPage());
-        }, (obj) => PageSourceShortName != "CommandsControlPage");
+        }, () => PageSourceShortName != "CommandsControlPage");
 
-        public ICommand SettingsPageChange => new DelegateCommand((obj) =>
+        public ICommand SettingsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new SettingsPage());
-        }, (obj) => PageSourceShortName != "SettingsPage");       
+        }, () => PageSourceShortName != "SettingsPage");       
 
         public async void WindowClosing_StopReceivingBot(object sender, System.ComponentModel.CancelEventArgs e)
         {
             try
             {
-                if (GlobalUnit.Api.IsReceiving)
+                if (App.Api.IsReceiving)
                 {
-                    if (System.Windows.MessageBox.Show("The bot is still running, are you sure you want to shut down the bot and close the application?",
-                        "HamstiBot", System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.OK)
+                    if (MessageBox.Show("The bot is still running, are you sure you want to shut down the bot and close the application?", Application.Current.MainWindow.Title, MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
                     {
                         await ExecuteLaunchBot.StopBotAsync();
-                        System.Windows.Application.Current.Shutdown(0);
+                        Application.Current.Shutdown(0);
                     }
                     else
                         e.Cancel = true;
@@ -70,7 +69,7 @@ namespace HamstiBotWPF.ViewModels
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Завершение приложения произошло с системной ошибкой: {ex.Message}");
+                MessageBox.Show($"Завершение приложения произошло с системной ошибкой: {ex.Message}");
             }
         }
 
@@ -80,14 +79,14 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
-                if (GlobalUnit.Api.IsReceiving)
+                if (App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot launched successfully", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage($"При запуске бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
             }
-        }, () => !GlobalUnit.Api.IsReceiving);
+        }, () => !App.Api.IsReceiving);
 
         public ICommand StopBot => new AsyncCommand(async () =>
         {
@@ -95,14 +94,14 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
-                if (!GlobalUnit.Api.IsReceiving)
+                if (!App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully stopped", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage($"При остановке бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
             }
-        }, () => GlobalUnit.Api.IsReceiving);
+        }, () => App.Api.IsReceiving);
 
         public ICommand RestartBot => new AsyncCommand(async () =>
         {
@@ -110,13 +109,13 @@ namespace HamstiBotWPF.ViewModels
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Restart bot", HorizontalAlignment.Center));
                 await Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
-                if (GlobalUnit.Api.IsReceiving)
+                if (App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully restarted", HorizontalAlignment.Right));
             }
             catch (Exception ex)
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("При попытке перезапуска бота произошла ошибка:" + ex.Message, HorizontalAlignment.Right));
             }
-        }, () => GlobalUnit.Api.IsReceiving);
+        }, () => App.Api.IsReceiving);
     }
 }

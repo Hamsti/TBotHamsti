@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Windows;
-using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using HamstiBotWPF.Core;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
 
 namespace HamstiBotWPF.LogicRepository
 {
@@ -16,6 +14,21 @@ namespace HamstiBotWPF.LogicRepository
     /// </summary>
     public static class RepUsers
     {
+        private static ObservableCollection<PatternUser> authUsers;
+
+        /// <summary>
+        /// List of all authorized users
+        /// </summary>
+        public static ObservableCollection<PatternUser> AuthUsers
+        {
+            get
+            {
+                if (authUsers is null)
+                    authUsers = new ObservableCollection<PatternUser>();
+                return authUsers;
+            }
+        }
+
         public enum StatusUser
         {
             NotDefined,
@@ -24,13 +37,13 @@ namespace HamstiBotWPF.LogicRepository
             Admin
         }
 
-        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin) => await SendMessage(GlobalUnit.AuthUsers.Where(user => user.Status == status), message);
+        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin) => await SendMessage(AuthUsers.Where(user => user.Status == status), message);
 
         public static async Task SendMessage(int idUser, string message)
         {
             try
             {
-                await GlobalUnit.Api.SendTextMessageAsync(idUser, message);
+                await App.Api.SendTextMessageAsync(idUser, message);
             }
             catch (Exception ex)
             {
@@ -74,9 +87,9 @@ namespace HamstiBotWPF.LogicRepository
             var localItems = new ObservableCollection<PatternUser>(items);
             Application.Current.Dispatcher.Invoke(() =>
             {
-                GlobalUnit.AuthUsers.Clear();
+                AuthUsers.Clear();
                 foreach (var User in localItems)
-                    GlobalUnit.AuthUsers.Add(User);
+                    AuthUsers.Add(User);
             });
         }
 
@@ -87,9 +100,9 @@ namespace HamstiBotWPF.LogicRepository
         public static void Update(ObservableCollection<PatternUser> items)
         {
             var localItems = new ObservableCollection<PatternUser>(items);
-            GlobalUnit.AuthUsers.Clear();
+            AuthUsers.Clear();
             foreach (var User in localItems)
-                GlobalUnit.AuthUsers.Add(User);
+                AuthUsers.Add(User);
         }
 
         /// <summary>
@@ -100,9 +113,9 @@ namespace HamstiBotWPF.LogicRepository
         {
             try
             {
-                if (GlobalUnit.AuthUsers == null) return false;
+                if (AuthUsers == null) return false;
 
-                System.IO.File.WriteAllText("AuthUsers.json", JsonConvert.SerializeObject(GlobalUnit.AuthUsers));
+                System.IO.File.WriteAllText("AuthUsers.json", JsonConvert.SerializeObject(AuthUsers));
 
                 RefreshAndSort();
                 return true;
@@ -117,24 +130,24 @@ namespace HamstiBotWPF.LogicRepository
         /// <summary>
         /// Sorting and refresh users without of save
         /// </summary>
-        public static void RefreshAndSort() => Update(GlobalUnit.AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
+        public static void RefreshAndSort() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
 
         /// <summary>
         /// Checks if this user is in the list of authorized users and not IsBlocked
         /// </summary>
-        /// <param name="userId">Message.From.Id</param>
-        public static bool IsAuthNotIsBlockedUser(int userId) => GlobalUnit.AuthUsers.Count(user => user.IdUser == userId && user.IsBlocked == false) > 0;
+        /// <param name="idUser">Message.From.Id</param>
+        public static bool IsAuthNotIsBlockedUser(int idUser) => AuthUsers.Count(user => user.IdUser == idUser && user.IsBlocked == false) > 0;
 
         /// <summary>
         /// Checks if this user is in the list of authorized users
         /// </summary>
-        /// <param name="userId">Message.From.Id</param>
-        public static bool IsAuthUser(int userId) => GlobalUnit.AuthUsers.Count(user => user.IdUser == userId) > 0;
+        /// <param name="idUser">Message.From.Id</param>
+        public static bool IsAuthUser(int idUser) => AuthUsers.Count(user => user.IdUser == idUser) > 0;
 
         /// <summary>
         /// Find user status
         /// </summary>
-        /// <param name="userId">Message.From.Id</param>
-        public static StatusUser GetStatusUser(int userId) => GlobalUnit.AuthUsers.Where(w => w.IdUser == userId).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
+        /// <param name="idUser">Message.From.Id</param>
+        public static StatusUser GetStatusUser(int idUser) => AuthUsers.Where(w => w.IdUser == idUser).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
     }
 }

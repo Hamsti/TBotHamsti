@@ -1,8 +1,9 @@
-﻿using System;
+﻿using DevExpress.Mvvm;
+using System;
 using System.Linq;
-using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
-using DevExpress.Mvvm;
+using System.Collections.ObjectModel;
 using HamstiBotWPF.Services;
 using HamstiBotWPF.Core;
 using HamstiBotWPF.Pages;
@@ -10,7 +11,6 @@ using HamstiBotWPF.Events;
 using HamstiBotWPF.Messages;
 using HamstiBotWPF.LogicRepository;
 using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
-using System.Windows;
 
 namespace HamstiBotWPF.ViewModels
 {
@@ -22,7 +22,7 @@ namespace HamstiBotWPF.ViewModels
         private readonly System.Text.RegularExpressions.Regex regex;
         private PatternUser selectedUserList;
         private PatternUser selectedUserBeforeModify;
-        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.AuthUsers;
+        public static ObservableCollection<PatternUser> ListUsers => RepUsers.AuthUsers;
 
         public bool ExitsSelectedUser => ListUsers.Count(c => c == SelectedUserList) > 0;
 
@@ -50,7 +50,7 @@ namespace HamstiBotWPF.ViewModels
         public ICommand CreateNewUser => new AsyncCommand(async () =>
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserList.IdUser_Nickname}", HorizontalAlignment.Right));
-            GlobalUnit.AuthUsers.Add(new PatternUser(SelectedUserList));
+            RepUsers.AuthUsers.Add(new PatternUser(SelectedUserList));
             RepUsers.Save();
             await eventBus.Publish(new RefreshUsersListEvent());
             pageService.ChangePage(new UsersControlPage());
@@ -77,13 +77,13 @@ namespace HamstiBotWPF.ViewModels
 
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e) => e.Handled = regex.IsMatch(e.Text);
 
-        public ICommand IsIsBlockedUserChanged => new DelegateCommand((obj) =>
+        public ICommand IsBlockedUserChanged => new DelegateCommand<object>((obj) =>
         {
             if (bool.TryParse(obj.ToString(), out bool isBlocked))
                 SelectedUserList.IsBlocked = isBlocked;
         }, (obj) => ListUsers.Count(c => !c.IsBlocked && c.Status == StatusUser.Admin && c != SelectedUserList) > 0 || SelectedUserList.Status < StatusUser.Admin);
 
-        public ICommand IsStatusUserChanged => new DelegateCommand((obj) =>
+        public ICommand IsStatusUserChanged => new DelegateCommand<object>((obj) =>
         {
             foreach (var Status in Enum.GetValues(typeof(StatusUser)))
                 if (Status.ToString() == obj.ToString())

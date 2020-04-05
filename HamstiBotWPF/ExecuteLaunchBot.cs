@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using HamstiBotWPF.Core;
 using HamstiBotWPF.LogicRepository;
 using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
-using System.Linq;
 
 namespace HamstiBotWPF
 {
@@ -46,14 +46,14 @@ namespace HamstiBotWPF
                     case MessageType.Document:
                         RepBotActions.DocumentUploader(message); break;
                     default:
-                        await RepUsers.SendMessage(message.From.Id, $"На данный момент, \"{message.Type.ToString()}\" - неизвестный тип сообщения."); break;
+                        await RepUsers.SendMessage(message.From.Id, $"На данный момент, \"{message.Type}\" - неизвестный тип сообщения."); break;
                 }
             }
             //User was not found or IsBlocked in the list of authorized users
             else
             {
                 if (RepUsers.IsAuthUser(message.From.Id))
-                    await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {GlobalUnit.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
+                    await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
                 else
                     await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);
             }
@@ -63,17 +63,17 @@ namespace HamstiBotWPF
         {
             bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
             bool isCommand = false;
-            int CountCurrentCommand = GlobalUnit.botCommands.FindAll(m => m.Command.Equals(model.Command)).Count;
-            int CountCurrentCommand2 = CountCurrentCommand;
+            int countCurrentCommand = RepCommands.botCommands.FindAll(m => m.Command.Equals(model.Command)).Count;
+            int countCurrentCommand2 = countCurrentCommand;
 
-            foreach (var command in GlobalUnit.botCommands)
+            foreach (var command in RepCommands.botCommands)
             {
                 if (command.Command == model.Command)
                 {
                     isCommand = true;
 
-                    if (IsBotLevelCommand(command) && ((BotLevelCommand)command).ParrentLevel == GlobalUnit.currentLevelCommand ||
-                        command.NameOfLevel == GlobalUnit.currentLevelCommand || !command.LevelDependent)
+                    if (IsBotLevelCommand(command) && ((BotLevelCommand)command).ParrentLevel == RepCommands.currentLevelCommand ||
+                        command.NameOfLevel == RepCommands.currentLevelCommand || !command.LevelDependent)
                     {
                         if (command.CountArgsCommand == model.Args.Length ||
                             command.CountArgsCommand == -1 && model.Args.Length > 0)
@@ -88,7 +88,7 @@ namespace HamstiBotWPF
                             else
                                 await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{command.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)command.StatusUser ? " и выше" : string.Empty)}.");
                         }
-                        else if (--CountCurrentCommand < 1)
+                        else if (--countCurrentCommand < 1)
                         {
                             if (IsBotLevelCommand(command))
                                 ((BotLevelCommand)command).OnError.Invoke(model, message);
@@ -96,8 +96,8 @@ namespace HamstiBotWPF
                                 command.OnError?.Invoke(model, message);
                         }
                     }
-                    else if (--CountCurrentCommand2 < 1)
-                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{GlobalUnit.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
+                    else if (--countCurrentCommand2 < 1)
+                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{RepCommands.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
                 }
             }
             return isCommand;
@@ -111,18 +111,18 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось запустить...");
+                await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} не удалось запустить...");
                 return;
             }
 
-            if (!GlobalUnit.Api.IsReceiving)
+            if (!App.Api.IsReceiving)
             {
-                GlobalUnit.Api.StartReceiving(Array.Empty<UpdateType>());
-                await RepUsers.SendMessage($"Запущен бот {GlobalUnit.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
+                App.Api.StartReceiving(Array.Empty<UpdateType>());
+                await RepUsers.SendMessage($"Запущен бот {App.Api.GetMeAsync().Result} пользователем: {Environment.UserDomainName}");
             }
             else
             {
-                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} уже запущен.");
+                await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} уже запущен.");
                 await RunBotAsync(--numberAttempt);
             }
         }
@@ -135,17 +135,17 @@ namespace HamstiBotWPF
         {
             if (numberAttempt <= 0)
             {
-                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} не удалось остановить...");
+                await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} не удалось остановить...");
                 return;
             }
-            if (GlobalUnit.Api.IsReceiving)
+            if (App.Api.IsReceiving)
             {
-                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
-                GlobalUnit.Api.StopReceiving();
+                await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} успешно остановлен пользователем: {Environment.UserDomainName}");
+                App.Api.StopReceiving();
             }
             else
             {
-                await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} уже остановлен");
+                await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} уже остановлен");
                 await StopBotAsync(--numberAttempt);
             }
         }
@@ -154,11 +154,11 @@ namespace HamstiBotWPF
         /// To reload this bot
         /// </summary>
         /// <param name="numberAttempt">The number of attempts to reload the bot</param>
-        public static async Task RestartBotAsync(int numberAttempt = 2)
+        public static async Task RestartBotAsync(int numberAttempt = 1)
         {
-            await RepUsers.SendMessage($"Бот {GlobalUnit.Api.GetMeAsync().Result} выполняет перезагрузку...");
+            await RepUsers.SendMessage($"Бот {App.Api.GetMeAsync().Result} выполняет перезагрузку...");
 
-            if (GlobalUnit.Api.IsReceiving)
+            if (App.Api.IsReceiving)
             {
                 await StopBotAsync(numberAttempt);
                 await RunBotAsync(numberAttempt);

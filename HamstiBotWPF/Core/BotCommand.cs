@@ -23,10 +23,7 @@ namespace HamstiBotWPF.Core
         public bool LevelDependent { get; set; } = true;
         public StatusUser StatusUser { get; set; } = StatusUser.User;
         public Action<BotCommandStructure, Message> Execute { get; set; }
-        public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) =>
-        {
-            await LogicRepository.RepBotActions.SendMessageWrongNumberOfArgs(message);
-        };
+        public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) => await LogicRepository.RepBotActions.SendMessageWrongNumberOfArgs(message);
 
         /// <summary>
         /// Command converter to normal view

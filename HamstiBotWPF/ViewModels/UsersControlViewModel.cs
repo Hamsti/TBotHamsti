@@ -13,7 +13,7 @@ namespace HamstiBotWPF.ViewModels
     {
         private readonly PageService pageService;
         private readonly EventBus eventBus;
-        public static ObservableCollection<PatternUser> ListUsers => GlobalUnit.AuthUsers;
+        public static ObservableCollection<PatternUser> ListUsers => RepUsers.AuthUsers;
 
         public UsersControlViewModel(PageService pageService, EventBus eventBus)
         {

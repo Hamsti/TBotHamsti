@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using HamstiBotWPF.Core;
+using HamstiBotWPF.LogicRepository;
 
 namespace HamstiBotWPF.ViewModels
 {
     public class CommandsControlViewModel
     {
-        public List<BotCommand> ListCommands => GlobalUnit.botCommands;
+        public List<BotCommand> ListCommands => RepCommands.botCommands;
 
-        public CommandsControlViewModel()
-        {
-            
-        }
+        public CommandsControlViewModel() { }
     }
 }

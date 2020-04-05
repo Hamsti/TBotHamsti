@@ -1,80 +1,71 @@
 ﻿using DevExpress.Mvvm;
 using System;
-using System.Linq;
-using HamstiBotWPF.Services;
+using System.Windows;
 using System.Windows.Input;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.Events;
+using HamstiBotWPF.Services;
+using HamstiBotWPF.Messages;
 
 namespace HamstiBotWPF.ViewModels
 {
     public class SettingsViewModel : BindableBase
     {
         private readonly MessageBus messageBus;
-        //private int IdAdminForStartApp { get; set; }
 
-        public SettingsViewModel(MessageBus messageBus)
+        static SettingsViewModel()
         {
-            this.messageBus = messageBus;
             if (Properties.Settings.Default.UsedDarkTheme)
                 ChangeTheInterfaceForDarkTheme();
             else
                 ChangeTheInterfaceForLightTheme();
-
-            //IdAdminForStartApp = Properties.Settings.Default.AdminId;
         }
 
-        public ICommand ChangeForDarkTheme => new DelegateCommand((obj) =>
+        public SettingsViewModel(MessageBus messageBus)
+        {
+            this.messageBus = messageBus;
+        }
+
+        public ICommand ChangeForDarkTheme => new AsyncCommand(async () =>
         {
             ChangeTheInterfaceForDarkTheme();
-        }, (obj) => !Properties.Settings.Default.UsedDarkTheme);
+            await messageBus.SendTo<LogsViewModel>(new TextMessage("Changed theme on \"Dark\"", HorizontalAlignment.Center));
+        }, () => !Properties.Settings.Default.UsedDarkTheme);
 
-        public ICommand ChangeForLightTheme => new DelegateCommand((obj) =>
+        public ICommand ChangeForLightTheme => new AsyncCommand(async () =>
         {
             ChangeTheInterfaceForLightTheme();
-        }, (obj) => Properties.Settings.Default.UsedDarkTheme);
+            await messageBus.SendTo<LogsViewModel>(new TextMessage("Changed theme on \"Light\"", HorizontalAlignment.Center));
+        }, () => Properties.Settings.Default.UsedDarkTheme);
 
-        //public ICommand SaveSettingsBot => new AsyncCommand(async () =>
-        //{
-        //    Properties.Settings.Default.Save();
-        //    PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
-        //    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"New bot administrator: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
-        //    IdAdminForStartApp = Properties.Settings.Default.AdminId;
-        //    //await eventBus.Publish(new RefreshUsersListEvent());
-        //});
-        ////() => IdAdminForStartApp != Properties.Settings.Default.AdminId);
+        public ICommand SaveSettingsBot => new DelegateCommand(() =>
+        {
+            Properties.Settings.Default.Save();
+        });
 
-        //public ICommand DefaultSettingBot => new AsyncCommand(async () =>
-        //{
-        //    Properties.Settings.Default.AdminId = Properties.Settings.Default.RecoverIdAdmin;
-        //    Properties.Settings.Default.Save();
-        //    PatternUser newAdminUser = GlobalUnit.AuthUsers.FirstOrDefault(f => f.IdUser == Properties.Settings.Default.AdminId);
-        //    await messageBus.SendTo<LogsViewModel>(new Messages.TextMessage($"Restored default bot admin: {(newAdminUser != null ? newAdminUser.IdUser_Nickname : "Unauthorized user")}"));
-        //    IdAdminForStartApp = Properties.Settings.Default.RecoverIdAdmin;
-        //    //await eventBus.Publish(new RefreshUsersListEvent());
-        //});
-        ////() => Properties.Settings.Default.AdminId != Properties.Settings.Default.RecoverIdAdmin);
+        public ICommand DefaultSettingBot => new DelegateCommand(() =>
+        {
+            
+        });
 
-        private void ChangeTheInterfaceForDarkTheme()
+        private static void ChangeTheInterfaceForDarkTheme()
         {
             Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
-            System.Windows.Application.Current.Resources.MergedDictionaries.RemoveAt(1);
-            System.Windows.Application.Current.Resources.MergedDictionaries.Insert(1, new System.Windows.ResourceDictionary() { Source = uri });
+            Application.Current.Resources.MergedDictionaries.RemoveAt(1);
+            Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
             uri = new Uri("pack://application:,,,/HamstiBotWPF;component/Themes/Dark.xaml");
-            System.Windows.Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            System.Windows.Application.Current.Resources.MergedDictionaries.Insert(3, new System.Windows.ResourceDictionary() { Source = uri });
+            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
+            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = true;
             Properties.Settings.Default.Save();
         }
 
-        private void ChangeTheInterfaceForLightTheme()
+        private static void ChangeTheInterfaceForLightTheme()
         {
             Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
-            System.Windows.Application.Current.Resources.MergedDictionaries.RemoveAt(1);
-            System.Windows.Application.Current.Resources.MergedDictionaries.Insert(1, new System.Windows.ResourceDictionary() { Source = uri });
+            Application.Current.Resources.MergedDictionaries.RemoveAt(1);
+            Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
             uri = new Uri($"pack://application:,,,/HamstiBotWPF;component/Themes/Light.xaml");
-            System.Windows.Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            System.Windows.Application.Current.Resources.MergedDictionaries.Insert(3, new System.Windows.ResourceDictionary() { Source = uri });
+            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
+            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = false;
             Properties.Settings.Default.Save();
         }

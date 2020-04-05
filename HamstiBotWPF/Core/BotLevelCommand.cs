@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using HamstiBotWPF.LogicRepository;
@@ -35,12 +32,12 @@ namespace HamstiBotWPF.Core
         /// </summary>
         public LevelCommand ParrentLevel { get; private set; }
 
-        public BotLevelCommand(LevelCommand NameOfLevel, LevelCommand ParrentLevel = LevelCommand.Root)
+        public BotLevelCommand(LevelCommand nameOfLevel, LevelCommand parrentLevel = LevelCommand.Root)
         {
             Execute += async (BotCommandStructure command, Message message) => await ExecLevelUp(message);
-            base.NameOfLevel = NameOfLevel;
-            this.ParrentLevel = ParrentLevel;
-            Command = "/" + NameOfLevel.ToString();
+            NameOfLevel = nameOfLevel;
+            ParrentLevel = parrentLevel;
+            Command = "/" + nameOfLevel.ToString();
             base.CountArgsCommand = 0;
         }
 
@@ -57,7 +54,7 @@ namespace HamstiBotWPF.Core
             {
                 if (("/" + level.ToString().ToLower()).Equals(model.Command))
                 {
-                    GlobalUnit.currentLevelCommand = level;
+                    RepCommands.currentLevelCommand = level;
                     await SendMessageWhenLevelChanges(message);
                 }
             }
@@ -70,14 +67,14 @@ namespace HamstiBotWPF.Core
 
         private static async Task SendMessageWhenLevelChanges(Message message)
         {
-            string messageWhenLevelChanges = "Current level: " + GlobalUnit.currentLevelCommand + "\n\nList of commands:\n";
+            string messageWhenLevelChanges = "Current level: " + RepCommands.currentLevelCommand + "\n\nList of commands:\n";
 
             await RepUsers.SendMessage(message.From.Id, messageWhenLevelChanges + RepBotActions.GetHelp(message.From.Id));
         }
 
         private static async Task<bool> WhenLevelIsRoot(Message message)
         {
-            if (message.Text.ToLower() == TOPREVLEVEL && GlobalUnit.currentLevelCommand == LevelCommand.Root)
+            if (message.Text.ToLower() == TOPREVLEVEL && RepCommands.currentLevelCommand == LevelCommand.Root)
             {
                 await RepUsers.SendMessage(message.From.Id, "Вы находитесь на начальном уровне.");
                 return true;
@@ -87,9 +84,9 @@ namespace HamstiBotWPF.Core
 
         private async Task ExecLevelUp(Message message)
         {
-            if (message.Text.ToLower() == TOPREVLEVEL && GlobalUnit.currentLevelCommand > LevelCommand.Root)
+            if (message.Text.ToLower() == TOPREVLEVEL && RepCommands.currentLevelCommand > LevelCommand.Root)
             {
-                GlobalUnit.currentLevelCommand = ParrentLevel;
+                RepCommands.currentLevelCommand = ParrentLevel;
                 await SendMessageWhenLevelChanges(message);
             }
         }
