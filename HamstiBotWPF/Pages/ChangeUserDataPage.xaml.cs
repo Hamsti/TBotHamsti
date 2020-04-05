@@ -10,16 +10,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HamstiBotWPF
+namespace HamstiBotWPF.Pages
 {
     /// <summary>
-    /// Логика взаимодействия для NewMainWindow.xaml
+    /// Логика взаимодействия для ChangeUserDataPage.xaml
     /// </summary>
-    public partial class Main : Window
+    public partial class ChangeUserDataPage : Page
     {
-        public Main()
+        public ChangeUserDataPage()
         {
             InitializeComponent();
         }

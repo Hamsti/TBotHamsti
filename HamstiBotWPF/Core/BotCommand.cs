@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Telegram.Bot.Types;
+using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
 
 namespace HamstiBotWPF.Core
 {
@@ -9,15 +10,20 @@ namespace HamstiBotWPF.Core
     /// </summary>
     public class BotCommand
     {
-        public string Command { get; set; }
+        private string command;
+
+        public string Command 
+        { 
+            get => command;
+            set => command = value.ToLower();
+        }
         public string ExampleCommand { get; set; }
-        public int CountArgsCommand { get; set; }
-        public bool VisibleCommand { get; set; } = true;
+        public int CountArgsCommand { get; set; } = 0;
+        public BotLevelCommand.LevelCommand NameOfLevel { get; set; } = BotLevelCommand.LevelCommand.Root;
+        public bool LevelDependent { get; set; } = true;
+        public StatusUser StatusUser { get; set; } = StatusUser.User;
         public Action<BotCommandStructure, Message> Execute { get; set; }
-        public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) =>
-        {
-            await GlobalUnit.Api.SendTextMessageAsync(message.From.Id, "Не верное кол-во агрументов\nСписок комманд: /help");
-        };
+        public Action<BotCommandStructure, Message> OnError { get; set; } = async (model, message) => await LogicRepository.RepBotActions.SendMessageWrongNumberOfArgs(message);
 
         /// <summary>
         /// Command converter to normal view
@@ -29,7 +35,7 @@ namespace HamstiBotWPF.Core
             if (messageText.StartsWith("/"))
             {
                 var splits = messageText.Split(' ');
-                var command = splits?.FirstOrDefault();
+                var command = splits?.FirstOrDefault().ToLower();
                 var args = splits.Skip(1).Take(splits.Count()).ToArray();
 
                 return new BotCommandStructure

@@ -12,10 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace HamstiBotWPF
+namespace HamstiBotWPF.OldMainWindow
 {
     /// <summary>
-    /// Логика взаимодействия для NewMainWindow.xaml
+    /// Логика взаимодействия для Main.xaml
     /// </summary>
     public partial class Main : Window
     {
@@ -23,5 +23,6 @@ namespace HamstiBotWPF
         {
             InitializeComponent();
         }
+
     }
 }
