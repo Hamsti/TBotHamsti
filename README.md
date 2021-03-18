@@ -1,6 +1,9 @@
-# HamstiBotWPF
-Simple contol for PC using TelegramBot from Hamsti
+# Telegram bot Hamsti
 
-This bot is designed to control the PC through the bot telegram.
-Your suggestions for the finalization of this bot are welcome.
-Creator: <a href="https://t.me/Hamsti" rel="nofollow">@Hamsti</a>
+It's a universal template for the quick implementation of telegram bots.
+
+When this bot was being developed, it used the MVVM pattern to easily add web support in the future.
+>For example how it works, the telegram bot **Hamsti** located on the local machine and uses some commands to cotrol the PC.
+
+Your suggestions for adding new features are welcome.
+Creator: [@Hamsti](https://t.me/Hamsti)
