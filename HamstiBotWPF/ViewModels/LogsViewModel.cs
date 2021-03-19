@@ -2,12 +2,12 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Messages;
+using TBotHamsti.Services;
+using TBotHamsti.Messages;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class LogsViewModel : BindableBase
     {

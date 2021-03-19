@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 
-namespace HamstiBotWPF.Services
+namespace TBotHamsti.Services
 {
     public class PageService
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.ViewModels;
+using TBotHamsti.Services;
+using TBotHamsti.ViewModels;
 
-namespace HamstiBotWPF
+namespace TBotHamsti
 {
     public class ViewModelLocator
     {

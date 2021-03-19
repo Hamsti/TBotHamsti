@@ -5,12 +5,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Threading.Tasks;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Pages;
-using HamstiBotWPF.Events;
-using HamstiBotWPF.Messages;
+using TBotHamsti.Services;
+using TBotHamsti.Pages;
+using TBotHamsti.Events;
+using TBotHamsti.Messages;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class MainViewModel : BindableBase
     {

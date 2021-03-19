@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:HamstiBotWPF.Themes">
+                    xmlns:local="clr-namespace:TBotHamsti.Themes">
 
     <SolidColorBrush x:Key="BackgroundColor" Color="#fffffe" />
     <SolidColorBrush x:Key="ForegroundColor" Color="#0f0e17" />

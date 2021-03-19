@@ -1,6 +1,6 @@
-﻿using HamstiBotWPF.Events;
+﻿using TBotHamsti.Events;
 
-namespace HamstiBotWPF.Messages
+namespace TBotHamsti.Messages
 {
     abstract class ImageMessage : IEvent
     {

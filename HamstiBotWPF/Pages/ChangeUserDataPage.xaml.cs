@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HamstiBotWPF.Pages
+namespace TBotHamsti.Pages
 {
     /// <summary>
     /// Логика взаимодействия для ChangeUserDataPage.xaml

@@ -9,12 +9,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using HamstiBotWPF.Core;
+using TBotHamsti.Core;
 using Screen = System.Windows.Forms.Screen;
-using LevelCommand = HamstiBotWPF.Core.BotLevelCommand.LevelCommand;
-using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF.LogicRepository
+namespace TBotHamsti.LogicRepository
 {
     /// <summary>
     /// Implementation of all bot functionality
@@ -23,7 +23,7 @@ namespace HamstiBotWPF.LogicRepository
     {
         public static string GetHelp(int idUser) => (RepCommands.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
             string.Join("\n", RepCommands.botCommands.Where(w => (w.StatusUser <= RepUsers.GetStatusUser(idUser) && w.Command != BotLevelCommand.TOPREVLEVEL) &&
-            RepCommands.currentLevelCommand == (w.GetType().Equals(typeof(BotCommand)) ? w.NameOfLevel : ((BotLevelCommand)w).ParrentLevel)).
+            RepCommands.currentLevelCommand == (w.GetType().Equals(typeof(BotLevelCommand)) ? ((BotLevelCommand)w).ParrentLevel : w.NameOfLevel)).
             Select(s => s.ExampleCommand ?? ((BotLevelCommand)s).ExampleCommand));
 
         public static Task HelpBot(Message message) => RepUsers.SendMessage(message.From.Id, "Список команд у бота:\n" + GetHelp(message.From.Id));

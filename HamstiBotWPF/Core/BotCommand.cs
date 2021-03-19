@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Telegram.Bot.Types;
-using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF.Core
+namespace TBotHamsti.Core
 {
     /// <summary>
     /// Structure for execute user commands

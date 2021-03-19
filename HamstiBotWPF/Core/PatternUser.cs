@@ -1,6 +1,6 @@
-﻿using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+﻿using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF.Core
+namespace TBotHamsti.Core
 {
     public class PatternUser
     {

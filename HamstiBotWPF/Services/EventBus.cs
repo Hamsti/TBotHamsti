@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using HamstiBotWPF.Events;
+using TBotHamsti.Events;
 
-namespace HamstiBotWPF.Services
+namespace TBotHamsti.Services
 {
     public class EventBus
     {

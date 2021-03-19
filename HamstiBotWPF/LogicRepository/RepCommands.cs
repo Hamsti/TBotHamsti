@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using HamstiBotWPF.Core;
-using LevelCommand = HamstiBotWPF.Core.BotLevelCommand.LevelCommand;
-using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using TBotHamsti.Core;
+using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF.LogicRepository
+namespace TBotHamsti.LogicRepository
 {
     /// <summary>
     /// To work with a list of commands

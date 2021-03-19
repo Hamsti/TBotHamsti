@@ -5,9 +5,9 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using HamstiBotWPF.Core;
+using TBotHamsti.Core;
 
-namespace HamstiBotWPF.LogicRepository
+namespace TBotHamsti.LogicRepository
 {
     /// <summary>
     /// To work with a list of authorized users

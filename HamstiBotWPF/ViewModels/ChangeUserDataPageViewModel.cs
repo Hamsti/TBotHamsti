@@ -4,15 +4,15 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.Pages;
-using HamstiBotWPF.Events;
-using HamstiBotWPF.Messages;
-using HamstiBotWPF.LogicRepository;
-using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using TBotHamsti.Services;
+using TBotHamsti.Core;
+using TBotHamsti.Pages;
+using TBotHamsti.Events;
+using TBotHamsti.Messages;
+using TBotHamsti.LogicRepository;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class ChangeUserDataPageViewModel : BindableBase
     {

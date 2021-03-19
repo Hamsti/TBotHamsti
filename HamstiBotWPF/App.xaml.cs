@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace HamstiBotWPF
+namespace TBotHamsti
 {
     /// <summary>
     /// Логика взаимодействия для App.xaml
@@ -18,7 +18,7 @@ namespace HamstiBotWPF
         /// <summary>
         /// Creating a bot and working with it
         /// </summary>
-        public static Telegram.Bot.TelegramBotClient Api { get; } = new Telegram.Bot.TelegramBotClient(HamstiBotWPF.Properties.Settings.Default.ApiBot);
+        public static Telegram.Bot.TelegramBotClient Api { get; } = new Telegram.Bot.TelegramBotClient(TBotHamsti.Properties.Settings.Default.ApiBot);
     }
    
 }

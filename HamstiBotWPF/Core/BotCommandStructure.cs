@@ -1,4 +1,4 @@
-﻿namespace HamstiBotWPF.Core
+﻿namespace TBotHamsti.Core
 {
     public class BotCommandStructure
     {

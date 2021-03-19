@@ -1,4 +1,4 @@
-﻿namespace HamstiBotWPF.Events
+﻿namespace TBotHamsti.Events
 {
     public interface IEvent  { }
 }

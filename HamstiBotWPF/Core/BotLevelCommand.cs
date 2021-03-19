@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using HamstiBotWPF.LogicRepository;
+using TBotHamsti.LogicRepository;
 
-namespace HamstiBotWPF.Core
+namespace TBotHamsti.Core
 {
     public class BotLevelCommand : BotCommand
     {

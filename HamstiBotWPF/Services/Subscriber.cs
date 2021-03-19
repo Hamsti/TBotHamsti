@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HamstiBotWPF.Services
+namespace TBotHamsti.Services
 {
     class EventSubscriber : IDisposable
     {

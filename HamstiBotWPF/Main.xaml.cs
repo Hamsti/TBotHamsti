@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace HamstiBotWPF
+namespace TBotHamsti
 {
     /// <summary>
     /// Логика взаимодействия для NewMainWindow.xaml

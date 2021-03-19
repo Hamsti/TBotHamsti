@@ -1,13 +1,13 @@
 ﻿using DevExpress.Mvvm;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.Events;
-using HamstiBotWPF.Pages;
-using HamstiBotWPF.LogicRepository;
+using TBotHamsti.Services;
+using TBotHamsti.Core;
+using TBotHamsti.Events;
+using TBotHamsti.Pages;
+using TBotHamsti.LogicRepository;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class UsersControlViewModel : BindableBase
     {

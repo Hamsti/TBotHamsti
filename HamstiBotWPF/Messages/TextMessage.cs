@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace HamstiBotWPF.Messages
+namespace TBotHamsti.Messages
 {
     public class TextMessage : IMessage
     {

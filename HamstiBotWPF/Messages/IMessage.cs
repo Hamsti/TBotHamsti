@@ -1,4 +1,4 @@
-﻿namespace HamstiBotWPF.Messages
+﻿namespace TBotHamsti.Messages
 {
     public interface IMessage { }
 }

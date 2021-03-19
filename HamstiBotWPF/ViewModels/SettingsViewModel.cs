@@ -2,10 +2,10 @@
 using System;
 using System.Windows;
 using System.Windows.Input;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Messages;
+using TBotHamsti.Services;
+using TBotHamsti.Messages;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class SettingsViewModel : BindableBase
     {
@@ -51,7 +51,7 @@ namespace HamstiBotWPF.ViewModels
             Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri("pack://application:,,,/HamstiBotWPF;component/Themes/Dark.xaml");
+            uri = new Uri("pack://application:,,,/TBotHamsti;component/Themes/Dark.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(3);
             Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = true;
@@ -63,7 +63,7 @@ namespace HamstiBotWPF.ViewModels
             Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri($"pack://application:,,,/HamstiBotWPF;component/Themes/Light.xaml");
+            uri = new Uri($"pack://application:,,,/TBotHamsti;component/Themes/Light.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(3);
             Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = false;

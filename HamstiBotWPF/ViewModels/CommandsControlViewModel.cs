@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.LogicRepository;
+using TBotHamsti.Core;
+using TBotHamsti.LogicRepository;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class CommandsControlViewModel
     {

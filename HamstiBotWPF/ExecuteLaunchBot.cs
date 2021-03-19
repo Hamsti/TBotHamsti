@@ -3,11 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.LogicRepository;
-using StatusUser = HamstiBotWPF.LogicRepository.RepUsers.StatusUser;
+using TBotHamsti.Core;
+using TBotHamsti.LogicRepository;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
-namespace HamstiBotWPF
+namespace TBotHamsti
 {
     /// <summary>
     /// To control the bot (reading messages, start, stop, reload)
