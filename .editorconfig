@@ -2,3 +2,42 @@
 
 # CS1998: В асинхронном методе отсутствуют операторы await, будет выполнен синхронный метод
 dotnet_diagnostic.CS1998.severity = suggestion
+
+# CA1024: Use properties where appropriate.
+dotnet_diagnostic.CA1024.severity = warning
+
+# CA1033: Interface methods should be callable by child types
+dotnet_diagnostic.CA1033.severity = warning
+
+# CA1821: Remove empty finalizers
+dotnet_diagnostic.CA1821.severity = warning
+
+# CA2200: Rethrow to preserve stack details.
+dotnet_diagnostic.CA2200.severity = warning
+
+# CA2214: Do not call overridable methods in constructors
+dotnet_diagnostic.CA2214.severity = warning
+
+# CA1008: Enums should have zero value.
+dotnet_diagnostic.CA1008.severity = warning
+
+# CA1012: Abstract classes should not have public constructors
+dotnet_diagnostic.CA1012.severity = warning
+
+# CA1052: Static holder types should be Static or NotInheritable
+dotnet_diagnostic.CA1052.severity = warning
+
+# CA1708: Identifier names should differ by more than case
+dotnet_diagnostic.CA1708.severity = warning
+
+# CA1715: Interface names should be prefixed with 'I'
+dotnet_diagnostic.CA1715.severity = warning
+
+# CA2229: Implement Serialization constructor
+dotnet_diagnostic.CA2229.severity = warning
+
+# CA2235: Mark all non-serializable fields.
+dotnet_diagnostic.CA2235.severity = warning
+
+# CA2237: Mark ISerializable types with SerializableAttribute.
+dotnet_diagnostic.CA2237.severity = warning

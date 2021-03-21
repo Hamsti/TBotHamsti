@@ -9,8 +9,6 @@
             <local:ViewModelLocator x:Key="ViewModelLocator" />
             <properties:Settings x:Key="Settings" />
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/TBotHamsti;component/Themes/CommonDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/TBotHamsti;component/Themes/Light.xaml" />
             </ResourceDictionary.MergedDictionaries>

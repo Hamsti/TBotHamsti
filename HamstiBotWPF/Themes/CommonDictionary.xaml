@@ -136,12 +136,12 @@
         <Setter Property="VerticalContentAlignment" Value="Bottom" />
     </Style>
 
-    <Style TargetType="ListView" BasedOn="{StaticResource {x:Type ListView}}">
+    <Style TargetType="ListView"> <!--BasedOn="{StaticResource {x:Type ListView}}"-->
         <Setter Property="FontSize" Value="{StaticResource FontSizeValue}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
     </Style>
 
-    <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
+    <Style TargetType="GridViewColumnHeader"> <!--BasedOn="{StaticResource {x:Type GridViewColumnHeader}}"-->
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
     </Style>
 

@@ -48,24 +48,18 @@ namespace TBotHamsti.ViewModels
 
         private static void ChangeTheInterfaceForDarkTheme()
         {
-            Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
+            Uri uri = new Uri("pack://application:,,,/TBotHamsti;component/Themes/Dark.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri("pack://application:,,,/TBotHamsti;component/Themes/Dark.xaml");
-            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = true;
             Properties.Settings.Default.Save();
         }
 
         private static void ChangeTheInterfaceForLightTheme()
         {
-            Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
+            Uri uri = new Uri($"pack://application:,,,/TBotHamsti;component/Themes/Light.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri($"pack://application:,,,/TBotHamsti;component/Themes/Light.xaml");
-            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = false;
             Properties.Settings.Default.Save();
         }
