@@ -10,9 +10,9 @@
       DataContext="{Binding LogsViewModel, Source={StaticResource ViewModelLocator}}">
 
     <Grid>
-        <ListView ItemsSource="{Binding ListLogs}" 
+        <ListView ItemsSource="{Binding ListLogs}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                  HorizontalContentAlignment="Stretch">
+                  HorizontalContentAlignment="Stretch" >
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Text}"
@@ -20,8 +20,30 @@
                                TextWrapping="WrapWithOverflow" />
                 </DataTemplate>
             </ListView.ItemTemplate>
-            
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListViewItem}" >
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                <TextBlock Text="{Binding Text}"
+                                           HorizontalAlignment="{Binding HorizontalAlignment}"
+                                           TextAlignment="Justify"
+                                           TextWrapping="WrapWithOverflow"
+                                           Margin="3, 2"
+                                           />
+                                
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource OrangeColor}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.Resources>
         </ListView>
+
         <TextBlock Text="Logs is clear">
             <TextBlock.Style>
                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockMessageStyle}">

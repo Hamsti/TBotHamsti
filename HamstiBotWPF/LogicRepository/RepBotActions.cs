@@ -1,16 +1,16 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Drawing;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Windows;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TBotHamsti.Core;
-using Screen = System.Windows.Forms.Screen;
 using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
@@ -271,19 +271,20 @@ namespace TBotHamsti.LogicRepository
                 }
             }
 
-            public async static Task GetScreenshot(Message message, string nameOfPicture = "Screenshot.png")
+            public async static Task GetScreenshot(Message message)
             {
                 try
                 {
-                    Graphics graph;
-                    var bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                    graph = Graphics.FromImage(bmp);
-                    graph.CopyFromScreen(0, 0, 0, 0, bmp.Size);
-                    bmp.Save(nameOfPicture);
-                    using (var stream = System.IO.File.OpenRead(nameOfPicture))
+                    string filename = "ScreenCapture-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
+                    using (Bitmap bmp = new Bitmap((int)SystemParameters.VirtualScreenWidth, (int)SystemParameters.VirtualScreenHeight))
                     {
-                        await App.Api.SendDocumentAsync(message.From.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
+                        using Graphics graph = Graphics.FromImage(bmp);
+                        graph.CopyFromScreen((int)SystemParameters.VirtualScreenLeft, (int)SystemParameters.VirtualScreenTop, 0, 0, bmp.Size);
+                        bmp.Save(Properties.Settings.Default.SavePath + "\\" + filename);
                     }
+
+                    using var stream = System.IO.File.OpenRead(Properties.Settings.Default.SavePath + "\\" + filename);
+                    await App.Api.SendDocumentAsync(message.From.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
                 }
                 catch (Exception ex)
                 {

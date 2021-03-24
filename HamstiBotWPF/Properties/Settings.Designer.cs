@@ -34,7 +34,7 @@ namespace TBotHamsti.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\Pictures\\HamstiBot\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\OneDrive\\Pictures\\HamstiBot\\")]
         public string SavePath {
             get {
                 return ((string)(this["SavePath"]));
