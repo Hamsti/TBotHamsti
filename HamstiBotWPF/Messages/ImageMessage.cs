@@ -1,8 +1,7 @@
-﻿using TBotHamsti.Events;
-
-namespace TBotHamsti.Messages
+﻿namespace TBotHamsti.Messages
 {
-    abstract class ImageMessage : IEvent
+    abstract class ImageMessage : IMessage
     {
+
     }
 }

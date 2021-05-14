@@ -12,10 +12,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -27,5 +25,17 @@
         <Button Content="Light theme" 
                 Grid.Column="1" 
                 Command="{Binding ChangeForLightTheme}" />
+
+        <!--Restore default settings-->
+        <Button Grid.Row="1"
+                Content="Default" 
+                VerticalAlignment="Bottom"
+                Command="{Binding SettingsViewModel.DefaultSettingBot, Source={StaticResource ViewModelLocator}}" />
+        <!--Save changes settings-->
+        <Button Grid.Row="1"
+                Grid.Column="1"
+                Content="Save" 
+                VerticalAlignment="Bottom"
+                Command="{Binding SettingsViewModel.SaveSettingsBot, Source={StaticResource ViewModelLocator}}" />
     </Grid>
 </Page>

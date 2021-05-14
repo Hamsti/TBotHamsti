@@ -18,6 +18,11 @@ namespace TBotHamsti.Core
         /// User lock status
         /// </summary>
         public bool IsBlocked { get; set; }
+
+        /// <summary>
+        /// Bookmark for set to top of the list
+        /// </summary>
+        public bool IsSetBookmark { get; set; }
         
         /// <summary>
         /// Local nickname for the bot
@@ -31,6 +36,7 @@ namespace TBotHamsti.Core
         public PatternUser()
         {
             IsBlocked = false;
+            IsSetBookmark = false;
             LocalNickname = null;
             Status = StatusUser.NotDefined;
         }
@@ -39,6 +45,7 @@ namespace TBotHamsti.Core
         {
             IdUser = user.IdUser;
             IsBlocked = user.IsBlocked;
+            IsSetBookmark = user.IsSetBookmark;
             LocalNickname = user.LocalNickname;
             Status = user.Status;
         }

@@ -12,15 +12,13 @@ namespace TBotHamsti
         {
             var services = new ServiceCollection();
 
+            services.AddTransient<MainViewModel>();
             services.AddTransient<CommandsControlViewModel>();
             services.AddTransient<SettingsViewModel>();
-            services.AddTransient<MainViewModel>();
-            services.AddScoped<ChangeUserDataPageViewModel>();
-            services.AddScoped<UsersControlViewModel>();
             services.AddScoped<LogsViewModel>();
+            services.AddScoped<CommonControlUserDataViewModel>();
 
             services.AddSingleton<PageService>();
-            services.AddSingleton<EventBus>();
             services.AddSingleton<MessageBus>();
 
             _provider = services.BuildServiceProvider();
@@ -33,9 +31,8 @@ namespace TBotHamsti
 
         public MainViewModel MainViewModel => _provider.GetRequiredService<MainViewModel>();
         public CommandsControlViewModel CommandsControlViewModel => _provider.GetRequiredService<CommandsControlViewModel>();
-        public LogsViewModel LogsViewModel => _provider.GetRequiredService<LogsViewModel>();
         public SettingsViewModel SettingsViewModel => _provider.GetRequiredService<SettingsViewModel>();
-        public UsersControlViewModel UsersControlViewModel => _provider.GetRequiredService<UsersControlViewModel>();
-        public ChangeUserDataPageViewModel ChangeUserDataPageViewModel => _provider.GetRequiredService<ChangeUserDataPageViewModel>();
+        public LogsViewModel LogsViewModel => _provider.GetRequiredService<LogsViewModel>();
+        public CommonControlUserDataViewModel CommonControlUserDataViewModel => _provider.GetRequiredService<CommonControlUserDataViewModel>();
     }
 }

@@ -61,5 +61,14 @@ namespace TBotHamsti.Properties {
                 this["UsedDarkTheme"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("AuthUsers.json")]
+        public string JsonFileName {
+            get {
+                return ((string)(this["JsonFileName"]));
+            }
+        }
     }
 }

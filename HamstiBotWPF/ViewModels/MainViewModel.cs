@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Threading.Tasks;
 using TBotHamsti.Services;
 using TBotHamsti.Pages;
-using TBotHamsti.Events;
 using TBotHamsti.Messages;
 
 namespace TBotHamsti.ViewModels
@@ -16,16 +15,14 @@ namespace TBotHamsti.ViewModels
     {
         private readonly PageService pageService;
         private readonly MessageBus messageBus;
-        private readonly EventBus eventBus;
 
-        public Page PageSource { get; set; }
-        public string PageSourceShortName => PageSource.ToString().Split('.').Last();
+        public Page PageSource { get; private set; }
+        public string PageSourceTitle => PageSource.Title;//.ToString().Split('.').Last();
 
-        public MainViewModel(PageService pageService, MessageBus messageBus, EventBus eventBus)
+        public MainViewModel(PageService pageService, MessageBus messageBus)
         {
             this.pageService = pageService;
             this.messageBus = messageBus;
-            this.eventBus = eventBus;
 
             this.pageService.OnPageChanged += (page) => PageSource = page;
             this.pageService.ChangePage(new LogsPage());
@@ -34,23 +31,23 @@ namespace TBotHamsti.ViewModels
         public ICommand LogsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new LogsPage());
-        }, () => PageSourceShortName != "LogsPage");
-       
-        public ICommand UserControlPageChange => new AsyncCommand(async () =>
+        }, () => PageSourceTitle != "LogsPage");
+
+        public ICommand UserControlPageChange => new DelegateCommand(() =>
         {
-            await eventBus.Publish(new RefreshUsersListEvent());
             pageService.ChangePage(new UsersControlPage());
-        }, () => PageSourceShortName != "UsersControlPage");
+            LogicRepository.RepUsers.Refresh();
+        }, () => PageSourceTitle != "UsersControlPage");
 
         public ICommand CommandsControlPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new CommandsControlPage());
-        }, () => PageSourceShortName != "CommandsControlPage");
+        }, () => PageSourceTitle != "CommandsControlPage");
 
         public ICommand SettingsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new SettingsPage());
-        }, () => PageSourceShortName != "SettingsPage");       
+        }, () => PageSourceTitle != "SettingsPage");
 
         public async void WindowClosing_StopReceivingBot(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -58,18 +55,18 @@ namespace TBotHamsti.ViewModels
             {
                 if (App.Api.IsReceiving)
                 {
-                    if (MessageBox.Show("The bot is still running, are you sure you want to shut down the bot and close the application?", Application.Current.MainWindow.Title, MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
-                    {
-                        await ExecuteLaunchBot.StopBotAsync();
-                        Application.Current.Shutdown(0);
-                    }
-                    else
-                        e.Cancel = true;
+                    await messageBus.SendTo<LogsViewModel>(new TextMessage("The bot will be stopping. Try again for closing app.", HorizontalAlignment.Center));
+                    StopBot.Execute(null);
+                    e.Cancel = true;
+                }
+                else
+                {
+                    Application.Current.Shutdown(0);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Завершение приложения произошло с системной ошибкой: {ex.Message}");
+                await messageBus.SendTo<LogsViewModel>(new TextMessage($"Завершение приложения произошло с системной ошибкой: {ex.Message}", HorizontalAlignment.Right));
             }
         }
 

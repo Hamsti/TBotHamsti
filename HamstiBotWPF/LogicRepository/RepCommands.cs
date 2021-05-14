@@ -21,7 +21,7 @@ namespace TBotHamsti.LogicRepository
         /// </summary>
         public static LevelCommand currentLevelCommand = LevelCommand.Root;
 
-        private static void Sort() => botCommands = new List<BotCommand>(botCommands.OrderBy(o => o is BotLevelCommand ? -1 : 1).ThenBy(t => t.NameOfLevel).ThenBy(t => t.CountArgsCommand).ThenBy(t => t.Command));
+        private static void Sort() => botCommands = new List<BotCommand>(botCommands.OrderBy(o => o is BotLevelCommand ? -1 : 1).ThenBy(t => t.NameOfLevel).ThenBy(s => s.StatusUser).ThenBy(t => t.CountArgsCommand).ThenBy(t => t.Command));
         /// <summary>
         /// Add all commands to the command list
         /// </summary>

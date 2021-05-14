@@ -4,6 +4,10 @@ namespace TBotHamsti.Messages
 {
     public class TextMessage : IMessage
     {
+        public string Text { get; set; }
+
+        public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Stretch;
+        
         public TextMessage(string text)
         {
             Text = text;
@@ -13,9 +17,5 @@ namespace TBotHamsti.Messages
         {
             HorizontalAlignment = horizontalAlignment;
         }
-
-        public string Text { get; set; }
-
-        public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Stretch;
     }
 }

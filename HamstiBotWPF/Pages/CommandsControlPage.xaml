@@ -15,11 +15,29 @@
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding NameOfLevel}" 
                                     Header="Level" />
-                    <GridViewColumn DisplayMemberBinding="{Binding CountArgsCommand}" 
-                                    Header="Args" />
+                    <GridViewColumn Header="Args"
+                                    Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="0.5*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding CountArgsCommand}" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding ExampleCommand}" 
                                     Header="Example command" 
-                                    Width="225"/>
+                                    Width="Auto"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding StatusUser}"
+                                    Header="Status"
+                                    Width="Auto" />
+                    <GridViewColumn DisplayMemberBinding="{Binding LevelDependent}"
+                                    Header="Global"
+                                    Width="Auto" />
                 </GridView>
             </ListView.View>
         </ListView>

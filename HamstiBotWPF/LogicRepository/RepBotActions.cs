@@ -306,14 +306,14 @@ namespace TBotHamsti.LogicRepository
             {
                 int indexUser = 0;
                 System.Text.StringBuilder messageText = new System.Text.StringBuilder($"Список пользователей бота {App.Api.GetMeAsync().Result}:\n\n");
-                RepUsers.RefreshAndSort();
+                RepUsers.Refresh();
                 foreach (var user in ListUsers)
                     messageText.Append($"{++indexUser}) {user.IdUser_Nickname} | Is blocked: {user.IsBlocked} | Status: {user.Status}\n");
                 return messageText.ToString();
             }
 
             public static Task SendListOfUsers(Message message) => RepUsers.SendMessage(message.From.Id, ListOfUsersParseString());
-            public static Task SaveChanges(Message message) => RepUsers.SendMessage(message.From.Id, RepUsers.Save() ? "Успешное сохранение изменений" : "При сохранении изменений произошла ошибка");
+            public static Task SaveChanges(Message message) => RepUsers.SendMessage(message.From.Id, RepUsers.SaveRefresh() ? "Успешное сохранение изменений" : "При сохранении изменений произошла ошибка");
             public static Task CancelChanges(Message message) => RepUsers.SendMessage(message.From.Id, App.Current.Dispatcher.Invoke(() => RepUsers.Upload()) ? "Изменения успешно отменены" : "При отмене изменений произошла ошибка");
 
             public static async Task<Task> AuthNewUser(Message message, int idUser, string nickname = null)

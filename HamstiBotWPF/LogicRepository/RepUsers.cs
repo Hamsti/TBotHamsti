@@ -1,10 +1,11 @@
-﻿using System;
-using System.Windows;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.ObjectModel;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using TBotHamsti.Core;
 
 namespace TBotHamsti.LogicRepository
@@ -14,6 +15,14 @@ namespace TBotHamsti.LogicRepository
     /// </summary>
     public static class RepUsers
     {
+        public enum StatusUser
+        {
+            NotDefined,
+            User,
+            Moderator,
+            Admin
+        }
+
         private static ObservableCollection<PatternUser> authUsers;
 
         /// <summary>
@@ -29,15 +38,13 @@ namespace TBotHamsti.LogicRepository
             }
         }
 
-        public enum StatusUser
+        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin)
         {
-            NotDefined,
-            User,
-            Moderator,
-            Admin
-        }
+            IEnumerable<PatternUser> findedUsers = AuthUsers.Where(user => user.Status == status);
 
-        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin) => await SendMessage(AuthUsers.Where(user => user.Status == status), message);
+            foreach (var user in findedUsers)
+                await SendMessage(user.IdUser, message);
+        }
 
         public static async Task SendMessage(int idUser, string message)
         {
@@ -51,12 +58,6 @@ namespace TBotHamsti.LogicRepository
             };
         }
 
-        private static async Task SendMessage(IEnumerable<PatternUser> findedUsers, string message)
-        {
-            foreach (var user in findedUsers)
-                await SendMessage(user.IdUser, message);
-        }
-
         /// <summary>
         /// Adding all authorized users from a file, including sorting
         /// </summary>
@@ -65,10 +66,12 @@ namespace TBotHamsti.LogicRepository
         {
             try
             {
-                Update(System.IO.File.Exists("AuthUsers.json") ? JsonConvert.DeserializeObject<ObservableCollection<PatternUser>>(System.IO.File.ReadAllText("AuthUsers.json"))
-                     : new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.RecoverIdAdmin } });
+                Update(File.Exists(Properties.Settings.Default.JsonFileName) ?
+                            JsonConvert.DeserializeObject<ObservableCollection<PatternUser>>(File.ReadAllText(Properties.Settings.Default.JsonFileName)) :
+                            new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.RecoverIdAdmin } }
+                );
 
-                RefreshAndSort();
+                Refresh();
                 return true;
             }
             catch (Exception ex)
@@ -79,45 +82,18 @@ namespace TBotHamsti.LogicRepository
         }
 
         /// <summary>
-        /// Replace items in source collection with does creating new
-        /// </summary>
-        /// <param name="items">New collection</param>
-        public static void Update<T>(T items) where T : IOrderedEnumerable<PatternUser>, IEnumerable<PatternUser>
-        {
-            var localItems = new ObservableCollection<PatternUser>(items);
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                AuthUsers.Clear();
-                foreach (var User in localItems)
-                    AuthUsers.Add(User);
-            });
-        }
-
-        /// <summary>
-        /// Replace items in source collection with does creating new
-        /// </summary>
-        /// <param name="items">New collection</param>
-        public static void Update(ObservableCollection<PatternUser> items)
-        {
-            var localItems = new ObservableCollection<PatternUser>(items);
-            AuthUsers.Clear();
-            foreach (var User in localItems)
-                AuthUsers.Add(User);
-        }
-
-        /// <summary>
         /// Saving user data changes to a file
         /// </summary>
         /// <returns>Successful save</returns>
-        public static bool Save()
+        public static bool SaveRefresh()
         {
             try
             {
                 if (AuthUsers == null) return false;
 
-                System.IO.File.WriteAllText("AuthUsers.json", JsonConvert.SerializeObject(AuthUsers));
+                File.WriteAllText(Properties.Settings.Default.JsonFileName, JsonConvert.SerializeObject(AuthUsers));
 
-                RefreshAndSort();
+                Refresh();
                 return true;
             }
             catch (Exception ex)
@@ -130,7 +106,7 @@ namespace TBotHamsti.LogicRepository
         /// <summary>
         /// Sorting and refresh users without of save
         /// </summary>
-        public static void RefreshAndSort() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
+        public static void Refresh() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
 
         /// <summary>
         /// Checks if this user is in the list of authorized users and not IsBlocked
@@ -149,5 +125,32 @@ namespace TBotHamsti.LogicRepository
         /// </summary>
         /// <param name="idUser">Message.From.Id</param>
         public static StatusUser GetStatusUser(int idUser) => AuthUsers.Where(w => w.IdUser == idUser).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
+
+        /// <summary>
+        /// Replace items in source collection with does creating new
+        /// </summary>
+        /// <param name="items">New collection</param>
+        private static void Update<T>(T items) where T : IOrderedEnumerable<PatternUser>, IEnumerable<PatternUser>
+        {
+            var localItems = new ObservableCollection<PatternUser>(items);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                AuthUsers.Clear();
+                foreach (var User in localItems)
+                    AuthUsers.Add(User);
+            });
+        }
+
+        /// <summary>
+        /// Replace items in source collection with does creating new
+        /// </summary>
+        /// <param name="items">New collection</param>
+        private static void Update(ObservableCollection<PatternUser> items)
+        {
+            var localItems = new ObservableCollection<PatternUser>(items);
+            AuthUsers.Clear();
+            foreach (var User in localItems)
+                AuthUsers.Add(User);
+        }
     }
 }

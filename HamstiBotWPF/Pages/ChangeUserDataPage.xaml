@@ -9,152 +9,262 @@
       xmlns:prop="clr-namespace:TBotHamsti.Properties"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      DataContext="{Binding ChangeUserDataPageViewModel, Source={StaticResource ViewModelLocator}}"
+      DataContext="{Binding CommonControlUserDataViewModel, Source={StaticResource ViewModelLocator}}"
       Title="ChangeUserDataPage">
 
     <Page.Resources>
         <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}" />
     </Page.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" 
+                           MaxHeight="350"/>
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
 
-        <TextBlock Text ="Id user" />
-        <TextBlock Text="Is blocked" Grid.Row="1"  />
-        <TextBlock Text="Nickname" Grid.Row="2" />
-        <TextBlock Text="Status" Grid.Row="3" />
-        
-        <TextBox Grid.Column="1" 
-                 HorizontalAlignment="Left"
-                 Width="77" 
-                 Text="{Binding SelectedUserList.IdUser}" 
-                 MaxLength="{Binding SelectedUserList.MaxLenghtIdUser}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="PreviewTextInput" >
-                    <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </TextBox>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" >
-            <RadioButton GroupName="IsBlocked" 
-                         Content="Yes"
-                         Command="{Binding IsBlockedUserChanged}"
-                         CommandParameter="true">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+        <Grid Margin="4, 1">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Delete">
+                            <Setter Property='IsEnabled' Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.8*"
+                               MaxHeight="33"/>
+                <RowDefinition Height="1.1*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="1.1*"/>
+                <RowDefinition Height="1.2*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="0.8*"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text ="Id user"
+                       VerticalAlignment="Bottom"/>
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="1"
+                        VerticalAlignment="Top">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.IsBlocked}" Value="True" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                            </Trigger>
                         </Style.Triggers>
                     </Style>
-                </RadioButton.Style>
-            </RadioButton>
-            <RadioButton GroupName="IsBlocked" 
-                         Content="No" 
-                         Command="{Binding IsBlockedUserChanged}"
-                         CommandParameter="false">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.IsBlocked}" Value="False" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RadioButton.Style>
-            </RadioButton>
-        </StackPanel>
-        <TextBox Grid.Row="2" 
-                 Grid.Column="1" 
-                 Text="{Binding SelectedUserList.LocalNickname}" />
-        
-        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" >
-            <RadioButton GroupName="StatusUser" 
-                         Content="Admin"
-                         Command="{Binding IsStatusUserChanged}"
-                         CommandParameter="Admin">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="Admin" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RadioButton.Style>
-            </RadioButton>
-            <RadioButton GroupName="StatusUser" 
+                </StackPanel.Resources>
+                
+                <TextBox Grid.Row="1" 
+                         x:Name="idUserTextBox"
+                         HorizontalAlignment="Left"
+                         Width="97" 
+                         Text="{Binding SelectedUserItem.IdUser}" 
+                         MaxLength="{Binding SelectedUserItem.MaxLenghtIdUser}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewTextInput" >
+                            <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+                
+                <TextBlock Margin="4,0,1,0" Text="{Binding ElementName=idUserTextBox, Path=Text.Length}" />
+                <TextBlock Text="/" />
+                <TextBlock Text="{Binding SelectedUserItem.MaxLenghtIdUser}" />
+                <TextBlock Text="- lenght less than 9 numbers!">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=idUserTextBox, Path=IsFocused}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding ElementName=idUserTextBox, Path=IsFocused}" Value="False" />
+                                        <Condition Binding="{Binding ElementName=idUserTextBox, Path=Text.Length}" Value="9" />
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+
+            <TextBlock Text="Nickname" 
+                       VerticalAlignment="Bottom"
+                       Grid.Row="2" />
+            <TextBox Grid.Row="3"  
+                     Text="{Binding SelectedUserItem.LocalNickname}" />
+
+            
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="5">
+                <TextBlock Text="Bookmark" />
+                <CheckBox Style="{StaticResource OrangeSwitchStyle}" 
+                          IsChecked="{Binding SelectedUserItem.IsSetBookmark}"
+                          Command="{Binding ChangeUserBookmark}" 
+                          CommandParameter="{Binding SelectedUserItem.IsSetBookmark}" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="4">
+                <TextBlock Text="Is blocked" />
+                <CheckBox Style="{StaticResource OrangeSwitchStyle}" 
+                          IsChecked="{Binding SelectedUserItem.IsBlocked}"
+                          Command="{Binding ChangeUserBlock}" 
+                          CommandParameter="{Binding SelectedUserItem.IsBlocked}" />
+            </StackPanel>
+            
+           
+            <TextBlock Text="Status"
+                       VerticalAlignment="Bottom"
+                       Grid.Row="6" />
+            <WrapPanel Orientation="Horizontal" 
+                       VerticalAlignment="Top" 
+                       Grid.Row="7" >
+                <RadioButton GroupName="StatusUser" 
+                             Content="Admin"
+                             Command="{Binding ChangeUserStatus}"
+                             CommandParameter="Admin">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Admin" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
                          Content="Moderator"
-                         Command="{Binding IsStatusUserChanged}"
+                         Command="{Binding ChangeUserStatus}"
                          CommandParameter="Moderator">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="Moderator" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RadioButton.Style>
-            </RadioButton>
-            <RadioButton GroupName="StatusUser" 
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Moderator" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
                          Content="User"
-                         Command="{Binding IsStatusUserChanged}"
+                         Command="{Binding ChangeUserStatus}"
                          CommandParameter="User">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="User" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RadioButton.Style>
-            </RadioButton>
-            <RadioButton GroupName="StatusUser" 
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="User" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
                          Content="Not defined" 
-                         Command="{Binding IsStatusUserChanged}"
+                         Command="{Binding ChangeUserStatus}"
                          CommandParameter="NotDefined">
-                <RadioButton.Style>
-                    <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedUserList.Status}" Value="NotDefined" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding SelectedUserList}" Value="{x:Null}" >
-                                <Setter Property="IsChecked" Value="True" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RadioButton.Style>
-            </RadioButton>
-        </WrapPanel>
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="NotDefined" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem}" Value="{x:Null}" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+            </WrapPanel>
+        </Grid>
 
-        <!--<WrapPanel Orientation="Horizontal" 
-                   Grid.Row="5"
-                   Grid.ColumnSpan="2" >
-            <TextBlock Text="Id admin: "/>
+        
+        <Grid Grid.Row="1"
+              VerticalAlignment="Bottom" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            
+            <Button Content="Cancel" 
+                    Command="{Binding CommonControlUserDataViewModel.CancelEditingUser, Source={StaticResource ViewModelLocator}}" />
 
-            <ComboBox MinWidth="80"
-                      ItemsSource="{Binding UsersControlViewModel.ListUsers, Source={StaticResource ViewModelLocator}}"
-                      SelectedValuePath="IdUser"
-                      DisplayMemberPath="IdUser_Nickname"
-                      SelectedValue="{Binding AdminId, Source={x:Static prop:Settings.Default}}" />
-        </WrapPanel>-->
+            <Grid Grid.Column="1">
+                <Button Content="Create" 
+                        Command="{Binding CommonControlUserDataViewModel.CreateUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Create">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Modify" 
+                        Command="{Binding CommonControlUserDataViewModel.ModifyUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Edit">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Delete" 
+                        Command="{Binding CommonControlUserDataViewModel.ConfirmDeleteUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Delete">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>

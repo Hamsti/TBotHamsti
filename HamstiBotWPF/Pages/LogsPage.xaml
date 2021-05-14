@@ -13,24 +13,32 @@
         <ListView ItemsSource="{Binding ListLogs}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   HorizontalContentAlignment="Stretch" >
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Text}"
-                               HorizontalAlignment="{Binding HorizontalAlignment}"
-                               TextWrapping="WrapWithOverflow" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
             <ListView.Resources>
                 <Style TargetType="{x:Type ListViewItem}" >
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                <TextBlock Text="{Binding Text}"
+                                <Border Margin="1,0" BorderBrush="{DynamicResource OrangeColor}" >
+                                    <TextBlock Text="{Binding Text}"
                                            HorizontalAlignment="{Binding HorizontalAlignment}"
                                            TextAlignment="Justify"
                                            TextWrapping="WrapWithOverflow"
-                                           Margin="3, 2"
+                                           Margin="3, 2.5"
                                            />
+                                    
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HorizontalAlignment}" Value="Stretch">
+                                                    <Setter Property="BorderThickness" Value="3,0,0,0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding HorizontalAlignment}" Value="Right">
+                                                    <Setter Property="BorderThickness" Value="0,0,3,0" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
                                 
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">

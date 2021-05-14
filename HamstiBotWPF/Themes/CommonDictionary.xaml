@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
-    <sys:Double x:Key="FontSizeValue">15</sys:Double>
+    <sys:Double x:Key="FontSizeValue">16</sys:Double>
+    <sys:Double x:Key="CornerRadiusValue">15</sys:Double>
 
     <SolidColorBrush x:Key="OrangeColor" Color="#ff8906" />
     <SolidColorBrush x:Key="DarkOrangeColor" Color="#EC7F05" />
@@ -11,7 +12,8 @@
     <SolidColorBrush x:Key="BlackColor" Color="#0f0e17" />
 
     <Style TargetType="Button">
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="MinWidth" Value="35" />
         <Setter Property="Margin" Value="4, 5" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontWeight" Value="DemiBold" />
@@ -21,12 +23,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border"
-                        CornerRadius="12"
-                        Background="{TemplateBinding Background}">
-                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6,0,6,0" />
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" >
+                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="9,4" />
                     </Border>
-                    <ControlTemplate.Triggers>
+                    <!--<ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="True">
                             <Setter Property="Effect">
                                 <Setter.Value>
@@ -38,6 +41,7 @@
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
+                    
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Effect">
                                 <Setter.Value>
@@ -49,53 +53,77 @@
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
-                    </ControlTemplate.Triggers>
+                    </ControlTemplate.Triggers>-->
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource DarkOrangeColor}"/>
-                <Setter Property="Foreground" Value="{StaticResource WhiteColor}" />
-            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="{StaticResource GrayColor}" />
                 <Setter Property="Foreground" Value="{StaticResource BlackColor}" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource DarkOrangeColor}"/>
+                <!--<Setter Property="Foreground" Value="{StaticResource WhiteColor}" />-->
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style x:Key="ButtonLeftMenuStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}" >
-        <Setter Property="Margin" Value="4,5,0,10" />
+        <Setter Property="Margin" Value="5,7" />
+        <Setter Property="Foreground" Value="{DynamicResource BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{StaticResource OrangeColor}" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="BorderThickness" Value="1.5" />
+                <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
+                <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
+            </Trigger>
+            
+        </Style.Triggers>
+    </Style>
+    
+    <Style x:Key="ButtonIconStyle" TargetType="Button">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border"
-                                                CornerRadius="12,0,0,12"
-                                                Background="{TemplateBinding Background}">
-
-                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6,0,6,0" />
-                        <Border.Effect>
-                            <DropShadowEffect Color="#EC7F05" 
-                                              Direction="225" 
-                                              ShadowDepth="5" 
-                                              BlurRadius="10"
-                                              Opacity="0.3" />
-                        </Border.Effect>
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" >
+                        <ContentPresenter VerticalAlignment="Center" 
+                                          HorizontalAlignment="Center" 
+                                          SnapsToDevicePixels="True" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
-                <Setter Property="Foreground" Value="{StaticResource OrangeColor}" />
-            </Trigger>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource DarkOrangeColor}"/>
-                <Setter Property="Foreground" Value="{StaticResource WhiteColor}" />
-            </Trigger>
-        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Canvas" x:Key="CanvasForIcons">
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style TargetType="Canvas" x:Key="CanvasForListIcons" BasedOn="{StaticResource CanvasForIcons}">
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="LayoutTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="0.9" ScaleY="0.85" />
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Path">
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
     </Style>
 
     <Style x:Key="TextBlockStyle" TargetType="TextBlock">
@@ -114,13 +142,21 @@
     </Style>
 
     <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-        <Setter Property="Margin" Value="2" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="1,0" />
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeValue}" />
         <Setter Property="CaretBrush" Value="{StaticResource OrangeColor}" />
+        <Setter Property="BorderBrush" Value="{StaticResource OrangeColor}" />
         <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        
+        <Style.Resources>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="CornerRadius" Value="4" />
+            </Style>
+        </Style.Resources>
     </Style>
 
     <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
@@ -129,9 +165,9 @@
     </Style>
 
     <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-        <Setter Property="Margin" Value="0,0,5,2" />
+        <Setter Property="Margin" Value="0, 0, 12, 0" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Bottom" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeValue}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
     </Style>
@@ -140,22 +176,25 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeValue}" />
         <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <Style TargetType="GridViewColumnHeader">
         <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        <Setter Property="Margin" Value="0.5" />
+        <Setter Property="Padding" Value="10,1" />
     </Style>
 
     <Style TargetType="{x:Type ListViewItem}">
-
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListViewItem}">
                     <Border CornerRadius="2" SnapsToDevicePixels="True"  
-                                BorderThickness="{TemplateBinding BorderThickness}"   
-                                BorderBrush="{TemplateBinding BorderBrush}"   
-                                Background="{TemplateBinding Background}">
+                            BorderThickness="{TemplateBinding BorderThickness}"   
+                            BorderBrush="{TemplateBinding BorderBrush}"   
+                            Background="{TemplateBinding Background}">
                         <Border Name="InnerBorder" CornerRadius="1" BorderThickness="1">
                             <GridViewRowPresenter Content="{TemplateBinding Content}" />
                             <!--<Grid>
@@ -204,6 +243,155 @@
                             </MultiTrigger>-->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <ControlTemplate x:Key="SimpleExpanderButtonTemp" 
+                     TargetType="{x:Type ToggleButton}" >
+        <Border x:Name="ExpanderButtonBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{TemplateBinding Padding}" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Rectangle Fill="Transparent"
+                       Grid.ColumnSpan="2"/>
+                <Ellipse Name="Circle"
+                         Grid.Column="0"
+                         Stroke="DarkGray"
+                         Width="20"
+                         Height="20"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+                <Path x:Name="Sign"
+                      Grid.Column="0"
+                      Data="M 0,5 H 10 M 5,0 V 10 Z"
+                      Stroke="#FF666666"
+                      Width="10"
+                      Height="10"
+                      StrokeThickness="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      RenderTransformOrigin="0.5,0.5" >
+                    <Path.RenderTransform>
+                        <RotateTransform Angle="0"/>
+                    </Path.RenderTransform>
+                </Path>
+                <ContentPresenter x:Name="HeaderContent"
+                          Grid.Column="1"
+                          Margin="4,0,0,0"
+                          ContentSource="Content"/>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <!--Change the sign to minus when toggled-->
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Data" TargetName="Sign" Value="M 0,5 H 10 Z"/>
+            </Trigger>
+
+            <!-- MouseOver, Pressed behaviours-->
+            <Trigger Property="IsMouseOver" Value="true">
+                <Setter Property="Stroke"
+                        Value="#FF3C7FB1"
+                        TargetName="Circle"/>
+                <Setter Property="Stroke"
+                        Value="#222"
+                        TargetName="Sign"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="true">
+                <Setter Property="Stroke"
+                        Value="#FF526C7B"
+                        TargetName="Circle"/>
+                <Setter Property="StrokeThickness"
+                        Value="1.5"
+                        TargetName="Circle"/>
+                <Setter Property="Stroke"
+                        Value="#FF003366"
+                        TargetName="Sign"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    
+    
+    
+    
+    <Style x:Key="OrangeSwitchStyle" TargetType="{x:Type CheckBox}">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GrayColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource OrangeColor}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeValue}" />
+        <Setter Property="Margin" Value="10,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                        <Grid Margin="0,1,0,0"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <Border x:Name="BackgroundBorder"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    Width="50"
+                                    Height="21" 
+                                    CornerRadius="4" />
+                            <Border x:Name="slider" 
+                                    BorderBrush="#FF939393"
+                                    Background="#FFF0F0F0"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    HorizontalAlignment="Left" 
+                                    Width="20" 
+                                    Height="21" 
+                                    CornerRadius="4" />
+                        </Grid>
+                        <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentStringFormat="{TemplateBinding ContentStringFormat}" 
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                          VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                          Margin="10,0,0,0" />
+
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter Property="Content" Value="No" />
+                            <Setter TargetName="slider"
+                                    Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <TranslateTransform X="0" Y="0" />
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Content" Value="Yes" />
+                            <Setter TargetName="slider"
+                                    Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <TranslateTransform X="30" Y="0" />
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
+
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{DynamicResource GrayColor}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

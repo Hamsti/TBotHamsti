@@ -61,7 +61,7 @@ namespace TBotHamsti
 
         private static async Task<bool> ExecCommand(BotCommandStructure model, Telegram.Bot.Types.Message message)
         {
-            bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
+            static bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
             bool isCommand = false;
             int countCurrentCommand = RepCommands.botCommands.FindAll(m => m.Command.Equals(model.Command)).Count;
             int countCurrentCommand2 = countCurrentCommand;
