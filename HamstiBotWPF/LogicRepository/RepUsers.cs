@@ -38,23 +38,30 @@ namespace TBotHamsti.LogicRepository
             }
         }
 
+        static RepUsers()
+        {
+            Upload();
+        }
+
         public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin)
         {
             IEnumerable<PatternUser> findedUsers = AuthUsers.Where(user => user.Status == status);
 
             foreach (var user in findedUsers)
-                await SendMessage(user.IdUser, message);
+                await SendMessage(user.Id, message);
         }
 
-        public static async Task SendMessage(int idUser, string message)
+        public static PatternUser GetUser(int id) => AuthUsers.Where(user => user.Id == id).DefaultIfEmpty(new PatternUser()).FirstOrDefault();
+
+        public static async Task SendMessage(int Id, string message)
         {
             try
             {
-                await App.Api.SendTextMessageAsync(idUser, message);
+                await App.Api.SendTextMessageAsync(Id, message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _ = Task.Run(() => MessageBox.Show(ex.Message));
+                //_ = Task.Run(() => MessageBox.Show(ex.Message));
             };
         }
 
@@ -68,15 +75,15 @@ namespace TBotHamsti.LogicRepository
             {
                 Update(File.Exists(Properties.Settings.Default.JsonFileName) ?
                             JsonConvert.DeserializeObject<ObservableCollection<PatternUser>>(File.ReadAllText(Properties.Settings.Default.JsonFileName)) :
-                            new ObservableCollection<PatternUser>() { new PatternUser { IdUser = Properties.Settings.Default.RecoverIdAdmin } }
+                            new ObservableCollection<PatternUser>() { new PatternUser { Id = Properties.Settings.Default.RecoverIdAdmin } }
                 );
 
                 Refresh();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("При загрузке данных, произошла ошибка: " + ex.Message);
+                //MessageBox.Show("При загрузке данных, произошла ошибка: " + ex.Message);
                 return false;
             }
         }
@@ -98,7 +105,7 @@ namespace TBotHamsti.LogicRepository
             }
             catch (Exception ex)
             {
-                MessageBox.Show("При сохранении данных, произошла ошибка: " + ex.Message);
+                //MessageBox.Show("При сохранении данных, произошла ошибка: " + ex.Message);
                 return false;
             }
         }
@@ -106,25 +113,25 @@ namespace TBotHamsti.LogicRepository
         /// <summary>
         /// Sorting and refresh users without of save
         /// </summary>
-        public static void Refresh() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.IdUser));
+        public static void Refresh() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.Id));
 
         /// <summary>
         /// Checks if this user is in the list of authorized users and not IsBlocked
         /// </summary>
-        /// <param name="idUser">Message.From.Id</param>
-        public static bool IsAuthNotIsBlockedUser(int idUser) => AuthUsers.Count(user => user.IdUser == idUser && user.IsBlocked == false) > 0;
+        /// <param name="Id">Message.From.Id</param>
+        public static bool IsAuthNotIsBlockedUser(int Id) => AuthUsers.Count(user => user.Id == Id && user.IsBlocked == false) > 0;
 
         /// <summary>
         /// Checks if this user is in the list of authorized users
         /// </summary>
-        /// <param name="idUser">Message.From.Id</param>
-        public static bool IsAuthUser(int idUser) => AuthUsers.Count(user => user.IdUser == idUser) > 0;
+        /// <param name="Id">Message.From.Id</param>
+        public static bool IsAuthUser(int Id) => AuthUsers.Count(user => user.Id == Id) > 0;
 
         /// <summary>
         /// Find user status
         /// </summary>
-        /// <param name="idUser">Message.From.Id</param>
-        public static StatusUser GetStatusUser(int idUser) => AuthUsers.Where(w => w.IdUser == idUser).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
+        /// <param name="Id">Message.From.Id</param>
+        public static StatusUser GetStatusUser(int Id) => AuthUsers.Where(w => w.Id == Id).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
 
         /// <summary>
         /// Replace items in source collection with does creating new
@@ -133,7 +140,7 @@ namespace TBotHamsti.LogicRepository
         private static void Update<T>(T items) where T : IOrderedEnumerable<PatternUser>, IEnumerable<PatternUser>
         {
             var localItems = new ObservableCollection<PatternUser>(items);
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 AuthUsers.Clear();
                 foreach (var User in localItems)

@@ -1,4 +1,5 @@
-﻿using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
+﻿using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
+using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
 namespace TBotHamsti.Core
 {
@@ -12,7 +13,7 @@ namespace TBotHamsti.Core
         /// <summary>
         /// Id user in Telegram
         /// </summary>
-        public int IdUser { get; set; }  
+        public int Id { get; set; }  
 
         /// <summary>
         /// User lock status
@@ -30,8 +31,9 @@ namespace TBotHamsti.Core
         public string LocalNickname { get; set; }
 
         public StatusUser Status { get; set; }
+        public LevelCommand CurrentLevel { get; set; }
 
-        public string IdUser_Nickname => IdUser.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname); 
+        public string IdUser_Nickname => Id.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname); 
 
         public PatternUser()
         {
@@ -39,15 +41,17 @@ namespace TBotHamsti.Core
             IsSetBookmark = false;
             LocalNickname = null;
             Status = StatusUser.NotDefined;
+            CurrentLevel = LevelCommand.None;
         }
 
         public PatternUser(PatternUser user)
         {
-            IdUser = user.IdUser;
+            Id = user.Id;
             IsBlocked = user.IsBlocked;
             IsSetBookmark = user.IsSetBookmark;
             LocalNickname = user.LocalNickname;
             Status = user.Status;
+            CurrentLevel = user.CurrentLevel;
         }
     }
 }

@@ -30,7 +30,7 @@
                   ScrollViewer.VerticalScrollBarVisibility="Visible">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding IdUser}"
+                    <GridViewColumn DisplayMemberBinding="{Binding Id}"
                                     Header="Id user"/>
                     
                     <GridViewColumn DisplayMemberBinding="{Binding LocalNickname, TargetNullValue=null}" 

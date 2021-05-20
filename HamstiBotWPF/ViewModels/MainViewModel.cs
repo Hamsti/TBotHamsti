@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TBotHamsti.Services;
 using TBotHamsti.Pages;
 using TBotHamsti.Messages;
+using TBotHamsti.LogicRepository;
 
 namespace TBotHamsti.ViewModels
 {
@@ -75,6 +76,7 @@ namespace TBotHamsti.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
+                RepUsers.Upload();
                 await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
                 if (App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot launched successfully", HorizontalAlignment.Right));
@@ -90,6 +92,7 @@ namespace TBotHamsti.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
+                RepUsers.SaveRefresh();
                 await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
                 if (!App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully stopped", HorizontalAlignment.Right));

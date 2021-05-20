@@ -7,8 +7,8 @@ namespace TBotHamsti.ViewModels
 {
     public class CommandsControlViewModel
     {
-        public List<BotCommand> ListCommands => RepCommands.botCommands;
-        //public List<BotLevelCommand> ListLevels => (BotLevelCommand)RepCommands.botCommands.Where(s => s is BotLevelCommand).ToList();
+        public ITCommand[] ListCommands => CollectionCommands.Values;
+        //public List<BotLevelCommand> ListLevels => (BotLevelCommand)CollectionCommands.Commands.Where(s => s is BotLevelCommand).ToList();
 
         public CommandsControlViewModel() { }
     }

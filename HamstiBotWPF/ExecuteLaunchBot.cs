@@ -23,6 +23,7 @@ namespace TBotHamsti
             //Check message for null
             if (message == null) return;
 
+            var user = RepUsers.GetUser(message.From.Id);
             //User authorization check
             if (RepUsers.IsAuthNotIsBlockedUser(message.From.Id))
             {
@@ -33,7 +34,7 @@ namespace TBotHamsti
                         //Parsing and executing a command or errors
                         var model = BotCommand.ParserCommand(message.Text);
 
-                        if (model == null || !ExecCommand(model, message).Result) //Execute if command not found
+                        if (model == null || !ExecCommand(model, user, message).Result) //Execute if command not found
                         {
                             await RepUsers.SendMessage(message.From.Id, $"Команда \"{message.Text}\" не была найдена\nДля просмотра списка команд введите /help");
                             return;
@@ -41,10 +42,10 @@ namespace TBotHamsti
                         break;
                     //Image received from user
                     case MessageType.Photo:
-                        RepBotActions.ImageUploader(message); break;
+                        RepBotActions.ImageUploader(user, message); break;
                     //Document received from user
                     case MessageType.Document:
-                        RepBotActions.DocumentUploader(message); break;
+                        RepBotActions.DocumentUploader(user, message); break;
                     default:
                         await RepUsers.SendMessage(message.From.Id, $"На данный момент, \"{message.Type}\" - неизвестный тип сообщения."); break;
                 }
@@ -53,53 +54,52 @@ namespace TBotHamsti
             else
             {
                 if (RepUsers.IsAuthUser(message.From.Id))
-                    await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
+                    await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
                 else
-                    await RepBotActions.ControlUsers.AuthNewUser(message, message.From.Id);
+                    await RepBotActions.ControlUsers.AuthNewUser(user, message, message.From.Id);
             }
         }
 
-        private static async Task<bool> ExecCommand(BotCommandStructure model, Telegram.Bot.Types.Message message)
+        internal static async Task<bool> ExecCommand(ITCommand model, PatternUser user, Telegram.Bot.Types.Message message)
         {
-            static bool IsBotLevelCommand(BotCommand levelCommand) => levelCommand.GetType().Equals(typeof(BotLevelCommand));
+            static bool IsBotLevelCommand(ITCommand levelCommand) => levelCommand is BotLevelCommand;
             bool isCommand = false;
-            int countCurrentCommand = RepCommands.botCommands.FindAll(m => m.Command.Equals(model.Command)).Count;
+            int countCurrentCommand = CollectionCommands.Values.Count(m => m.Command.Equals(model.Command));
             int countCurrentCommand2 = countCurrentCommand;
 
-            foreach (var command in RepCommands.botCommands)
+            foreach (var command in CollectionCommands.Values)
             {
                 if (command.Command == model.Command)
                 {
                     isCommand = true;
 
-                    if (IsBotLevelCommand(command) && ((BotLevelCommand)command).ParrentLevel == RepCommands.currentLevelCommand ||
-                        command.NameOfLevel == RepCommands.currentLevelCommand || !command.LevelDependent)
+                    if (IsBotLevelCommand(command) && user.CurrentLevel == ((BotLevelCommand)command).ParrentLevel ||
+                        user.CurrentLevel == command.NameOfLevel || !command.LevelDependent)
                     {
-                        if (command.CountArgsCommand == model.Args.Length ||
-                            command.CountArgsCommand == -1 && model.Args.Length > 0)
+                        if (command.CountArgsCommand == model.Args?.Length ||
+                            command.CountArgsCommand == -1 && model.Args?.Length > 0)
                         {
-                            if (command.StatusUser <= RepUsers.GetStatusUser(message.From.Id))
+                            if (command.StatusUser <= user.Status)
                             {
-                                if (IsBotLevelCommand(command))
-                                    ((BotLevelCommand)command).Execute?.Invoke(model, message);
-                                else 
-                                    command.Execute?.Invoke(model, message);
+                                command.Execute?.Invoke(model, user, message);
                             }
                             else
                                 await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{command.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)command.StatusUser ? " и выше" : string.Empty)}.");
                         }
                         else if (--countCurrentCommand < 1)
                         {
-                            if (IsBotLevelCommand(command))
-                                ((BotLevelCommand)command).OnError.Invoke(model, message);
-                            else
-                                command.OnError?.Invoke(model, message);
+                            command.OnError?.Invoke(model, user, message);
+                            return isCommand;
                         }
                     }
                     else if (--countCurrentCommand2 < 1)
-                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{RepCommands.currentLevelCommand}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
+                    {
+                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{user.CurrentLevel}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
+                        return isCommand;
+                    }
                 }
             }
+
             return isCommand;
         }
 

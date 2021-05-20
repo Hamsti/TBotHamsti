@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Exceptions;
 using TBotHamsti.Core;
 using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
+using TEnum = Telegram.Bot.Types.Enums;
 
 namespace TBotHamsti.LogicRepository
 {
@@ -21,16 +23,15 @@ namespace TBotHamsti.LogicRepository
     /// </summary>
     public static class RepBotActions
     {
-        public static string GetHelp(int idUser) => (RepCommands.currentLevelCommand != LevelCommand.Root ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
-            string.Join("\n", RepCommands.botCommands.Where(w => (w.StatusUser <= RepUsers.GetStatusUser(idUser) && w.Command != BotLevelCommand.TOPREVLEVEL) &&
-            RepCommands.currentLevelCommand == (w.GetType().Equals(typeof(BotLevelCommand)) ? ((BotLevelCommand)w).ParrentLevel : w.NameOfLevel)).
-            Select(s => s.ExampleCommand ?? ((BotLevelCommand)s).ExampleCommand));
+        public static string GetHelp(PatternUser user) => (user.CurrentLevel != LevelCommand.None ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
+            string.Join("\n", CollectionCommands.Values.Where(w => (w.StatusUser <= user.Status && w.Command != BotLevelCommand.TOPREVLEVEL) &&
+            user.CurrentLevel == (w is BotLevelCommand command ? command.ParrentLevel : w.NameOfLevel)).Select(s => s.ExampleCommand));
 
-        public static Task HelpBot(Message message) => RepUsers.SendMessage(message.From.Id, "Список команд у бота:\n" + GetHelp(message.From.Id));
+        public static Task HelpBot(PatternUser user) => RepUsers.SendMessage(user.Id, "Список команд у бота:\n" + GetHelp(user));
 
-        public static Task SendMessageWrongNumberOfArgs(Message message) => RepUsers.SendMessage(message.From.Id, "Не верное кол-во агрументов\nСписок комманд: /help");
+        public static Task SendMessageWrongNumberOfArgs(PatternUser user) => RepUsers.SendMessage(user.Id, "Не верное кол-во агрументов\nСписок комманд: /help");
 
-        public static async void ImageUploader(Message message)
+        public static async void ImageUploader(PatternUser user, Message message)
         {
             try
             {
@@ -40,15 +41,15 @@ namespace TBotHamsti.LogicRepository
                 {
                     await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
                 }
-                await RepUsers.SendMessage(message.From.Id, "Загрузка изображения успешно завершена");
+                await RepUsers.SendMessage(user.Id, "Загрузка изображения успешно завершена");
             }
             catch (Exception ex)
             {
-                await RepUsers.SendMessage(message.From.Id, $"При загрузке изображения произошла ошибка: {ex.Message}");
+                await RepUsers.SendMessage(user.Id, $"При загрузке изображения произошла ошибка: {ex.Message}");
             }
         }
 
-        public static async void DocumentUploader(Message message)
+        public static async void DocumentUploader(PatternUser user, Message message)
         {
             try
             {
@@ -57,11 +58,11 @@ namespace TBotHamsti.LogicRepository
                 {
                     await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
                 }
-                await RepUsers.SendMessage(message.From.Id, "Загрузка документа успешно завершена");
+                await RepUsers.SendMessage(user.Id, "Загрузка документа успешно завершена");
             }
             catch (Exception ex)
             {
-                await RepUsers.SendMessage(message.From.Id, $"При загрузке документа произошла ошибка: {ex.Message}");
+                await RepUsers.SendMessage(user.Id, $"При загрузке документа произошла ошибка: {ex.Message}");
             }
         }
 
@@ -72,13 +73,12 @@ namespace TBotHamsti.LogicRepository
             App.Current.Dispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background);
         }
 
-        public static Task ShowScreenButtons(Message message, string arg)
+        public static Task ShowScreenButtons(PatternUser user, string arg)
         {
-            string[] keys;
-            ParserKeys(out keys, arg, message.From.Id);
+            ParserKeys(out string[] keys, arg, user);
 
             if (keys == null)
-                return RepUsers.SendMessage(message.From.Id, "Не найден аргумент для выполнения команды");
+                return RepUsers.SendMessage(user.Id, "Не найден аргумент для выполнения команды");
 
             int countColsKeys = 3;
             var rkm = new ReplyKeyboardMarkup();
@@ -96,19 +96,22 @@ namespace TBotHamsti.LogicRepository
 
             rkm.OneTimeKeyboard = true;
 
+            //if (keys.Count() == 0)
+            //    return App.Api.SendTextMessageAsync(message.Chat.Id, "Экранная клавиатура успешно удалена.", replyMarkup: new ReplyKeyboardRemove());
+            //else
+            //    return App.Api.SendTextMessageAsync(message.Chat.Id, $"Количество добавленных кнопок: {keys.Count()}", replyMarkup: rkm);
             if (keys.Count() == 0)
-                return App.Api.SendTextMessageAsync(message.Chat.Id, "Экранная клавиатура успешно удалена.", replyMarkup: new ReplyKeyboardRemove());
+                return App.Api.SendTextMessageAsync(user.Id, "Экранная клавиатура успешно удалена.", replyMarkup: new ReplyKeyboardRemove());
             else
-                return App.Api.SendTextMessageAsync(message.Chat.Id, $"Количество добавленных кнопок: {keys.Count()}", replyMarkup: rkm);
+                return App.Api.SendTextMessageAsync(user.Id, $"Количество добавленных кнопок: {keys.Count()}", replyMarkup: rkm);
         }
 
-        private static void ParserKeys(out string[] keys, string arg, int idUser)
+        private static void ParserKeys(out string[] keys, string arg, PatternUser user)
         {
-            StatusUser statusUser = RepUsers.GetStatusUser(idUser);
             if (bool.TryParse(arg, out bool isShowKeys))
-                keys = isShowKeys ? RepCommands.botCommands.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= statusUser).Select(s => s.Command).ToArray() : new string[0];
+                keys = isShowKeys ? CollectionCommands.Values.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= user.Status).Select(s => s.Command).ToArray() : new string[0];
             else
-                keys = arg.ToLower() == "all" ? RepCommands.botCommands.Where(w => w.StatusUser <= statusUser).Select(s => s.Command).ToArray() : null;
+                keys = arg.ToLower() == "all" ? CollectionCommands.Values.Where(w => w.StatusUser <= user.Status).Select(s => s.Command).ToArray() : null;
         }
 
         public static class Messages
@@ -120,80 +123,80 @@ namespace TBotHamsti.LogicRepository
                 return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
             }
 
-            public static async Task UserSentToAdmin(Message message, string[] args)
+            public static async Task UserSentToAdmin(PatternUser user, Message message, string[] args)
             {
                 try
                 {
-                    if (message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+                    if (message.Type == TEnum.MessageType.Text)
                     {
-                        await RepUsers.SendMessage($"Сообщение от пользователя \n(id: {message.From.Id} || IsBlocked: {!RepUsers.IsAuthNotIsBlockedUser(message.From.Id)}):\n\"{string.Join(" ", args)}\"");
-                        await RepUsers.SendMessage(message.From.Id, "Сообщение успешно отправлено админу бота " + App.Api.GetMeAsync().Result);
+                        await RepUsers.SendMessage($"Сообщение от пользователя \n(id: {user.Id} || IsBlocked: {!RepUsers.IsAuthNotIsBlockedUser(user.Id)}):\n\"{string.Join(" ", args)}\"");
+                        await RepUsers.SendMessage(user.Id, "Сообщение успешно отправлено админу бота " + App.Api.GetMeAsync().Result);
                     }
                     else
                     {
-                        await RepUsers.SendMessage(message.From.Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
+                        await RepUsers.SendMessage(user.Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
                     }
                 }
                 catch
                 {
-                    await RepUsers.SendMessage(message.From.Id, $"При отправке сообщения администратору произошла системная ошибка...\nПовторите попытку позже.");
+                    await RepUsers.SendMessage(user.Id, $"При отправке сообщения администратору произошла системная ошибка...\nПовторите попытку позже.");
                 }
             }
 
-            public static async Task AdminSentToUser(Message message, int idUser, string[] args)
+            public static async Task AdminSentToUser(PatternUser user, Message message, int Id, string[] args)
             {
-                if (RepUsers.IsAuthUser(idUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+                if (RepUsers.IsAuthUser(Id) && message.Type == TEnum.MessageType.Text)
                 {
                     try
                     {
-                        await RepUsers.SendMessage(idUser,
+                        await RepUsers.SendMessage(Id,
                             $"Сообщение от администратора бота {App.Api.GetMeAsync().Result}: \n\"{string.Join(" ", args.Skip(1))}\"" +
-                            $"\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
-                        await RepUsers.SendMessage(message.From.Id, $"Сообщение успешно отправлено пользователю \"{idUser}\"");
+                            $"\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
+                        await RepUsers.SendMessage(user.Id, $"Сообщение успешно отправлено пользователю \"{Id}\"");
                     }
-                    catch (Telegram.Bot.Exceptions.ApiRequestException ex)
+                    catch (ApiRequestException ex)
                     {
-                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{idUser}\" произошла ошибка Telegram.Bot.Exceptions.ApiRequestException:\n\n{ex.Message}");
+                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{Id}\" произошла ошибка Telegram.Bot.Exceptions.ApiRequestException:\n\n{ex.Message}");
                     }
                     catch (Exception ex)
                     {
-                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{idUser}\" произошла системная ошибка:\n\n{ex.Message}");
+                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{Id}\" произошла системная ошибка:\n\n{ex.Message}");
                     }
                 }
                 else
                 {
-                    await RepUsers.SendMessage(message.From.Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
+                    await RepUsers.SendMessage(Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
                 }
             }
 
-            public static async Task UserSpamFromAdmin(Message message, int idUser, int countMessages)
+            public static async Task UserSpamFromAdmin(PatternUser user, Message message, int IdUserForSpam, int countMessages)
             {
-                if (RepUsers.IsAuthUser(idUser) && message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+                if (RepUsers.IsAuthUser(IdUserForSpam) && message.Type == TEnum.MessageType.Text)
                 {
                     try
                     {
-                        await RepUsers.SendMessage(idUser,
+                        await RepUsers.SendMessage(IdUserForSpam,
                             $"Вы были выбраны жертвой для спама от администратора бота {App.Api.GetMeAsync().Result}:\n" +
-                            $"\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
+                            $"\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
                         for (int i = 0; i < countMessages; i++)
                         {
-                            await RepUsers.SendMessage(idUser, RandomString(new Random().Next(5, 40)));
+                            await RepUsers.SendMessage(IdUserForSpam, RandomString(new Random().Next(5, 40)));
                         }
-                        await RepUsers.SendMessage(idUser, "Спам успешно завершён. Хорошего дня ;)");
-                        await RepUsers.SendMessage("Спам пользователя \"" + idUser + "\" успешно завершён.");
+                        await RepUsers.SendMessage(IdUserForSpam, "Спам успешно завершён. Хорошего дня ;)");
+                        await RepUsers.SendMessage(user.Id, "Спам пользователя \"" + IdUserForSpam + "\" успешно завершён.");
                     }
-                    catch (Telegram.Bot.Exceptions.ApiRequestException ex)
+                    catch (ApiRequestException ex)
                     {
-                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{idUser}\" произошла ошибка Telegram.Bot.Exceptions.ApiRequestException:\n\n{ex.Message}");
+                        await RepUsers.SendMessage(user.Id, $"При отправке сообщения пользователю с id: \"{IdUserForSpam}\" произошла ошибка Telegram.Bot.Exceptions.ApiRequestException:\n\n{ex.Message}");
                     }
                     catch (Exception ex)
                     {
-                        await RepUsers.SendMessage($"При отправке сообщения пользователю с id: \"{idUser}\" произошла системная ошибка:\n\n{ex.Message}");
+                        await RepUsers.SendMessage(user.Id, $"При отправке сообщения пользователю с id: \"{IdUserForSpam}\" произошла системная ошибка:\n\n{ex.Message}");
                     }
                 }
                 else
                 {
-                    await RepUsers.SendMessage(message.From.Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
+                    await RepUsers.SendMessage(user.Id, "Разрешается использовать только текстовые сообщения. Сообщение не было отправлено.");
                 }
             }
         }
@@ -210,7 +213,7 @@ namespace TBotHamsti.LogicRepository
                 return Task.CompletedTask;
             }
 
-            public static Task TurnOff(Message message, int tMin, int tSec)
+            public static Task TurnOff(PatternUser user, int tMin, int tSec)
             {
                 while (tSec >= 60)
                 {
@@ -218,7 +221,7 @@ namespace TBotHamsti.LogicRepository
                     tMin++;
                 }
                 Process.Start(@"C:\Windows\System32\shutdown.exe", "/s /t " + (tMin * 60 + tSec));
-                return RepUsers.SendMessage(message.From.Id, $"Таймер успешно установлен.\nЧерез {tMin} мин. {tSec} сек. ваш ПК будет выключен.");
+                return RepUsers.SendMessage(user.Id, $"Таймер успешно установлен.\nЧерез {tMin} мин. {tSec} сек. ваш ПК будет выключен.");
             }
 
             public static bool ExecuteCmdCommand(string programmPath, string cmdArgs)
@@ -245,11 +248,11 @@ namespace TBotHamsti.LogicRepository
                 private static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
 
-                public static Task changeVolume(Message message, string strValue)
+                public static Task ChangeVolume(PatternUser user, string strValue)
                 {
                     if (int.TryParse(strValue, out int value))
                     {
-                        if (value == 0) return RepUsers.SendMessage(message.From.Id, $"Изменение громкости на: {value} не является допустимым");
+                        if (value == 0) return RepUsers.SendMessage(user.Id, $"Изменение громкости на: {value} не является допустимым");
                         if (value >= -100 && value <= 100)
                         {
                             if (value >= 0)
@@ -258,20 +261,20 @@ namespace TBotHamsti.LogicRepository
                             if (value <= 0)
                                 for (double i = 0; i > Math.Floor((double)value / 2); i--)
                                     SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-                            return RepUsers.SendMessage(message.From.Id, $"Громкость изменена на: {value}");
+                            return RepUsers.SendMessage(user.Id, $"Громкость изменена на: {value}");
                         }
-                        return RepUsers.SendMessage(message.From.Id, "Выход за пределы: [-100;100] при изменении громкости");
+                        return RepUsers.SendMessage(user.Id, "Выход за пределы: [-100;100] при изменении громкости");
                     }
                     if (strValue.ToLower() == "mute")
                     {
                         SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)APPCOMMAND_VOLUME_MUTE);
-                        return RepUsers.SendMessage(message.From.Id, $"Громкость изменена на: {strValue}");
+                        return RepUsers.SendMessage(user.Id, $"Громкость изменена на: {strValue}");
                     }
                     return Task.CompletedTask;
                 }
             }
 
-            public async static Task GetScreenshot(Message message)
+            public async static Task GetScreenshot(PatternUser user)
             {
                 try
                 {
@@ -284,11 +287,11 @@ namespace TBotHamsti.LogicRepository
                     }
 
                     using var stream = System.IO.File.OpenRead(Properties.Settings.Default.SavePath + "\\" + filename);
-                    await App.Api.SendDocumentAsync(message.From.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
+                    await App.Api.SendDocumentAsync(user.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
                 }
                 catch (Exception ex)
                 {
-                    await RepUsers.SendMessage(message.From.Id, $"При работе со скриншотом, произошла ошибка: {ex.Message}");
+                    await RepUsers.SendMessage(user.Id, $"При работе со скриншотом, произошла ошибка: {ex.Message}");
                 }
             }
         }
@@ -312,82 +315,82 @@ namespace TBotHamsti.LogicRepository
                 return messageText.ToString();
             }
 
-            public static Task SendListOfUsers(Message message) => RepUsers.SendMessage(message.From.Id, ListOfUsersParseString());
-            public static Task SaveChanges(Message message) => RepUsers.SendMessage(message.From.Id, RepUsers.SaveRefresh() ? "Успешное сохранение изменений" : "При сохранении изменений произошла ошибка");
-            public static Task CancelChanges(Message message) => RepUsers.SendMessage(message.From.Id, App.Current.Dispatcher.Invoke(() => RepUsers.Upload()) ? "Изменения успешно отменены" : "При отмене изменений произошла ошибка");
+            public static Task SendListOfUsers(PatternUser user) => RepUsers.SendMessage(user.Id, ListOfUsersParseString());
+            public static Task SaveChanges(PatternUser user) => RepUsers.SendMessage(user.Id, RepUsers.SaveRefresh() ? "Успешное сохранение изменений" : "При сохранении изменений произошла ошибка");
+            public static Task CancelChanges(PatternUser user) => RepUsers.SendMessage(user.Id, App.Current.Dispatcher.Invoke(() => RepUsers.Upload()) ? "Изменения успешно отменены" : "При отмене изменений произошла ошибка");
 
-            public static async Task<Task> AuthNewUser(Message message, int idUser, string nickname = null)
+            public static async Task<Task> AuthNewUser(PatternUser user, Message message, int IdSelectedUser, string nickname = null)
             {
                 try
                 {
-                    if (!RepUsers.IsAuthUser(idUser))
+                    if (!RepUsers.IsAuthUser(IdSelectedUser))
                     {
-                        App.Current.Dispatcher.Invoke(() => ListUsers.Add(new PatternUser() { IdUser = idUser, LocalNickname = nickname }));
-                        await RepUsers.SendMessage($"Пользователь c id: \"{idUser}{(!string.IsNullOrEmpty(nickname) ? " | " + nickname : string.Empty)}\" был успешно добавлен в список пользователей.");
+                        App.Current.Dispatcher.Invoke(() => ListUsers.Add(new PatternUser() { Id = IdSelectedUser, LocalNickname = nickname }));
+                        await RepUsers.SendMessage($"Пользователь c id: \"{IdSelectedUser}{(!string.IsNullOrEmpty(nickname) ? " | " + nickname : string.Empty)}\" был успешно добавлен в список пользователей.");
                     }
                     else
-                        await RepUsers.SendMessage($"Пользователь c id: \"{idUser}\" уже существует!");
-                    await RepUsers.SendMessage(idUser, $"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/messageToAdmin YourMessage\"");
+                        await RepUsers.SendMessage($"Пользователь c id: \"{IdSelectedUser}\" уже существует!");
+                    await RepUsers.SendMessage(IdSelectedUser, $"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
                 }
                 catch (Exception ex)
                 {
-                    await RepUsers.SendMessage($"Error: При попытке использования команды \"{message.Text}\" пользователем {message.From.Id} произошла ошибка: \n{ex.Message}");
+                    await RepUsers.SendMessage($"Error: При попытке использования команды \"{message.Text}\" пользователем {user.Id} произошла ошибка: \n{ex.Message}");
                 }
-                return SendListOfUsers(message);
+                return SendListOfUsers(user);
             }
 
-            public static Task DeauthUser(Message message, int idUser)
+            public static Task DeauthUser(PatternUser user, int IdSelectedUser)
             {
-                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.IdUser == idUser).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
-                    RepUsers.SendMessage(message.From.Id, $"Пользователь c id: \"{idUser}\" был успешно успешно удалён из списка пользователей.").Wait();
+                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.Id == IdSelectedUser).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
+                    RepUsers.SendMessage(user.Id, $"Пользователь c id: \"{IdSelectedUser}\" был успешно успешно удалён из списка пользователей.").Wait();
                 else
-                    return RepUsers.SendMessage(message.From.Id, $"Пользователя c id: \"{idUser}\" не существует...");
-                return SendListOfUsers(message);
+                    return RepUsers.SendMessage(user.Id, $"Пользователя c id: \"{IdSelectedUser}\" не существует...");
+                return SendListOfUsers(user);
             }
 
-            public static Task DeauthUser(Message message, string[] args)
+            public static Task DeauthUser(PatternUser user, string[] args)
             {
                 string LocalNickname = string.Join(" ", args);
-                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.LocalNickname.ToLower() == LocalNickname.ToLower() && !StrToInt(f.LocalNickname).Equals(f.IdUser)).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
-                    RepUsers.SendMessage(message.From.Id, $"Пользователь c Nickname: \"{LocalNickname}\" был успешно успешно удалён из списка пользователей.").Wait();
+                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.LocalNickname.ToLower() == LocalNickname.ToLower() && !StrToInt(f.LocalNickname).Equals(f.Id)).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
+                    RepUsers.SendMessage(user.Id, $"Пользователь c Nickname: \"{LocalNickname}\" был успешно успешно удалён из списка пользователей.").Wait();
                 else
-                    return RepUsers.SendMessage(message.From.Id, $"Пользователя c Nickname: \"{LocalNickname}\" не существует...");
-                return SendListOfUsers(message);
+                    return RepUsers.SendMessage(user.Id, $"Пользователя c Nickname: \"{LocalNickname}\" не существует...");
+                return SendListOfUsers(user);
             }
 
-            public static Task ChangeLocalName(Message message, int idUser, string[] args)
+            public static Task ChangeLocalName(PatternUser user, int IdSelectedUser, string[] args)
             {
-                var findedUser = ListUsers.Where(f => f.IdUser == idUser).FirstOrDefault();
-                if (findedUser is null)
-                    return RepUsers.SendMessage(message.From.Id, $"Пользователь c id: \"{idUser}\" не найден...");
+                var selectedUser = ListUsers.Where(f => f.Id == IdSelectedUser).FirstOrDefault();
+                if (selectedUser is null)
+                    return RepUsers.SendMessage(user.Id, $"Пользователь c id: \"{IdSelectedUser}\" не найден...");
 
-                string beforeChangingNickname = findedUser.LocalNickname;
-                findedUser.LocalNickname = string.Join(" ", args.Skip(1));
-                RepUsers.SendMessage(message.From.Id, $"Пользователю c id: \"{idUser}\" измененён Nickname: \"{beforeChangingNickname}\" => \"{findedUser.LocalNickname}\".").Wait();
-                return SendListOfUsers(message);
+                string beforeChangingNickname = selectedUser.LocalNickname;
+                selectedUser.LocalNickname = string.Join(" ", args.Skip(1));
+                RepUsers.SendMessage(user.Id, $"Пользователю c id: \"{IdSelectedUser}\" измененён Nickname: \"{beforeChangingNickname}\" => \"{selectedUser.LocalNickname}\".").Wait();
+                return SendListOfUsers(user);
             }
 
-            public static Task LockUser(Message message, int idUser)
+            public static Task LockUser(PatternUser user, int IdSelectedUser)
             {
-                var findedUser = ListUsers.Where(f => f.IdUser == idUser).FirstOrDefault();
-                if (findedUser is null)
-                    return RepUsers.SendMessage(message.From.Id, $"Пользователь c id: \"{idUser}\" не найден...");
+                var selectedUser = ListUsers.Where(f => f.Id == IdSelectedUser).FirstOrDefault();
+                if (selectedUser is null)
+                    return RepUsers.SendMessage(user.Id, $"Пользователь c id: \"{IdSelectedUser}\" не найден...");
 
-                findedUser.IsBlocked = findedUser.IsBlocked ? false : true;
-                RepUsers.SendMessage(message.From.Id, $"Пользователь c id: \"{idUser}\" успешно {(findedUser.IsBlocked ? "заблокирован" : "разблокирован")}.").Wait();
-                return SendListOfUsers(message);
+                selectedUser.IsBlocked = !selectedUser.IsBlocked;
+                RepUsers.SendMessage(user.Id, $"Пользователь c id: \"{IdSelectedUser}\" успешно {(selectedUser.IsBlocked ? "заблокирован" : "разблокирован")}.").Wait();
+                return SendListOfUsers(user);
             }
 
-            public static Task LockUser(Message message, string[] args)
+            public static Task LockUser(PatternUser user, string[] args)
             {
                 string LocalNickname = string.Join(" ", args);
-                var findedUser = ListUsers.Where(f => f.LocalNickname.ToLower() == LocalNickname.ToLower()).FirstOrDefault();
-                if (findedUser is null || StrToInt(findedUser.LocalNickname).Equals(findedUser.IdUser))
-                    return RepUsers.SendMessage(message.From.Id, $"Пользователь c Nickname: \"{LocalNickname}\" не найден...");
+                var selectedUser = ListUsers.Where(f => f.LocalNickname.ToLower() == LocalNickname.ToLower()).FirstOrDefault();
+                if (selectedUser is null || StrToInt(selectedUser.LocalNickname).Equals(selectedUser.Id))
+                    return RepUsers.SendMessage(user.Id, $"Пользователь c Nickname: \"{LocalNickname}\" не найден...");
 
-                findedUser.IsBlocked = findedUser.IsBlocked ? false : true;
-                RepUsers.SendMessage(message.From.Id, $"Пользователь c Nickname: \"{LocalNickname}\" успешно {(findedUser.IsBlocked ? "заблокирован" : "разблокирован")}.").Wait();
-                return SendListOfUsers(message);
+                selectedUser.IsBlocked = !selectedUser.IsBlocked;
+                RepUsers.SendMessage(user.Id, $"Пользователь c Nickname: \"{LocalNickname}\" успешно {(selectedUser.IsBlocked ? "заблокирован" : "разблокирован")}.").Wait();
+                return SendListOfUsers(user);
             }
         }
     }

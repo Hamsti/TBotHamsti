@@ -119,7 +119,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Core\BotLevelCommand.cs" />
+    <Compile Include="Core\TCommand\BotLevelCommand.cs" />
+    <Compile Include="Core\TCommand\ITCommand.cs" />
     <Compile Include="Messages\ImageMessage.cs" />
     <Compile Include="Messages\IMessage.cs" />
     <Compile Include="Messages\TextMessage.cs" />
@@ -159,12 +160,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Core\BotCommand.cs" />
-    <Compile Include="Core\BotCommandStructure.cs" />
+    <Compile Include="Core\TCommand\BotCommand.cs" />
     <Compile Include="Core\PatternUser.cs" />
     <Compile Include="ExecuteLaunchBot.cs" />
     <Compile Include="LogicRepository\RepBotActions.cs" />
-    <Compile Include="LogicRepository\RepCommands.cs" />
+    <Compile Include="LogicRepository\CollectionCommands.cs" />
     <Compile Include="LogicRepository\RepUsers.cs" />
     <Page Include="Main.xaml">
       <SubType>Designer</SubType>
