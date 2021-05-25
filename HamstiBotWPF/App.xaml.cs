@@ -10,6 +10,7 @@ namespace TBotHamsti
         protected override void OnStartup(StartupEventArgs e)
         {
             ViewModelLocator.Init();
+            LogicRepository.CollectionCommands.Init();
             base.OnStartup(e);
         }
 

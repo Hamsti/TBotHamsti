@@ -103,7 +103,7 @@ namespace TBotHamsti.LogicRepository
                 Refresh();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("При сохранении данных, произошла ошибка: " + ex.Message);
                 return false;
@@ -140,7 +140,7 @@ namespace TBotHamsti.LogicRepository
         private static void Update<T>(T items) where T : IOrderedEnumerable<PatternUser>, IEnumerable<PatternUser>
         {
             var localItems = new ObservableCollection<PatternUser>(items);
-            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
+            App.Current.Dispatcher.Invoke(() =>
             {
                 AuthUsers.Clear();
                 foreach (var User in localItems)

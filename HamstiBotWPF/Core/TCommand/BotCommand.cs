@@ -12,22 +12,28 @@ namespace TBotHamsti.Core
     /// </summary>
     public class BotCommand : ITCommand
     {
-        private string command;
+        public string Command { get; }
+        public string ExampleCommand { get; }
+        public string[] Args { get; private set; }
+        public int CountArgsCommand { get; set; }
+        public StatusUser StatusUser { get; set; }
+        public LevelCommand NameOfLevel { get; set; } 
+        public Action<ITCommand, PatternUser, Message> Execute { get; set; }
+        public Action<ITCommand, PatternUser, Message> OnError { get; set; }
 
-        public string Command
+        public BotCommand(string command) : this(command, command) 
         {
-            get => command;
-            set => command = value.ToLower();
+            CountArgsCommand = default;
         }
 
-        public string[] Args { get; set; } = Array.Empty<string>();
-        public string ExampleCommand { get; set; }
-        public int CountArgsCommand { get; set; } = 0;
-        public LevelCommand ParrentLevel { get; set; } //parrent
-        public LevelCommand NameOfLevel { get; set; } = LevelCommand.None;
-        public StatusUser StatusUser { get; set; } = StatusUser.User;
-        public Action<ITCommand, PatternUser, Message> Execute { get; set; }
-        public Action<ITCommand, PatternUser, Message> OnError { get; set; } = async (model, user, message) => await RepBotActions.SendMessageWrongNumberOfArgs(user);
+        public BotCommand(string command, string exampleCommand) 
+        {
+            Command = command.ToLower();
+            ExampleCommand = exampleCommand;
+            Args = Array.Empty<string>();
+            StatusUser = StatusUser.User;
+            OnError = async (model, user, message) => await RepBotActions.SendMessageWrongNumberOfArgs(user);
+        }
 
         /// <summary>
         /// Command converter to normal view
@@ -42,15 +48,15 @@ namespace TBotHamsti.Core
                 var command = splits?.FirstOrDefault().ToLower();
                 var args = splits.Skip(1).Take(splits.Count()).ToArray();
 
-                return new BotCommand
+                return new BotCommand(command)
                 {
-                    Command = command,
-                    Args = args
+                    Args = args,
+                    CountArgsCommand = args.Length,
+                    NameOfLevel = LevelCommand.None
                 };
             }
+
             return null;
         }
-
-        public bool LevelDependent { get; set; }
     }
 }

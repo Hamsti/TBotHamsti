@@ -41,7 +41,7 @@ namespace TBotHamsti.Core
             IsSetBookmark = false;
             LocalNickname = null;
             Status = StatusUser.NotDefined;
-            CurrentLevel = LevelCommand.None;
+            CurrentLevel = BotLevelCommand.RootLevel.NameOfLevel;
         }
 
         public PatternUser(PatternUser user)

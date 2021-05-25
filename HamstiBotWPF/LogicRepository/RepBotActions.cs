@@ -23,9 +23,7 @@ namespace TBotHamsti.LogicRepository
     /// </summary>
     public static class RepBotActions
     {
-        public static string GetHelp(PatternUser user) => (user.CurrentLevel != LevelCommand.None ? BotLevelCommand.TOPREVLEVEL.ToUpper() + "\n" : string.Empty) +
-            string.Join("\n", CollectionCommands.Values.Where(w => (w.StatusUser <= user.Status && w.Command != BotLevelCommand.TOPREVLEVEL) &&
-            user.CurrentLevel == (w is BotLevelCommand command ? command.ParrentLevel : w.NameOfLevel)).Select(s => s.ExampleCommand));
+        public static string GetHelp(PatternUser user) => string.Join("\n", BotLevelCommand.GetBotLevelCommand(user).Result.CommandsOfLevel.Where(w => (w.StatusUser <= user.Status)).Select(s => s.ExampleCommand));
 
         public static Task HelpBot(PatternUser user) => RepUsers.SendMessage(user.Id, "Список команд у бота:\n" + GetHelp(user));
 
@@ -109,9 +107,9 @@ namespace TBotHamsti.LogicRepository
         private static void ParserKeys(out string[] keys, string arg, PatternUser user)
         {
             if (bool.TryParse(arg, out bool isShowKeys))
-                keys = isShowKeys ? CollectionCommands.Values.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= user.Status).Select(s => s.Command).ToArray() : new string[0];
+                keys = isShowKeys ? CollectionCommands.RootLevel.CommandsOfLevel.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= user.Status).Select(s => s.Command).ToArray() : new string[0];
             else
-                keys = arg.ToLower() == "all" ? CollectionCommands.Values.Where(w => w.StatusUser <= user.Status).Select(s => s.Command).ToArray() : null;
+                keys = arg.ToLower() == "all" ? CollectionCommands.RootLevel.CommandsOfLevel.Where(w => w.StatusUser <= user.Status).Select(s => s.Command).ToArray() : null;
         }
 
         public static class Messages

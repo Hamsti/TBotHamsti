@@ -56,51 +56,78 @@ namespace TBotHamsti
                 if (RepUsers.IsAuthUser(message.From.Id))
                     await RepUsers.SendMessage(message.From.Id, $"На данный момент вы заблокированы. Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
                 else
-                    await RepBotActions.ControlUsers.AuthNewUser(user, message, message.From.Id);
+                    await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(user, message, message.From.Id));
             }
         }
 
         internal static async Task<bool> ExecCommand(ITCommand model, PatternUser user, Telegram.Bot.Types.Message message)
         {
-            static bool IsBotLevelCommand(ITCommand levelCommand) => levelCommand is BotLevelCommand;
-            bool isCommand = false;
-            int countCurrentCommand = CollectionCommands.Values.Count(m => m.Command.Equals(model.Command));
-            int countCurrentCommand2 = countCurrentCommand;
+            var sourceOfCommands = await BotLevelCommand.GetBotLevelCommand(user);
 
-            foreach (var command in CollectionCommands.Values)
+            foreach (var tCommand in sourceOfCommands.CommandsOfLevel)
             {
-                if (command.Command == model.Command)
+                if (tCommand.Command == model.Command && (tCommand.CountArgsCommand == model.CountArgsCommand ||
+                                                          tCommand.CountArgsCommand == -1 && model.CountArgsCommand > 0))
                 {
-                    isCommand = true;
-
-                    if (IsBotLevelCommand(command) && user.CurrentLevel == ((BotLevelCommand)command).ParrentLevel ||
-                        user.CurrentLevel == command.NameOfLevel || !command.LevelDependent)
+                    if (tCommand.StatusUser <= user.Status)
                     {
-                        if (command.CountArgsCommand == model.Args?.Length ||
-                            command.CountArgsCommand == -1 && model.Args?.Length > 0)
-                        {
-                            if (command.StatusUser <= user.Status)
-                            {
-                                command.Execute?.Invoke(model, user, message);
-                            }
-                            else
-                                await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{command.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)command.StatusUser ? " и выше" : string.Empty)}.");
-                        }
-                        else if (--countCurrentCommand < 1)
-                        {
-                            command.OnError?.Invoke(model, user, message);
-                            return isCommand;
-                        }
+                        tCommand.Execute?.Invoke(model, user, message);
                     }
-                    else if (--countCurrentCommand2 < 1)
+                    else
                     {
-                        await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{user.CurrentLevel}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
-                        return isCommand;
+                        await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{tCommand.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)tCommand.StatusUser ? " и выше" : string.Empty)}.");
                     }
+                }
+                else
+                {
                 }
             }
 
-            return isCommand;
+            model.OnError?.Invoke(model, user, message);
+            return true;
+
+
+            //static bool IsBotLevelCommand(ITCommand levelCommand) => levelCommand is BotLevelCommand;
+            //bool isCommand = false;
+            //int countCurrentCommand = CollectionCommands.RootLevel.CommandsOfLevel.Count(m => m.Command.Equals(model.Command));
+            //int countCurrentCommand2 = countCurrentCommand;
+
+            //foreach (var command in CollectionCommands.RootLevel.CommandsOfLevel)
+            //{
+
+
+            //    if (command.Command == model.Command)
+            //    {
+            //        isCommand = true;
+
+            //        if (IsBotLevelCommand(command) && user.CurrentLevel == ((BotLevelCommand)command).ParrentLevel ||
+            //            user.CurrentLevel == command.NameOfLevel || !command.LevelDependent)
+            //        {
+            //            if (command.CountArgsCommand == model.Args?.Length ||
+            //                command.CountArgsCommand == -1 && model.Args?.Length > 0)
+            //            {
+            //                if (command.StatusUser <= user.Status)
+            //                {
+            //                    command.Execute?.Invoke(model, user, message);
+            //                }
+            //                else
+            //                    await RepUsers.SendMessage(message.From.Id, $"Для выполнения команды \"{model.Command}\", необходим статус \"{command.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)command.StatusUser ? " и выше" : string.Empty)}.");
+            //            }
+            //            else if (--countCurrentCommand < 1)
+            //            {
+            //                command.OnError?.Invoke(model, user, message);
+            //                return isCommand;
+            //            }
+            //        }
+            //        else if (--countCurrentCommand2 < 1)
+            //        {
+            //            await RepUsers.SendMessage(message.From.Id, $"Текущий уровень \"{user.CurrentLevel}\". \nЗапрашиваемая комманда находится на уровне \"{command.NameOfLevel}\"");
+            //            return isCommand;
+            //        }
+            //    }
+            //}
+
+            //return isCommand;
         }
 
         /// <summary>
