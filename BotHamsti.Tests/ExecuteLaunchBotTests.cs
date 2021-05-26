@@ -23,6 +23,7 @@ namespace TBotHamsti.Tests
         [SetUp]
         public void Setup()
         {
+            LogicRepository.CollectionCommands.Init();
             CollectionCommands = LogicRepository.CollectionCommands.RootLevel.CommandsOfLevel;
 
             string JsonFileName = Settings.Default.JsonFileName;
@@ -38,7 +39,7 @@ namespace TBotHamsti.Tests
         public async Task ExecCommand_IsNormalExecute(int indexCommand, int indexUser)
         {
             // Act
-            Assert.IsTrue(await ExecCommand(CollectionCommands[indexCommand],
+            Assert.IsTrue(await ExecuteTextCommand(CollectionCommands[indexCommand],
                                             AuthUsers[indexUser],
                                             new Message()
                                             {
@@ -58,7 +59,7 @@ namespace TBotHamsti.Tests
             int indexUser = AuthUsers.Count;
 
             // Act
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ExecCommand(CollectionCommands[indexCommand],
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ExecuteTextCommand(CollectionCommands[indexCommand],
                                                                               AuthUsers[indexUser],
                                                                               new Message()
                                                                               {
@@ -78,7 +79,7 @@ namespace TBotHamsti.Tests
             int indexUser = AuthUsers.Count > 0 ? AuthUsers.Count : throw new ArgumentOutOfRangeException(nameof(AuthUsers));
 
             // Act
-            Assert.ThrowsAsync<IndexOutOfRangeException>(() => ExecCommand(CollectionCommands[indexCommand],
+            Assert.ThrowsAsync<IndexOutOfRangeException>(() => ExecuteTextCommand(CollectionCommands[indexCommand],
                                                                            AuthUsers[indexUser],
                                                                            new Message()
                                                                            {
@@ -175,12 +176,12 @@ namespace TBotHamsti.Tests
             CollectionCommands[0] = new Core.BotCommand(CollectionCommands[0].Command)
             {
                 StatusUser = statusCommand,
-                Execute = (model, user, message) => isExec = true,
-                OnError = (model, user, message) => isExec = false,
+                Execute = (model, user, message) => { isExec = true; return Task.CompletedTask; },
+                OnError = (model, user, message) => { isExec = false; return Task.CompletedTask; },
             };
 
             // Act
-            await ExecCommand(CollectionCommands[0],
+            await ExecuteTextCommand(CollectionCommands[0],
                               AuthUsers[indexUser],
                               new Message()
                               {

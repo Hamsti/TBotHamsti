@@ -6,20 +6,25 @@ using TBotHamsti.Services;
 using TBotHamsti.Messages;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
+using System.Threading.Tasks;
 
 namespace TBotHamsti.ViewModels
 {
     public class LogsViewModel : BindableBase
     {
-        private readonly MessageBus messageBus;
+        public static MessageBus MessageBus { get; private set; }
         public ObservableCollection<TextMessage> ListLogs { get; private set; }
 
         public LogsViewModel(MessageBus messageBus)
         {
             ListLogs = new ObservableCollection<TextMessage>();
-            this.messageBus = messageBus;
-            this.messageBus.Receive<TextMessage>(this, async message => ListLogs.Insert(0, new TextMessage(message.Text,
-                                                                                                           message.HorizontalAlignment)));
+            MessageBus = messageBus;
+            MessageBus.Receive<TextMessage>(this, message =>
+            {
+                ListLogs.Insert(0, new TextMessage(message.Text, message.HorizontalAlignment));
+                return Task.CompletedTask;
+            });
+
             App.Api.OnMessageEdited += BotOnMessageReceived;
             App.Api.OnMessage += BotOnMessageReceived;
             App.Api.OnReceiveError += BotOnReceiveError;

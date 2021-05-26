@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using TBotHamsti.Core;
 
 namespace TBotHamsti.LogicRepository
@@ -43,25 +42,23 @@ namespace TBotHamsti.LogicRepository
             Upload();
         }
 
-        public static async Task SendMessage(string message, StatusUser status = StatusUser.Admin)
+        public static async Task SendMessageAsync(this StatusUser status, string message)
         {
             IEnumerable<PatternUser> findedUsers = AuthUsers.Where(user => user.Status == status);
 
             foreach (var user in findedUsers)
-                await SendMessage(user.Id, message);
+                await user.SendMessageAsync(message);
         }
 
-        public static PatternUser GetUser(int id) => AuthUsers.Where(user => user.Id == id).DefaultIfEmpty(new PatternUser()).FirstOrDefault();
-
-        public static async Task SendMessage(int Id, string message)
+        public static async Task SendMessageAsync(this PatternUser user, string message)
         {
             try
             {
-                await App.Api.SendTextMessageAsync(Id, message);
+                await App.Api.SendTextMessageAsync(user.Id, message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //_ = Task.Run(() => MessageBox.Show(ex.Message));
+                await App.Api.SendTextMessageAsync(user.Id, ex.Message);
             };
         }
 
@@ -116,22 +113,10 @@ namespace TBotHamsti.LogicRepository
         public static void Refresh() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.Id));
 
         /// <summary>
-        /// Checks if this user is in the list of authorized users and not IsBlocked
-        /// </summary>
-        /// <param name="Id">Message.From.Id</param>
-        public static bool IsAuthNotIsBlockedUser(int Id) => AuthUsers.Count(user => user.Id == Id && user.IsBlocked == false) > 0;
-
-        /// <summary>
         /// Checks if this user is in the list of authorized users
         /// </summary>
-        /// <param name="Id">Message.From.Id</param>
-        public static bool IsAuthUser(int Id) => AuthUsers.Count(user => user.Id == Id) > 0;
-
-        /// <summary>
-        /// Find user status
-        /// </summary>
-        /// <param name="Id">Message.From.Id</param>
-        public static StatusUser GetStatusUser(int Id) => AuthUsers.Where(w => w.Id == Id).DefaultIfEmpty(new PatternUser()).Select(s => s.Status).FirstOrDefault();
+        /// <param name="id">Message.From.Id</param>
+        public static PatternUser GetUser(int id) => AuthUsers.Where(user => user.Id == id).First();
 
         /// <summary>
         /// Replace items in source collection with does creating new
