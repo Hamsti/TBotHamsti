@@ -152,16 +152,16 @@
                     </RadioButton.Style>
                 </RadioButton>
                 <RadioButton GroupName="StatusUser" 
-                         Content="Moderator"
+                         Content="Moder"
                          Command="{Binding ChangeUserStatus}"
-                         CommandParameter="Moderator">
+                         CommandParameter="Moder">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
                                 </Trigger>
-                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Moderator" >
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Moder" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                             </Style.Triggers>
@@ -188,14 +188,14 @@
                 <RadioButton GroupName="StatusUser" 
                          Content="Not defined" 
                          Command="{Binding ChangeUserStatus}"
-                         CommandParameter="NotDefined">
+                         CommandParameter="None">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
                             <Style.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
                                 </Trigger>
-                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="NotDefined" >
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="None" >
                                     <Setter Property="IsChecked" Value="True" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding SelectedUserItem}" Value="{x:Null}" >

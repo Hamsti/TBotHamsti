@@ -40,7 +40,7 @@ namespace TBotHamsti.Core
             IsBlocked = false;
             IsSetBookmark = false;
             LocalNickname = null;
-            Status = StatusUser.NotDefined;
+            Status = StatusUser.None;
             CurrentLevel = BotLevelCommand.RootLevel.NameOfLevel;
         }
 

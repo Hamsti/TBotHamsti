@@ -150,6 +150,7 @@
     <Compile Include="Services\MessageBus.cs" />
     <Compile Include="Services\PageService.cs" />
     <Compile Include="Services\Subscriber.cs" />
+    <Compile Include="Themes\LeftMarginMultiplierConverter.cs" />
     <Compile Include="ViewModelLocator.cs" />
     <Compile Include="ViewModels\CommandsControlViewModel.cs" />
     <Compile Include="ViewModels\CommonControlUserDataViewModel.cs" />

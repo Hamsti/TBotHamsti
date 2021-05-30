@@ -157,13 +157,13 @@ namespace TBotHamsti.Tests
         //}
 
 
-        [TestCase(StatusUser.NotDefined, StatusUser.NotDefined)]
-        [TestCase(StatusUser.NotDefined, StatusUser.User)]
-        [TestCase(StatusUser.NotDefined, StatusUser.Moderator)]
-        [TestCase(StatusUser.NotDefined, StatusUser.Admin)]
-        [TestCase(StatusUser.Admin, StatusUser.NotDefined)]
+        [TestCase(StatusUser.None, StatusUser.None)]
+        [TestCase(StatusUser.None, StatusUser.User)]
+        [TestCase(StatusUser.None, StatusUser.Moder)]
+        [TestCase(StatusUser.None, StatusUser.Admin)]
+        [TestCase(StatusUser.Admin, StatusUser.None)]
         [TestCase(StatusUser.Admin, StatusUser.User)]
-        [TestCase(StatusUser.Admin, StatusUser.Moderator)]
+        [TestCase(StatusUser.Admin, StatusUser.Moder)]
         [TestCase(StatusUser.Admin, StatusUser.Admin)]
         public async Task ExecCommand_IsHasAccessToCommand(StatusUser statusCommand, StatusUser statusUser)
         {

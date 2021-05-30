@@ -16,9 +16,9 @@ namespace TBotHamsti.LogicRepository
     {
         public enum StatusUser
         {
-            NotDefined,
+            None,
             User,
-            Moderator,
+            Moder,
             Admin
         }
 
@@ -47,14 +47,24 @@ namespace TBotHamsti.LogicRepository
             IEnumerable<PatternUser> findedUsers = AuthUsers.Where(user => user.Status == status);
 
             foreach (var user in findedUsers)
+            {
                 await user.SendMessageAsync(message);
+            }
         }
 
         public static async Task SendMessageAsync(this PatternUser user, string message)
         {
             try
             {
-                await App.Api.SendTextMessageAsync(user.Id, message);
+                if (user is null)
+                {
+                    await ViewModels.LogsViewModel.MessageBus.SendTo<ViewModels.LogsViewModel>(new Messages.TextMessage(
+                        "User is null, message did't send: \"" + message + "\"", System.Windows.HorizontalAlignment.Right));
+                }
+                else
+                {
+                    await App.Api.SendTextMessageAsync(user.Id, message);
+                }
             }
             catch (Exception ex)
             {
@@ -116,7 +126,7 @@ namespace TBotHamsti.LogicRepository
         /// Checks if this user is in the list of authorized users
         /// </summary>
         /// <param name="id">Message.From.Id</param>
-        public static PatternUser GetUser(int id) => AuthUsers.Where(user => user.Id == id).First();
+        public static PatternUser GetUser(int id) => AuthUsers.Where(user => user.Id == id).FirstOrDefault();
 
         /// <summary>
         /// Replace items in source collection with does creating new

@@ -24,7 +24,7 @@ namespace TBotHamsti
         public static async void CheckMessageBot(object sender, MessageEventArgs messageEventArgs)
         {
             var message = messageEventArgs.Message;
-            var user = RepUsers.AuthUsers.Where(user => user.Id == message.From.Id).First();
+            var user = RepUsers.AuthUsers.Where(user => user.Id == message.From.Id).FirstOrDefault();
 
             if (message is null)
             {

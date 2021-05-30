@@ -44,14 +44,15 @@ namespace TBotHamsti.LogicRepository
             HelpCommand = new BotCommand("/help")
             {
                 NameOfLevel = LevelCommand.All,
+                StatusUser = StatusUser.None,
                 Execute = async (model, user, message) => await RepBotActions.HelpBot(user)
             };
             RootLevel.AppendToSomeLevels(HelpCommand);
 
             RootLevel.AppendToSomeLevels(new BotCommand("/start")
             {
-                NameOfLevel = LevelCommand.All,
-                //LevelDependent = false,
+                NameOfLevel = LevelCommand.Root | LevelCommand.Users | LevelCommand.Messages,
+                StatusUser = StatusUser.None,
                 Execute = async (model, user, message) => await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(message, null, message.From.Id))
             });
 
@@ -64,7 +65,7 @@ namespace TBotHamsti.LogicRepository
             SendMessageToAdminCommand = new BotCommand("/writeToAdmin", "[Message text]", -1)
             {
                 NameOfLevel = LevelCommand.All,
-                //LevelDependent = false,
+                StatusUser = StatusUser.None,
                 Execute = async (model, user, message) => await RepBotActions.Messages.UserSentToAdmin(user, model.Args)
             };
             MessagesLevel.AppendToSomeLevels(SendMessageToAdminCommand);
@@ -135,7 +136,7 @@ namespace TBotHamsti.LogicRepository
 
             UsersLevel.AppendOnlyToThisLevel(new BotCommand("/nickname", "[Id user] [New nickname]", -1)
             {
-                StatusUser = StatusUser.Moderator,
+                StatusUser = StatusUser.Moder,
                 Execute = async (model, user, message) =>
                 {
                     if (model.Args.Length >= 2)

@@ -3,44 +3,17 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:TBotHamsti.Pages"
+      xmlns:local="clr-namespace:TBotHamsti"
+      xmlns:themes="clr-namespace:TBotHamsti.Themes"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       DataContext="{Binding CommandsControlViewModel, Source={StaticResource ViewModelLocator}}"
       Title="CommandsControlPage">
 
     <Grid>
-        <ListView ItemsSource="{Binding ListCommands}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding NameOfLevel}" 
-                                    Header="Level" />
-                    <GridViewColumn Header="Args"
-                                    Width="Auto">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="0.5*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding CountArgsCommand}" TextAlignment="Right"/>
-                                </Grid>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding ExampleCommand}" 
-                                    Header="Example command" 
-                                    Width="Auto"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding StatusUser}"
-                                    Header="Status"
-                                    Width="Auto" />
-                    <GridViewColumn DisplayMemberBinding="{Binding LevelDependent}"
-                                    Header="Global"
-                                    Width="Auto" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <TreeView ItemsSource="{Binding ListCommands}" 
+                  Style="{StaticResource TreeViewITCommand}" />
+
         <TextBlock Text="Not found commands">
             <TextBlock.Style>
                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockMessageStyle}">
