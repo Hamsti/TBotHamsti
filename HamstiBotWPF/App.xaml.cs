@@ -18,8 +18,8 @@ namespace TBotHamsti
         protected override void OnStartup(StartupEventArgs e)
         {
             UiContext = SynchronizationContext.Current;
-            ViewModelLocator.Init();
-            LogicRepository.CollectionCommands.Init();
+            Services.ViewModelLocator.Init();
+            Models.CollectionCommands.Init();
             base.OnStartup(e);
         }
     }

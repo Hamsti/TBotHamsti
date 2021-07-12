@@ -1,15 +1,15 @@
 ﻿using DevExpress.Mvvm;
-using System.Windows;
-using System.Windows.Input;
-using System.Collections.ObjectModel;
-using TBotHamsti.Services;
-using TBotHamsti.Messages;
-using Telegram.Bot.Args;
-using Telegram.Bot.Types.Enums;
-using System.Threading.Tasks;
 using System;
-using TBotHamsti.Core;
-using TBotHamsti.LogicRepository;
+using System.Windows;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using TBotHamsti.Services;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Models.Users;
+using TBotHamsti.Models;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Args;
 
 namespace TBotHamsti.ViewModels
 {
@@ -39,10 +39,10 @@ namespace TBotHamsti.ViewModels
         /// </summary>
         private async void Api_AdapterOnMessage_EditedAlso(object sender, MessageEventArgs e)
         {
-            PatternUser user = RepUsers.GetUser(e.Message.From.Id);
+            User user = UsersFunc.GetUser(e.Message.From.Id);
             try
             {
-                await ExecuteLaunchBot.CheckMessageBot(e.Message, user);
+                await ExecutionBot.CheckMessage(e.Message, user);
             }
             catch (Exception ex)
             {

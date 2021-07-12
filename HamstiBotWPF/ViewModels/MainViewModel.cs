@@ -1,14 +1,14 @@
 ﻿using DevExpress.Mvvm;
 using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using TBotHamsti.Services;
-using TBotHamsti.Pages;
-using TBotHamsti.Messages;
-using TBotHamsti.LogicRepository;
+using TBotHamsti.Views;
+using TBotHamsti.Models.Users;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Models;
 
 namespace TBotHamsti.ViewModels
 {
@@ -37,7 +37,7 @@ namespace TBotHamsti.ViewModels
         public ICommand UserControlPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new UsersControlPage());
-            LogicRepository.RepUsers.Refresh();
+            UsersFunc.Refresh();
         }, () => PageSourceTitle != "UsersControlPage");
 
         public ICommand CommandsControlPageChange => new DelegateCommand(() =>
@@ -76,8 +76,8 @@ namespace TBotHamsti.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
-                RepUsers.Upload();
-                await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
+                UsersFunc.Upload();
+                await Task.Run(() => ExecutionBot.RunBotAsync());
                 if (App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot launched successfully", HorizontalAlignment.Right));
             }
@@ -92,8 +92,8 @@ namespace TBotHamsti.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
-                RepUsers.SaveRefresh();
-                await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
+                UsersFunc.SaveRefresh();
+                await Task.Run(() => ExecutionBot.StopBotAsync());
                 if (!App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully stopped", HorizontalAlignment.Right));
             }
@@ -108,7 +108,7 @@ namespace TBotHamsti.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Restart bot", HorizontalAlignment.Center));
-                await Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
+                await Task.Run(() => ExecutionBot.RestartBotAsync());
                 if (App.Api.IsReceiving)
                     await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully restarted", HorizontalAlignment.Right));
             }

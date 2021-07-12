@@ -2,33 +2,31 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
-using TBotHamsti.Core;
-using TBotHamsti.LogicRepository;
+using TBotHamsti.Models.Commands;
+using TBotHamsti.Models.Users;
 using TBotHamsti.Properties;
 using Telegram.Bot.Types;
-using static TBotHamsti.ExecuteLaunchBot;
-using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
-using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
+using static TBotHamsti.Models.ExecutionBot;
+using BotCommand = TBotHamsti.Models.Commands.BotCommand;
 
 namespace TBotHamsti.Tests
 {
     [TestFixture]
     public class ExecuteLaunchBot
     {
-        private ObservableCollection<PatternUser> AuthUsers;
-        private static IList<ITCommand> CollectionCommands;
+        private ObservableCollection<User> AuthUsers;
+        private static IList<ICommand> CollectionCommands;
 
         [SetUp]
         public void Setup()
         {
-            LogicRepository.CollectionCommands.Init();
-            CollectionCommands = LogicRepository.CollectionCommands.RootLevel.CommandsOfLevel;
+            Models.CollectionCommands.Init();
+            CollectionCommands = Models.CollectionCommands.RootLevel.CommandsOfLevel;
 
             string JsonFileName = Settings.Default.JsonFileName;
             Settings.Default.PropertyValues["JsonFileName"].PropertyValue = @"HamstiBotWPF\bin\Debug\" + JsonFileName;
-            AuthUsers = RepUsers.AuthUsers;
+            AuthUsers = UsersFunc.AuthUsers;
         }
 
 
@@ -39,7 +37,7 @@ namespace TBotHamsti.Tests
         public async Task ExecCommand_IsNormalExecute(int indexCommand, int indexUser)
         {
             // Act
-            Assert.IsTrue(await ExecuteTextCommand(CollectionCommands[indexCommand],
+            Assert.DoesNotThrow(async () => await ExecuteTextCommand(CollectionCommands[indexCommand],
                                             AuthUsers[indexUser],
                                             new Message()
                                             {
@@ -169,11 +167,11 @@ namespace TBotHamsti.Tests
         {
             // Arrange
             bool? isExec = null;
-            var tempUser = new PatternUser(AuthUsers[0]) { Id = 0, Status = statusUser };
+            var tempUser = new User(AuthUsers[0]) { Id = 0, Status = statusUser };
             AuthUsers.Add(tempUser);
             int indexUser = AuthUsers.IndexOf(tempUser);
 
-            CollectionCommands[0] = new Core.BotCommand(CollectionCommands[0].Command)
+            CollectionCommands[0] = new BotCommand(CollectionCommands[0].Command)
             {
                 StatusUser = statusCommand,
                 Execute = (model, user, message) => { isExec = true; return Task.CompletedTask; },

@@ -3,7 +3,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using TBotHamsti.Services;
-using TBotHamsti.Messages;
+using TBotHamsti.Models.Messages;
 
 namespace TBotHamsti.ViewModels
 {
@@ -48,7 +48,7 @@ namespace TBotHamsti.ViewModels
 
         private static void ChangeTheInterfaceForDarkTheme()
         {
-            Uri uri = new Uri("pack://application:,,,/TBotHamsti;component/Themes/Dark.xaml");
+            Uri uri = new Uri("pack://application:,,,/TBotHamsti;component/Views/Themes/Dark.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = true;
@@ -57,7 +57,7 @@ namespace TBotHamsti.ViewModels
 
         private static void ChangeTheInterfaceForLightTheme()
         {
-            Uri uri = new Uri($"pack://application:,,,/TBotHamsti;component/Themes/Light.xaml");
+            Uri uri = new Uri($"pack://application:,,,/TBotHamsti;component/Views/Themes/Light.xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
             Properties.Settings.Default.UsedDarkTheme = false;

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HamstiBotWPF\BotHamsti.csproj" />
+    <ProjectReference Include="..\HamstiBotWPF\TBotHamsti.csproj" />
   </ItemGroup>
 
 </Project>

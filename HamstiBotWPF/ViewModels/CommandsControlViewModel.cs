@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using TBotHamsti.Core;
-using TBotHamsti.LogicRepository;
+using TBotHamsti.Models;
+using TBotHamsti.Models.Commands;
 
 namespace TBotHamsti.ViewModels
 {
     public class CommandsControlViewModel
     {
-        public IList<ITCommand> ListCommands => CollectionCommands.RootLevel.CommandsOfLevel;
+        public IList<ICommand> ListCommands => CollectionCommands.RootLevel.CommandsOfLevel;
 
         public CommandsControlViewModel() { }
     }

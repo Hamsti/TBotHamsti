@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using TBotHamsti.Messages;
+using TBotHamsti.Models.Messages;
 
 namespace TBotHamsti.Services
 {

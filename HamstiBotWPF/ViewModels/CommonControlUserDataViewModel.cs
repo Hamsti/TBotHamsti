@@ -4,12 +4,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using TBotHamsti.Core;
-using TBotHamsti.LogicRepository;
-using TBotHamsti.Messages;
-using TBotHamsti.Pages;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Models.Users;
+using TBotHamsti.Views;
 using TBotHamsti.Services;
-using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 
 namespace TBotHamsti.ViewModels
 {
@@ -25,12 +23,12 @@ namespace TBotHamsti.ViewModels
         private readonly PageService pageService;
         private readonly MessageBus messageBus;
         private readonly System.Text.RegularExpressions.Regex regex;
-        public static ObservableCollection<PatternUser> ListUsers => RepUsers.AuthUsers;
+        public static ObservableCollection<User> ListUsers => UsersFunc.AuthUsers;
 
-        private PatternUser selectedUserItem;
-        private PatternUser selectedUserBeforeModify;
+        private User selectedUserItem;
+        private User selectedUserBeforeModify;
 
-        public PatternUser SelectedUserItem => selectedUserItem;
+        public User SelectedUserItem => selectedUserItem;
 
         public ModeEditUser ModeEditUser
         {
@@ -49,15 +47,15 @@ namespace TBotHamsti.ViewModels
         public ICommand CreateUser => new AsyncCommand(async () =>
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserItem.IdUser_Nickname}", HorizontalAlignment.Right));
-            ListUsers.Add(new PatternUser(SelectedUserItem));
-            RepUsers.SaveRefresh();
+            ListUsers.Add(new User(SelectedUserItem));
+            UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
         });
 
         public ICommand ModifyUser => new AsyncCommand(async () =>
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.IdUser_Nickname} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            RepUsers.SaveRefresh();
+            UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
         });
 
@@ -65,7 +63,7 @@ namespace TBotHamsti.ViewModels
         {
             ListUsers.Remove(SelectedUserItem);
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}", HorizontalAlignment.Right));
-            RepUsers.SaveRefresh();
+            UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
         });
 
@@ -82,7 +80,7 @@ namespace TBotHamsti.ViewModels
             if (ListUsers.Remove(SelectedUserItem))
             {
                 ListUsers.Add(selectedUserBeforeModify);
-                RepUsers.Refresh();
+                UsersFunc.Refresh();
             }
 
             pageService.ChangePage(new UsersControlPage());
@@ -112,21 +110,21 @@ namespace TBotHamsti.ViewModels
         public ICommand ModifyUserPageChange => new DelegateCommand<object>((obj) =>
         {
             ModeEditUser = ModeEditUser.Edit;
-            selectedUserBeforeModify = new PatternUser(SetUser(obj));
+            selectedUserBeforeModify = new User(SetUser(obj));
             pageService.ChangePage(new ChangeUserDataPage());
         });
 
         public ICommand DeleteUserPageChange => new DelegateCommand<object>((obj) =>
         {
             ModeEditUser = ModeEditUser.Delete;
-            selectedUserBeforeModify = new PatternUser(SetUser(obj));
+            selectedUserBeforeModify = new User(SetUser(obj));
             pageService.ChangePage(new ChangeUserDataPage());
         });
         
         public ICommand CreateUserPageChange => new DelegateCommand(() =>
         {
             ModeEditUser = ModeEditUser.Create;
-            selectedUserItem = new PatternUser();
+            selectedUserItem = new User();
             pageService.ChangePage(new ChangeUserDataPage());
         });
         
@@ -134,17 +132,17 @@ namespace TBotHamsti.ViewModels
         {
             SetUser(obj).IsSetBookmark = !SelectedUserItem.IsSetBookmark;
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Set bookmark user: ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            RepUsers.SaveRefresh();
+            UsersFunc.SaveRefresh();
         });
 
         public ICommand BlockUser => new AsyncCommand<object>(async (obj) =>
         {
             SetUser(obj).IsBlocked = !SelectedUserItem.IsBlocked;
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Block user: ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            RepUsers.SaveRefresh();
+            UsersFunc.SaveRefresh();
         });
 
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e) => e.Handled = regex.IsMatch(e.Text);
-        private PatternUser SetUser(object obj) => selectedUserItem = ListUsers.Where(w => w.Equals(obj)).DefaultIfEmpty(new PatternUser()).SingleOrDefault();
+        private User SetUser(object obj) => selectedUserItem = ListUsers.Where(w => w.Equals(obj)).DefaultIfEmpty(new User()).SingleOrDefault();
     }
 }

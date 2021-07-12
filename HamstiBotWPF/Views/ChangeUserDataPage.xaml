@@ -1,0 +1,270 @@
+﻿<Page x:Class="TBotHamsti.Views.ChangeUserDataPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:TBotHamsti.Views"
+      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+      xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+      xmlns:prop="clr-namespace:TBotHamsti.Properties"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding CommonControlUserDataViewModel, Source={StaticResource ViewModelLocator}}"
+      Title="ChangeUserDataPage">
+
+    <Page.Resources>
+        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" 
+                           MaxHeight="350"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Margin="4, 1">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Delete">
+                            <Setter Property='IsEnabled' Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.8*"
+                               MaxHeight="33"/>
+                <RowDefinition Height="1.1*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="1.1*"/>
+                <RowDefinition Height="1.2*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="0.8*"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text ="Id user"
+                       VerticalAlignment="Bottom"/>
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="1"
+                        VerticalAlignment="Top">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Resources>
+                
+                <TextBox Grid.Row="1" 
+                         x:Name="idUserTextBox"
+                         HorizontalAlignment="Left"
+                         Width="97" 
+                         Text="{Binding SelectedUserItem.Id}" 
+                         MaxLength="{Binding SelectedUserItem.MaxLenghtIdUser}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewTextInput" >
+                            <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+                
+                <TextBlock Margin="4,0,1,0" Text="{Binding ElementName=idUserTextBox, Path=Text.Length}" />
+                <TextBlock Text="/" />
+                <TextBlock Text="{Binding SelectedUserItem.MaxLenghtIdUser}" />
+                <TextBlock Text="- lenght less than 9 numbers!">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=idUserTextBox, Path=IsFocused}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding ElementName=idUserTextBox, Path=IsFocused}" Value="False" />
+                                        <Condition Binding="{Binding ElementName=idUserTextBox, Path=Text.Length}" Value="9" />
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+
+            <TextBlock Text="Nickname" 
+                       VerticalAlignment="Bottom"
+                       Grid.Row="2" />
+            <TextBox Grid.Row="3"  
+                     Text="{Binding SelectedUserItem.LocalNickname}" />
+
+            
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="5">
+                <TextBlock Text="Bookmark" />
+                <CheckBox Style="{StaticResource OrangeSwitchStyle}" 
+                          IsChecked="{Binding SelectedUserItem.IsSetBookmark}"
+                          Command="{Binding ChangeUserBookmark}" 
+                          CommandParameter="{Binding SelectedUserItem.IsSetBookmark}" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="4">
+                <TextBlock Text="Is blocked" />
+                <CheckBox Style="{StaticResource OrangeSwitchStyle}" 
+                          IsChecked="{Binding SelectedUserItem.IsBlocked}"
+                          Command="{Binding ChangeUserBlock}" 
+                          CommandParameter="{Binding SelectedUserItem.IsBlocked}" />
+            </StackPanel>
+            
+           
+            <TextBlock Text="Status"
+                       VerticalAlignment="Bottom"
+                       Grid.Row="6" />
+            <WrapPanel Orientation="Horizontal" 
+                       VerticalAlignment="Top" 
+                       Grid.Row="7" >
+                <RadioButton GroupName="StatusUser" 
+                             Content="Admin"
+                             Command="{Binding ChangeUserStatus}"
+                             CommandParameter="Admin">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Admin" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
+                         Content="Moder"
+                         Command="{Binding ChangeUserStatus}"
+                         CommandParameter="Moder">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="Moder" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
+                         Content="User"
+                         Command="{Binding ChangeUserStatus}"
+                         CommandParameter="User">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="User" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton GroupName="StatusUser" 
+                         Content="Not defined" 
+                         Command="{Binding ChangeUserStatus}"
+                         CommandParameter="None">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource GrayColor}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem.Status}" Value="None" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedUserItem}" Value="{x:Null}" >
+                                    <Setter Property="IsChecked" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+            </WrapPanel>
+        </Grid>
+
+        
+        <Grid Grid.Row="1"
+              VerticalAlignment="Bottom" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            
+            <Button Content="Cancel" 
+                    Command="{Binding CommonControlUserDataViewModel.CancelEditingUser, Source={StaticResource ViewModelLocator}}" />
+
+            <Grid Grid.Column="1">
+                <Button Content="Create" 
+                        Command="{Binding CommonControlUserDataViewModel.CreateUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Create">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Modify" 
+                        Command="{Binding CommonControlUserDataViewModel.ModifyUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Edit">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Delete" 
+                        Command="{Binding CommonControlUserDataViewModel.ConfirmDeleteUser, Source={StaticResource ViewModelLocator}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommonControlUserDataViewModel.ModeEditUser, Source={StaticResource ViewModelLocator}}"
+                                         Value="Delete">
+                                    <Setter Property='Visibility' Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
