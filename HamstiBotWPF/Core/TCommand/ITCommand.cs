@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using TBotHamsti.LogicRepository;
+using TBotHamsti.Messages;
 using Telegram.Bot.Types;
 
 namespace TBotHamsti.Core
@@ -14,6 +15,6 @@ namespace TBotHamsti.Core
         RepUsers.StatusUser StatusUser { get; set; }
         BotLevelCommand.LevelCommand NameOfLevel { get; }
         Func<ITCommand, PatternUser, Message, Task> Execute { get; }
-        Func<ITCommand, PatternUser, Message, Task> OnError { get; }
+        Func<TextMessage, PatternUser, Message, Task> OnError { get; }
     }
 }

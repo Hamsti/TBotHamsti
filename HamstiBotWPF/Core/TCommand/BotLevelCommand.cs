@@ -4,6 +4,7 @@ using Telegram.Bot.Types;
 using TBotHamsti.LogicRepository;
 using System.Collections.Generic;
 using static TBotHamsti.LogicRepository.RepUsers;
+using TBotHamsti.Messages;
 
 namespace TBotHamsti.Core
 {
@@ -23,10 +24,10 @@ namespace TBotHamsti.Core
 
         private static readonly List<BotLevelCommand> allAddedLevels;
         private readonly List<ITCommand> commandsOfLevel;
+        private static string DefaultErrorMessage => "An error occurred while changing the command level. To get the list of commands: " + CollectionCommands.HelpCommand.ExampleCommand;
 
         public static BotLevelCommand RootLevel { get; }
         public static BotLevelCommand UPLevel { get; }
-
 
         public string Command { get; private set; }
         public string ExampleCommand => Command.ToUpper();
@@ -36,6 +37,9 @@ namespace TBotHamsti.Core
         public LevelCommand NameOfLevel { get; private set; } //id
         public IList<ITCommand> CommandsOfLevel => commandsOfLevel.AsReadOnly(); //children
         public BotLevelCommand ParrentLevel { get; set; } = null; //parrent
+        public Func<ITCommand, PatternUser, Message, Task> Execute { get; private set; }
+        public Func<TextMessage, PatternUser, Message, Task> OnError { get; private set; } = async (messageError, user, message)
+            => await user.SendMessageAsync(messageError?.Text ?? DefaultErrorMessage);
 
         static BotLevelCommand()
         {
@@ -48,16 +52,10 @@ namespace TBotHamsti.Core
                 NameOfLevel = LevelCommand.All ^ LevelCommand.Root,
                 Execute = async (model, user, message) =>
                 {
-                    if (user.CurrentLevel != RootLevel.NameOfLevel)
-                    {
-                        user.CurrentLevel = GetBotLevelCommand(user).Result.ParrentLevel.NameOfLevel;
-                        await SendMessageWhenLevelChanges(user);
-                    }
-                    else
-                    {
-                        await user.SendMessageAsync("You're at the beginner level - " + RootLevel.NameOfLevel);
-                    }
-                }
+                    user.CurrentLevel = GetBotLevelCommand(user).ParrentLevel.NameOfLevel;
+                    await user.SendMessageAsync(MessageWhenLevelChanges(user));
+                },
+                OnError = async (messageError, user, message) => await user.SendMessageAsync("You're at the beginner level - " + RootLevel.NameOfLevel)
             };
         }
 
@@ -66,55 +64,40 @@ namespace TBotHamsti.Core
             NameOfLevel = nameOfLevel;
             commandsOfLevel = new List<ITCommand>();
             Command = "/" + nameOfLevel.ToString().ToLower();
+            Execute = ChangeLevel;
         }
-
-        /// <summary>
-        /// Processing commands for change current level
-        /// </summary>
-        public Func<ITCommand, PatternUser, Message, Task> Execute { get; private set; } = async (model, user, message) =>
-        {
-            foreach (var level in allAddedLevels)
-            {
-                if (level.Command == model.Command && user.CurrentLevel.HasFlag(level.ParrentLevel.NameOfLevel))
-                {
-                    user.CurrentLevel = level.NameOfLevel;
-                    await SendMessageWhenLevelChanges(user);
-                }
-            }
-        };
-
-        /// <summary>
-        /// Execute if have error when change level commands
-        /// </summary>
-        public Func<ITCommand, PatternUser, Message, Task> OnError { get; private set; } = async (model, user, message) =>
-               await user.SendMessageAsync("An error occurred while changing the command level. To get the list of commands: " + CollectionCommands.HelpCommand.ExampleCommand);
 
         public void AppendOnlyToThisLevel(ITCommand tCommand)
         {
             static bool isSetMoreThanOneBit(int number) => (number != 0) && ((number & (number - 1)) != 0);
-
-            if (!commandsOfLevel.Contains(tCommand))
+            if (commandsOfLevel.Contains(tCommand))
             {
-                switch (tCommand)
-                {
-                    case BotCommand botCommand: botCommand.NameOfLevel |= NameOfLevel; break;
-                    case BotLevelCommand botLevel:
-                        botLevel.ParrentLevel = this;
-                        allAddedLevels.Add(botLevel); break;
-                }
-
-                if (isSetMoreThanOneBit((int)tCommand.NameOfLevel))
-                {
-                    throw new ArgumentException($"\"{tCommand.Command}\" has set more than 1 level! Use for setting 2 and more levels \"AppendToSomeLevels\"", nameof(tCommand.NameOfLevel));
-                }
-
-                commandsOfLevel.Add(tCommand);
+                throw new ArgumentException($"{NameOfLevel} contain {tCommand.ExampleCommand} already", nameof(commandsOfLevel));
             }
+
+            switch (tCommand)
+            {
+                case BotCommand botCommand: botCommand.NameOfLevel |= NameOfLevel; break;
+                case BotLevelCommand botLevel:
+                    botLevel.ParrentLevel = this;
+                    allAddedLevels.Add(botLevel); break;
+            }
+
+            if (isSetMoreThanOneBit((int)tCommand.NameOfLevel))
+            {
+                throw new ArgumentException($"\"{tCommand.Command}\" has set more than 1 level! Use for setting 2 and more levels \"AppendToSomeLevels\"", nameof(tCommand.NameOfLevel));
+            }
+
+            commandsOfLevel.Add(tCommand);
         }
 
-        public void AppendToSomeLevels(ITCommand tCommand)
+        public static void AppendToSomeLevels(ITCommand tCommand)
         {
             LevelCommand checkCorrectLevelAddition = tCommand.NameOfLevel;
+            if (tCommand is BotLevelCommand && tCommand != UPLevel)
+            {
+                throw new ArgumentException($"It's allowed to add any {nameof(ITCommand)}, but only {UPLevel.ExampleCommand} of the {nameof(BotLevelCommand)} type");
+            }
 
             foreach (var botLevel in allAddedLevels)
             {
@@ -131,31 +114,34 @@ namespace TBotHamsti.Core
             }
         }
 
-        public static async Task<BotLevelCommand> GetBotLevelCommand(PatternUser user)
+        public static BotLevelCommand GetBotLevelCommand(PatternUser user)
         {
-            BotLevelCommand botLevel = allAddedLevels.Find(f => f.NameOfLevel == user.CurrentLevel);
-
-            if (botLevel is null)
+            if (user is null)
             {
-                botLevel = RootLevel;
-                user.CurrentLevel = botLevel.NameOfLevel;
-                await user.SendMessageAsync($"Unknown user level. Changed on {botLevel.NameOfLevel} level");
+                throw new ArgumentNullException(nameof(user));
             }
 
-            if (botLevel.ParrentLevel != null && !botLevel.CommandsOfLevel.Contains(UPLevel))
+            BotLevelCommand botLevel = allAddedLevels.Find(f => f.NameOfLevel == user.CurrentLevel);
+            if (botLevel is null)
             {
-                throw new ArgumentException($"Level \"{botLevel.NameOfLevel}\" doesn't contain of {nameof(BotLevelCommand)} for return to prevent level", nameof(UPLevel));
+                user.CurrentLevel = RootLevel.NameOfLevel;
+                throw new ArgumentException($"Unknown user level. Changed on {user.CurrentLevel} level", nameof(user.CurrentLevel));
             }
 
             return botLevel;
         }
 
-
-        private static async Task SendMessageWhenLevelChanges(PatternUser user)
+        private async Task ChangeLevel(ITCommand model, PatternUser user, Message message)
         {
-            string messageWhenLevelChanges = "Current level: " + user.CurrentLevel + "\n\nList of commands:\n";
-
-            await user.SendMessageAsync(messageWhenLevelChanges + RepBotActions.GetHelp(user));
+            if (!user.CurrentLevel.HasFlag(ParrentLevel.NameOfLevel))
+            {
+                throw new ArgumentException(DefaultErrorMessage, nameof(user.CurrentLevel));
+            }
+            
+            user.CurrentLevel = NameOfLevel;
+            await user.SendMessageAsync(MessageWhenLevelChanges(user));
         }
+
+        private static string MessageWhenLevelChanges(PatternUser user) => "Current level: " + user.CurrentLevel + "\n\nList of commands:\n" + RepBotActions.GetHelp(user);
     }
 }

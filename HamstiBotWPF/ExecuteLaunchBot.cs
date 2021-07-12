@@ -10,6 +10,7 @@ using TBotHamsti.LogicRepository;
 using TBotHamsti.ViewModels;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 using BotCommand = TBotHamsti.Core.BotCommand;
+using TBotHamsti.Messages;
 
 namespace TBotHamsti
 {
@@ -21,35 +22,36 @@ namespace TBotHamsti
         /// <summary>
         /// Listening to all incoming messages
         /// </summary>
-        public static async void CheckMessageBot(object sender, MessageEventArgs messageEventArgs)
+        public static async Task CheckMessageBot(Message message, PatternUser user = null)
         {
-            var message = messageEventArgs.Message;
-            var user = RepUsers.AuthUsers.Where(user => user.Id == message.From.Id).FirstOrDefault();
-
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
+            var model = BotCommand.ParseMessage(message) ?? throw new ArgumentNullException("Parse message");
             if (user is null)
             {
-                user = await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(message, null, message.From.Id)).Result;
+                user = await RepBotActions.ControlUsers.StartCommandUser(message);
             }
-
-            if (user.IsBlocked)
+            else if (user.IsBlocked && model.Command != CollectionCommands.SendMessageToAdminCommand.Command)
             {
-                await user.SendMessageAsync($"You're locked out now. Ask the bot admin {await App.Api.GetMeAsync()} to add you to the list of allowed users\n\nTo write the bot admin: \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"");
+                await user.SendMessageAsync($"You're [{user.Id}] locked out now. Ask the bot admin {await App.Api.GetMeAsync()} to add you to the list of allowed users\n\nTo write the bot admin: \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"");
             }
             else
             {
                 switch (message.Type)
                 {
                     case MessageType.Text:
-                        var model = BotCommand.ParserCommand(message.Text);
-                        if (!ExecuteTextCommand(model, user, message).Result)
-                        { 
-                            // The question of trying to find a command at all levels
+                        try
+                        {
+                            await ExecuteTextCommand(model, user, message);
+                        }
+                        catch (ArgumentOutOfRangeException ex)
+                        {
+                            // The trying to find a command at all levels and send result
                             // search CLR by tree in deep
+                            throw ex;
                         }
                         break;
                     //Image received from user
@@ -64,52 +66,51 @@ namespace TBotHamsti
             }
         }
 
-        internal static async Task<bool> ExecuteTextCommand(ITCommand model, PatternUser user, Message message)
+        internal static async Task ExecuteTextCommand(ITCommand model, PatternUser user, Message message)
         {
             //System.Collections.Generic.List<Task> IsAllTasksCompleted = new System.Collections.Generic.List<Task>();  ///implement after
 
-            if (model is null)
-            {
-                await user.SendMessageAsync($"\"{message.Text}\" - incorrect command syntax. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
-                return false;
-            }
+            var commands = BotLevelCommand.GetBotLevelCommand(user).CommandsOfLevel.Where(w => w.Command.Equals(model.Command));
+            var lastCommand = commands.DefaultIfEmpty(null)?.Last() ?? throw new ArgumentOutOfRangeException(nameof(commands),
+                $"The command \"{message.Text}\" wasn't found. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
 
-            var sourceOfCommands = await BotLevelCommand.GetBotLevelCommand(user);
-            foreach (var tCommand in sourceOfCommands.CommandsOfLevel)
+            foreach (ITCommand tCommand in commands)
             {
-                if (tCommand.Command == model.Command && (tCommand.CountArgsCommand == model.CountArgsCommand ||
-                                                          tCommand.CountArgsCommand == -1 && model.CountArgsCommand > 0))
+                if (tCommand.CountArgsCommand == model.CountArgsCommand ||
+                    tCommand.CountArgsCommand == -1 && model.CountArgsCommand > 0)
                 {
                     if (tCommand.StatusUser <= user.Status)
                     {
                         try
                         {
-                            //await tCommand.Execute(model, user, message);
-                            await tCommand.Execute?.Invoke(model, user, message);
+                            await LogsViewModel.MessageBus.SendTo<LogsViewModel>(
+                                new TextMessage($"The command \"{message.Text}\" execution for [{user.IdUser_Nickname}]", HorizontalAlignment.Right));
 
-                            await App.Current.Dispatcher.InvokeAsync(() => LogsViewModel.MessageBus.SendTo<LogsViewModel>(
-                                new Messages.TextMessage($"The command \"{message.Text}\" execution for [{user.IdUser_Nickname}]", HorizontalAlignment.Right)));
+                            await tCommand.Execute?.Invoke(model, user, message);
                         }
                         catch (Exception ex)
                         {
-                            await tCommand.OnError?.Invoke(model, user, message);
+                            string exMessage = ex.InnerException?.Message ?? ex.Message;
+                            await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(
+                                $"An error occurred by message: \"{message.Text}\".\n" +
+                                $"The user: [{user.IdUser_Nickname}]\n" +
+                                $"Execution interrupted of the command: {model.ExampleCommand}\n" +
+                                $"The exception: \"{exMessage}\"", HorizontalAlignment.Right));
 
-                            await App.Current.Dispatcher.InvokeAsync(() => LogsViewModel.MessageBus.SendTo<LogsViewModel>(
-                                new Messages.TextMessage($"An error occurred while execute \"{model.Command}\" command. The user [{user.IdUser_Nickname}] message : \"{message.Text}\"" +
-                                $"\nThe exception message: \"{ex.Message}\"", HorizontalAlignment.Right)));
+                            await tCommand.OnError?.Invoke(new TextMessage(exMessage), user, message);
                         }
-                        return true;
+                        return;
                     }
-                    else
-                    {
-                        await user.SendMessageAsync($"To execute the command \"{model.Command}\", the user status is required " +
-                            $"\"{tCommand.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)tCommand.StatusUser ? " and higher" : string.Empty)}");
-                    }
+
+                    throw new ArgumentException($"To execute the command \"{model.Command}\", the user status is required " +
+                            $"\"{tCommand.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)tCommand.StatusUser ? " and higher" : string.Empty)}",
+                            nameof(user.Status));
+                }
+                else if (lastCommand.Equals(tCommand))
+                {
+                    throw new ArgumentException("Wrong count of args", nameof(model.CountArgsCommand));
                 }
             }
-
-            await user.SendMessageAsync($"The command \"{message.Text}\" wasn't found. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
-            return false;
         }
 
 
@@ -148,6 +149,7 @@ namespace TBotHamsti
                 await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} failed to stop");
                 return;
             }
+
             if (App.Api.IsReceiving)
             {
                 await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} was successfully stopped by user: {Environment.UserDomainName}");

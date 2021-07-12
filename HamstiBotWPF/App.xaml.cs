@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using Telegram.Bot;
+using System.Threading;
 
 namespace TBotHamsti
 {
@@ -7,17 +9,18 @@ namespace TBotHamsti
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Creating a bot and working with it
+        /// </summary>
+        public static TelegramBotClient Api { get; } = new TelegramBotClient(TBotHamsti.Properties.Settings.Default.ApiBot);
+        public static SynchronizationContext UiContext { get; private set; }
+        
         protected override void OnStartup(StartupEventArgs e)
         {
+            UiContext = SynchronizationContext.Current;
             ViewModelLocator.Init();
             LogicRepository.CollectionCommands.Init();
             base.OnStartup(e);
         }
-
-        /// <summary>
-        /// Creating a bot and working with it
-        /// </summary>
-        public static Telegram.Bot.TelegramBotClient Api { get; } = new Telegram.Bot.TelegramBotClient(TBotHamsti.Properties.Settings.Default.ApiBot);
     }
-   
 }

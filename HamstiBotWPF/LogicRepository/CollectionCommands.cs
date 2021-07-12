@@ -1,9 +1,7 @@
 ﻿using System.Linq;
-using System.Collections.Generic;
 using TBotHamsti.Core;
 using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
-using System;
 
 namespace TBotHamsti.LogicRepository
 {
@@ -34,11 +32,11 @@ namespace TBotHamsti.LogicRepository
             BotLevelCommand BotLevel = new BotLevelCommand(LevelCommand.Bot) { StatusUser = StatusUser.Admin };
 
             RootLevel.AppendOnlyToThisLevel(UsersLevel);
-            RootLevel.AppendOnlyToThisLevel(MessagesLevel);
+            UsersLevel.AppendOnlyToThisLevel(MessagesLevel);
             RootLevel.AppendOnlyToThisLevel(PCLevel);
             RootLevel.AppendOnlyToThisLevel(BotLevel);
 
-            RootLevel.AppendToSomeLevels(BotLevelCommand.UPLevel);
+            BotLevelCommand.AppendToSomeLevels(BotLevelCommand.UPLevel);
 
 
             HelpCommand = new BotCommand("/help")
@@ -47,103 +45,102 @@ namespace TBotHamsti.LogicRepository
                 StatusUser = StatusUser.None,
                 Execute = async (model, user, message) => await RepBotActions.HelpBot(user)
             };
-            RootLevel.AppendToSomeLevels(HelpCommand);
+            BotLevelCommand.AppendToSomeLevels(HelpCommand);
 
-            RootLevel.AppendToSomeLevels(new BotCommand("/start")
+            BotLevelCommand.AppendToSomeLevels(new BotCommand("/start")
             {
                 NameOfLevel = LevelCommand.Root | LevelCommand.Users | LevelCommand.Messages,
                 StatusUser = StatusUser.None,
-                Execute = async (model, user, message) => await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(message, null, message.From.Id))
+                Execute = async (model, user, message) => await RepBotActions.ControlUsers.StartCommandUser(message)
             });
 
-            RootLevel.AppendToSomeLevels(new BotCommand("/keyboard", "[true; false; all]", 1)
+            BotLevelCommand.AppendToSomeLevels(new BotCommand("/keyboard", "true; false; all")
             {
                 NameOfLevel = LevelCommand.All,
                 Execute = async (model, user, message) => await RepBotActions.ShowScreenButtons(user, model.Args.FirstOrDefault())
             });
 
-            SendMessageToAdminCommand = new BotCommand("/writeToAdmin", "[Message text]", -1)
+            SendMessageToAdminCommand = new BotCommand("/writeToAdmin", "Message text", false)
             {
                 NameOfLevel = LevelCommand.All,
                 StatusUser = StatusUser.None,
-                Execute = async (model, user, message) => await RepBotActions.Messages.UserSentToAdmin(user, model.Args)
+                Execute = RepBotActions.Messages.UserSentToAdmin
             };
-            MessagesLevel.AppendToSomeLevels(SendMessageToAdminCommand);
+            BotLevelCommand.AppendToSomeLevels(SendMessageToAdminCommand);
 
-            MessagesLevel.AppendOnlyToThisLevel(new BotCommand("/toUser", "[Id user] [Message text]", -1)
+            MessagesLevel.AppendOnlyToThisLevel(new BotCommand("/toUser", new string[] { "Id user", "Message text" }, false)
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) => await RepBotActions.Messages.AdminSentToUser(user, RepUsers.GetUser(RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault())), model.Args)
             });
 
-            MessagesLevel.AppendOnlyToThisLevel(new BotCommand("/spam", "[Id user] [Count of messages]", 2)
+            MessagesLevel.AppendOnlyToThisLevel(new BotCommand("/spam", new string[] { "Id user", "Count of messages" })
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) =>
                     await RepBotActions.Messages.UserSpamFromAdmin(user, RepUsers.GetUser(RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault())), RepBotActions.ControlUsers.StrToInt(model.Args.LastOrDefault()))
             });
 
-            UsersLevel.AppendToSomeLevels(new BotCommand("/getUsers")
+            BotLevelCommand.AppendToSomeLevels(new BotCommand("/getUsers")
             {
                 NameOfLevel = LevelCommand.Users | LevelCommand.Messages,
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) => await RepBotActions.ControlUsers.SendListOfUsers(user)
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/add", "[Id user]", 1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/add", "Id user")
             {
                 StatusUser = StatusUser.Admin,
-                Execute = async (model, user, message) => await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(message, user, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault())))
+                Execute = RepBotActions.ControlUsers.AuthNewUser
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/add", "[Id user] [Nickname]", 2)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/add", new string[] { "Id user", "Nickname" }, false)
             {
                 StatusUser = StatusUser.Admin,
-                Execute = async (model, user, message) => await App.Current.Dispatcher.InvokeAsync(() => RepBotActions.ControlUsers.AuthNewUser(message, user, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), model.Args.LastOrDefault()))
+                Execute = RepBotActions.ControlUsers.AuthNewUser
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/lock", "[Id user]", 1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/lock", "Id user")
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) =>
                 {
                     if (int.TryParse(model.Args.FirstOrDefault(), out int Id))
+                    {
                         await RepBotActions.ControlUsers.LockUser(user, Id);
+                    }
                 }
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/lock", "[Nickname]", -1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/lock", "Nickname", false)
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) => await RepBotActions.ControlUsers.LockUser(user, model.Args)
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/deauth", "[Id user]", 1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/deauth", "Id user")
             {
                 StatusUser = StatusUser.Admin,
-                Execute = async (model, user, message) =>
+                Execute = (model, user, message) =>
                 {
                     if (int.TryParse(model.Args.FirstOrDefault(), out int Id))
-                        await RepBotActions.ControlUsers.DeauthUser(user, Id);
+                    {
+                        return RepBotActions.ControlUsers.DeauthUser(user, Id);
+                    }
+                    return System.Threading.Tasks.Task.CompletedTask;
                 }
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/deauth", "[Nickname]", -1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/deauth", "Nickname", false)
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) => await RepBotActions.ControlUsers.DeauthUser(user, model.Args)
             });
 
-            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/nickname", "[Id user] [New nickname]", -1)
+            UsersLevel.AppendOnlyToThisLevel(new BotCommand("/nickname", new string[] { "Id user", "New nickname" }, false)
             {
                 StatusUser = StatusUser.Moder,
-                Execute = async (model, user, message) =>
-                {
-                    if (model.Args.Length >= 2)
-                        await RepBotActions.ControlUsers.ChangeLocalName(user, RepBotActions.ControlUsers.StrToInt(model.Args.FirstOrDefault()), model.Args);
-                    else
-                        await RepBotActions.SendMessageWrongNumberOfArgs(user);
-                }
+                Execute = RepBotActions.ControlUsers.ChangeLocalName
             });
 
             UsersLevel.AppendOnlyToThisLevel(new BotCommand("/save")
@@ -176,12 +173,12 @@ namespace TBotHamsti.LogicRepository
                 Execute = async (model, user, message) => await ExecuteLaunchBot.RestartBotAsync()
             });
 
-            PCLevel.AppendOnlyToThisLevel(new BotCommand("/url", "[url:]", 1)
+            PCLevel.AppendOnlyToThisLevel(new BotCommand("/url", "url:")
             {
                 Execute = async (model, user, message) => await RepBotActions.ControlPC.ExecuteUrl(model, user, message)
             });
 
-            PCLevel.AppendOnlyToThisLevel(new BotCommand("/turnOff", "[tMin: int] [tSec: int]", 2)
+            PCLevel.AppendOnlyToThisLevel(new BotCommand("/turnOff", new string[] { "tMin: int", "tSec: int" })
             {
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) =>
@@ -193,10 +190,9 @@ namespace TBotHamsti.LogicRepository
                 StatusUser = StatusUser.Admin,
                 Execute = async (model, user, message) =>
                 {
-                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/a"))
-                        await App.Api.SendTextMessageAsync(message.From.Id, "Успешно выполнено снятие таймера на выключение");
-                    else
-                        await user.SendMessageAsync( "При снятии таймера, произошла системная ошибка");
+                    await user.SendMessageAsync(RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/a") ?
+                        "Успешно выполнено снятие таймера на выключение" :
+                        "При снятии таймера, произошла системная ошибка");
                 }
             });
 
@@ -204,10 +200,9 @@ namespace TBotHamsti.LogicRepository
             {
                 Execute = async (model, user, message) =>
                 {
-                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\rundll32.exe", "USER32.DLL LockWorkStation"))
-                        await user.SendMessageAsync( "Успешно заблокирована система");
-                    else
-                        await user.SendMessageAsync( "При блокировке системы, произошла системная ошибка");
+                    await user.SendMessageAsync(RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\rundll32.exe", "USER32.DLL LockWorkStation") ?
+                        "Успешно заблокирована система" :
+                        "При блокировке системы, произошла системная ошибка");
                 }
             });
 
@@ -220,14 +215,13 @@ namespace TBotHamsti.LogicRepository
             {
                 Execute = async (model, user, message) =>
                 {
-                    if (RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/h"))
-                        await user.SendMessageAsync( "Успешно выполнен перевод в гибернацию");
-                    else
-                        await user.SendMessageAsync( "При переводе в гибернацию, произошла системная ошибка");
+                    await user.SendMessageAsync(RepBotActions.ControlPC.ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/h") ?
+                        "Успешно выполнен перевод в гибернацию" :
+                        "При переводе в гибернацию, произошла системная ошибка");
                 }
             });
 
-            PCLevel.AppendOnlyToThisLevel(new BotCommand("/volume", "[int [-100..100]; mute]", 1)
+            PCLevel.AppendOnlyToThisLevel(new BotCommand("/volume", "[-100..100]; mute")
             {
                 Execute = async (model, user, message) => await RepBotActions.ControlPC.ContolVolume.ChangeVolume(user, model.Args.FirstOrDefault())
             });

@@ -5,7 +5,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using TBotHamsti.Core;
+using TBotHamsti.Messages;
+using TBotHamsti.ViewModels;
 
 namespace TBotHamsti.LogicRepository
 {
@@ -52,24 +55,19 @@ namespace TBotHamsti.LogicRepository
             }
         }
 
-        public static async Task SendMessageAsync(this PatternUser user, string message)
+        public static async Task<Telegram.Bot.Types.Message> SendMessageAsync(this PatternUser user, string message)
         {
-            try
+            if (user is null)
             {
-                if (user is null)
-                {
-                    await ViewModels.LogsViewModel.MessageBus.SendTo<ViewModels.LogsViewModel>(new Messages.TextMessage(
-                        "User is null, message did't send: \"" + message + "\"", System.Windows.HorizontalAlignment.Right));
-                }
-                else
-                {
-                    await App.Api.SendTextMessageAsync(user.Id, message);
-                }
+                throw new ArgumentNullException(nameof(user), "User is null, message did't send: \"" + message + "\"");
             }
-            catch (Exception ex)
+
+            if (message is null)
             {
-                await App.Api.SendTextMessageAsync(user.Id, ex.Message);
-            };
+                throw new ArgumentNullException(nameof(message), "Message is null, it doesn't send to user " + user.IdUser_Nickname);
+            }
+
+            return await App.Api.SendTextMessageAsync(user.Id, message);
         }
 
         /// <summary>

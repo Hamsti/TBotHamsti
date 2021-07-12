@@ -15,6 +15,8 @@ using TBotHamsti.Core;
 using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 using TEnum = Telegram.Bot.Types.Enums;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace TBotHamsti.LogicRepository
 {
@@ -23,11 +25,19 @@ namespace TBotHamsti.LogicRepository
     /// </summary>
     public static class RepBotActions
     {
-        public static string GetHelp(PatternUser user) => string.Join("\n", BotLevelCommand.GetBotLevelCommand(user).Result.CommandsOfLevel.Where(w => (w.StatusUser <= user.Status)).Select(s => s.ExampleCommand));
+        public static string GetHelp(PatternUser user) => string.Join("\n", BotLevelCommand.GetBotLevelCommand(user).CommandsOfLevel.Where(w => (w.StatusUser <= user.Status)).Select(s => s.ExampleCommand));
 
         public static Task HelpBot(PatternUser user) => user.SendMessageAsync("Список команд у бота:\n" + GetHelp(user));
 
-        public static Task SendMessageWrongNumberOfArgs(PatternUser user) => user.SendMessageAsync("Не верное кол-во агрументов\nСписок комманд: /help");
+        public static Exception ExceptionWrongNumberOfArgs => new ArgumentOutOfRangeException("Не верное кол-во агрументов\nСписок комманд: /help");
+
+        private static string GetOriginalArgs(ITCommand model, Message message, int skipArgs = 0)
+        {
+            if (model.Args.Length > skipArgs)
+                return message.Text.Substring(message.Text.LastIndexOf(model.Args[skipArgs]));
+            else
+                throw ExceptionWrongNumberOfArgs;
+        }
 
         public static async Task ImageUploader(PatternUser user, Message message)
         {
@@ -121,9 +131,9 @@ namespace TBotHamsti.LogicRepository
                 return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
             }
 
-            public static async Task UserSentToAdmin(PatternUser user, string[] args)
+            public static async Task UserSentToAdmin(ITCommand model, PatternUser user, Message message)
             {
-                await StatusUser.Admin.SendMessageAsync($"Сообщение от пользователя \n[{user.IdUser_Nickname} | blocked: {user.IsBlocked}):\n\"{string.Join(" ", args)}\"");
+                await StatusUser.Admin.SendMessageAsync($"Сообщение от пользователя \n[{user.IdUser_Nickname} | blocked: {user.IsBlocked}):\n\"{GetOriginalArgs(model, message)}\"");
                 await user.SendMessageAsync("Сообщение успешно отправлено админу бота " + App.Api.GetMeAsync().Result);
             }
 
@@ -257,11 +267,7 @@ namespace TBotHamsti.LogicRepository
         public static class ControlUsers
         {
             private static ObservableCollection<PatternUser> ListUsers => RepUsers.AuthUsers;
-            public static int StrToInt(string idUserString)
-            {
-                int.TryParse(idUserString, out int idNewUser);
-                return idNewUser;
-            }
+            public static int StrToInt(string idUserString) => int.TryParse(idUserString, out int idNewUser) ? idNewUser : -1;
 
             private static string ListOfUsersParseString()
             {
@@ -277,29 +283,74 @@ namespace TBotHamsti.LogicRepository
             public static Task SaveChanges(PatternUser user) => user.SendMessageAsync(RepUsers.SaveRefresh() ? "Успешное сохранение изменений" : "При сохранении изменений произошла ошибка");
             public static Task CancelChanges(PatternUser user) => user.SendMessageAsync(App.Current.Dispatcher.Invoke(() => RepUsers.Upload()) ? "Изменения успешно отменены" : "При отмене изменений произошла ошибка");
 
-            public static async Task<PatternUser> AuthNewUser(Message message, PatternUser userSource, int id, string nickname = null)
+            public static async Task<PatternUser> AuthNewUser(ITCommand model, Message message)
             {
-                PatternUser newUser = new PatternUser() { Id = id, LocalNickname = nickname };
-                try
+                int id;
+                if (model is null)
                 {
-                    PatternUser foundUser = RepUsers.GetUser(id);
-                    if (foundUser is null)
-                    {
-                        await App.Current.Dispatcher.InvokeAsync(() => ListUsers.Add(newUser));
-                        await userSource.SendMessageAsync($"Пользователь c id: \"{id}{(!string.IsNullOrEmpty(nickname) ? " | " + nickname : string.Empty)}\" был успешно добавлен в список пользователей.");
-                    }
-                    else
-                    {
-                        await userSource.SendMessageAsync($"Пользователь c id: \"{id}\" уже существует!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException($"При попытке использования команды \"{message.Text}\" пользователем {userSource.Id} произошла ошибка: \n{ex.Message}");
+                    throw new ArgumentNullException(nameof(model));
                 }
 
-                await newUser.SendMessageAsync($"Вы были успешно добавлены в список пользователей бота.\nЗапросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
-                return newUser;
+                if (model.Args is null)
+                {
+                    throw new ArgumentNullException(nameof(model.Args));
+                }
+
+                if (model.CountArgsCommand == 0)
+                {
+                    id = message.From.Id;
+                }
+                else if ((id = StrToInt(model.Args[0])) < 0)
+                {
+                    throw new ArgumentException("id isn't in the correct format", nameof(id));
+                }
+
+                return AddUser(id, null);
+            }
+
+            public static PatternUser AddUser(int id, string userName)
+            {
+                PatternUser newUser = new PatternUser() { Id = id, LocalNickname = userName };
+                if (RepUsers.GetUser(id) is null)
+                {
+
+                    App.UiContext.Send(x => ListUsers.Add(newUser), null);
+
+                    //newUser.SendMessageAsync($"Вы были успешно добавлены в список пользователей бота.\n" +
+                    //    $"Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\n" +
+                    //    $"Вы можете написать администратору бота используя команду \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"");
+                    return newUser;
+
+                }
+
+                throw new ArgumentException($"Пользователь [{newUser.IdUser_Nickname}] уже существует!", nameof(id));
+            }
+
+            public static async Task AuthNewUser(ITCommand model, PatternUser userSource, Message message)
+            {
+                string nickname = null;
+                if (userSource is null)
+                {
+                    throw new ArgumentNullException(nameof(userSource));
+                }
+
+                if (model.CountArgsCommand > 1)
+                {
+                    nickname = GetOriginalArgs(model, message, 1);
+                }
+
+                PatternUser newUser = await AuthNewUser(model, message);
+                newUser.LocalNickname = nickname;
+                await userSource.SendMessageAsync($"Пользователь [{newUser.IdUser_Nickname}] успешно добавлен в список пользователей.");
+            }
+
+            public static async Task<PatternUser> StartCommandUser(Message message)
+            {
+                PatternUser user = AddUser(message.From.Id, message.From.Username);
+                await user.SendMessageAsync($"Вы были успешно добавлены в список пользователей бота.\n" +
+                    $"Запросите у администратора бота {App.Api.GetMeAsync().Result} вас добавить в список разрешённых пользователей.\n\n" +
+                    $"Вы можете написать администратору бота используя команду \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"");
+                return user;
             }
 
             public static Task DeauthUser(PatternUser user, int IdSelectedUser)
@@ -314,22 +365,21 @@ namespace TBotHamsti.LogicRepository
             public static Task DeauthUser(PatternUser user, string[] args)
             {
                 string LocalNickname = string.Join(" ", args);
-                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.LocalNickname.ToLower() == LocalNickname.ToLower() && !StrToInt(f.LocalNickname).Equals(f.Id)).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
+                if (App.Current.Dispatcher.Invoke(() => ListUsers.Remove(ListUsers.Where(f => f.LocalNickname != null && f.LocalNickname.ToLower() == LocalNickname.ToLower() && !StrToInt(f.LocalNickname).Equals(f.Id)).DefaultIfEmpty(new PatternUser()).FirstOrDefault())))
                     user.SendMessageAsync($"Пользователь c Nickname: \"{LocalNickname}\" был успешно успешно удалён из списка пользователей.").Wait();
                 else
                     return user.SendMessageAsync($"Пользователя c Nickname: \"{LocalNickname}\" не существует...");
                 return SendListOfUsers(user);
             }
 
-            public static Task ChangeLocalName(PatternUser user, int IdSelectedUser, string[] args)
+            public static Task ChangeLocalName(ITCommand model, PatternUser user, Message message)
             {
-                var selectedUser = ListUsers.Where(f => f.Id == IdSelectedUser).FirstOrDefault();
-                if (selectedUser is null)
-                    return user.SendMessageAsync($"Пользователь c id: \"{IdSelectedUser}\" не найден...");
+                var selectedUser = ListUsers.Where(f => f.Id == StrToInt(model.Args[0])).DefaultIfEmpty(null)?.FirstOrDefault()
+                    ?? throw new ArgumentException($"Пользователь c id: \"{model.Args[0]}\" не найден...");
 
                 string beforeChangingNickname = selectedUser.LocalNickname;
-                selectedUser.LocalNickname = string.Join(" ", args.Skip(1));
-                user.SendMessageAsync($"Пользователю c id: \"{IdSelectedUser}\" измененён Nickname: \"{beforeChangingNickname}\" => \"{selectedUser.LocalNickname}\".").Wait();
+                selectedUser.LocalNickname = GetOriginalArgs(model, message, 1);
+                user.SendMessageAsync($"Пользователю c id: \"{model.Args[0]}\" измененён Nickname: \"{beforeChangingNickname}\" => \"{selectedUser.LocalNickname}\".").Wait();
                 return SendListOfUsers(user);
             }
 

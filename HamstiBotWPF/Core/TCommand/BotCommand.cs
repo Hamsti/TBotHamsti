@@ -5,6 +5,7 @@ using Telegram.Bot.Types;
 using TBotHamsti.LogicRepository;
 using StatusUser = TBotHamsti.LogicRepository.RepUsers.StatusUser;
 using LevelCommand = TBotHamsti.Core.BotLevelCommand.LevelCommand;
+using TBotHamsti.Messages;
 
 namespace TBotHamsti.Core
 {
@@ -13,91 +14,82 @@ namespace TBotHamsti.Core
     /// </summary>
     public class BotCommand : ITCommand
     {
-        private Func<ITCommand, PatternUser, Message, Task> onError;
+        private const char ARG_START = '[';
+        private const char ARG_END = ']';
+        private readonly bool isLimitCountArgs = true;
 
         public string Command { get; }
         public string ExampleCommand { get; }
         public string[] Args { get; private set; }
-        public int CountArgsCommand { get; private set; }
+        public int CountArgsCommand => isLimitCountArgs ? Args.Length : -1;
         public StatusUser StatusUser { get; set; }
         public LevelCommand NameOfLevel { get; set; }
         public Func<ITCommand, PatternUser, Message, Task> Execute { get; set; }
-        public Func<ITCommand, PatternUser, Message, Task> OnError
-        {
-            get => onError ?? ConstDefaultErrorHandlersAsync;
-            set
-            {
-                onError = value;
-                if (value != null && onError.GetInvocationList().Length == 1)
-                {
-                    onError += ConstDefaultErrorHandlersAsync;
-                }
-            }
-        }
+        public Func<TextMessage, PatternUser, Message, Task> OnError { get; set; } = async (messageError, user, message)
+            => await user.SendMessageAsync(messageError?.Text ?? DefaultErrorMessage(message));
 
         public BotCommand(string command)
         {
+            if (command is null)
+            {
+                throw new ArgumentNullException(nameof(command));
+            }
+
+            if (string.IsNullOrWhiteSpace(command))
+            {
+                throw new ArgumentException(nameof(command));
+            }
+
             ExampleCommand = command.Trim();
             Command = ExampleCommand.ToLower();
             Args = Array.Empty<string>();
             StatusUser = StatusUser.User;
         }
 
-        public BotCommand(string command, string args, int countArgsCommand) : this(command)
+        public BotCommand(string command, string[] args, bool isLimitCountArgs = true) : this(command)
         {
-            if (string.IsNullOrWhiteSpace(command))
-            {
-                throw new ArgumentNullException(nameof(command));
-            }
-
-            if (string.IsNullOrWhiteSpace(args))
+            if (args is null)
             {
                 throw new ArgumentNullException(nameof(args));
             }
 
-            if (countArgsCommand == default)
+            Args = args.Where(w => !w.Equals(command) || !string.IsNullOrWhiteSpace(w)).Select(s => ARG_START + s + ARG_END).ToArray();
+            if (Args.Length.Equals(0))
             {
-                throw new ArgumentException("Can't be zero", nameof(countArgsCommand));
+                throw new ArgumentException(nameof(Args) + " is empty, use " + nameof(BotCommand) + " (command) or correct args", nameof(Args));
             }
 
-            args = args.Replace(command, string.Empty).Trim();
-            if (!string.IsNullOrWhiteSpace(args))
-            {
-                ExampleCommand = command + " " + args;
-                CountArgsCommand = countArgsCommand;
-            }
-            else
-            {
-                throw new ArgumentException("Has to contain " + nameof(args));
-            }
+            this.isLimitCountArgs = isLimitCountArgs;
+            ExampleCommand = string.Concat(command, ' ', string.Join(" ", Args));
         }
+
+        public BotCommand(string command, string args, bool isLimitCountArgs = true) :
+            this(command, new string[] { args ?? throw new ArgumentNullException(nameof(args)) }, isLimitCountArgs)
+        { }
 
         /// <summary>
         /// Command converter to normal view
         /// </summary>
         /// <param name="messageText">Text of the incoming message from telegrams</param>
         /// <returns>Returns a command in normal form or emptiness in case of failure</returns>
-        public static ITCommand ParserCommand(string messageText)
+        public static BotCommand ParseMessage(Message message)
         {
-            if (messageText.StartsWith("/"))
+            string messageText = message.Text;
+            if (!messageText.StartsWith("/"))
             {
-                var splits = messageText.Split(' ');
-                var command = splits?.FirstOrDefault().ToLower();
-                var args = splits.Skip(1).Take(splits.Count()).ToArray();
-
-                return new BotCommand(command)
-                {
-                    Args = args,
-                    CountArgsCommand = args.Length,
-                    NameOfLevel = LevelCommand.None
-                };
+                throw new ArgumentException($"\"{messageText}\" - incorrect command syntax. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
             }
 
-            return null;
+            string[] splits = messageText.Split(' ');
+            return new BotCommand(splits?.FirstOrDefault().ToLower())
+            {
+                Args = splits.Skip(1).Take(splits.Count()).ToArray()
+            };
         }
 
-        private static async Task ConstDefaultErrorHandlersAsync(ITCommand model, PatternUser user, Message message) =>
-            await user.SendMessageAsync($"An error occurred while execute \"{message.Text}\" command. " +
-                                                $"To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
+        private static string DefaultErrorMessage(Message message)
+        {
+            return $"An error occurred while execute \"{message.Text}\" command. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}";
+        }
     }
 }
