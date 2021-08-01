@@ -1,9 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:HamstiBotWPF.Themes">
-
-    <SolidColorBrush x:Key="BackgroundColor" Color="#fffffe" />
-    <SolidColorBrush x:Key="ForegroundColor" Color="#0f0e17" />
-    <SolidColorBrush x:Key="ShadowColor" Color="#ffec7f05" />
-
-</ResourceDictionary>

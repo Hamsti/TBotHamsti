@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using HamstiBotWPF.Core;
-using HamstiBotWPF.LogicRepository;
+using TBotHamsti.Models;
+using TBotHamsti.Models.Commands;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class CommandsControlViewModel
     {
-        public List<BotCommand> ListCommands => RepCommands.botCommands;
+        public IList<ICommand> ListCommands => CollectionCommands.RootLevel.CommandsOfLevel;
 
         public CommandsControlViewModel() { }
     }

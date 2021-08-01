@@ -1,105 +1,101 @@
 ﻿using DevExpress.Mvvm;
 using System;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Controls;
 using System.Threading.Tasks;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Pages;
-using HamstiBotWPF.Events;
-using HamstiBotWPF.Messages;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using TBotHamsti.Models;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Models.Users;
+using TBotHamsti.Services;
+using TBotHamsti.Views;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class MainViewModel : BindableBase
     {
         private readonly PageService pageService;
         private readonly MessageBus messageBus;
-        private readonly EventBus eventBus;
 
-        public Page PageSource { get; set; }
-        public string PageSourceShortName => PageSource.ToString().Split('.').Last();
+        public Page PageSource { get; private set; }
+        public string PageSourceTitle => PageSource.Title;//.ToString().Split('.').Last();
 
-        public MainViewModel(PageService pageService, MessageBus messageBus, EventBus eventBus)
+        public MainViewModel(PageService pageService, MessageBus messageBus)
         {
             this.pageService = pageService;
             this.messageBus = messageBus;
-            this.eventBus = eventBus;
 
             this.pageService.OnPageChanged += (page) => PageSource = page;
             this.pageService.ChangePage(new LogsPage());
+            
+            if (Properties.Settings.Default.IsEnabledAutoStartBot)
+            {
+                _ = messageBus.SendTo<LogsViewModel>(new TextMessage("warning: automatic launch of the bot can increase the launch time of the application", HorizontalAlignment.Center));
+                _ = StartBotCommand();
+            }
         }
 
         public ICommand LogsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new LogsPage());
-        }, () => PageSourceShortName != "LogsPage");
-       
-        public ICommand UserControlPageChange => new AsyncCommand(async () =>
+        }, () => PageSourceTitle != "LogsPage");
+
+        public ICommand UserControlPageChange => new DelegateCommand(() =>
         {
-            await eventBus.Publish(new RefreshUsersListEvent());
             pageService.ChangePage(new UsersControlPage());
-        }, () => PageSourceShortName != "UsersControlPage");
+            UsersFunc.Refresh();
+        }, () => PageSourceTitle != "UsersControlPage");
 
         public ICommand CommandsControlPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new CommandsControlPage());
-        }, () => PageSourceShortName != "CommandsControlPage");
+        }, () => PageSourceTitle != "CommandsControlPage");
 
         public ICommand SettingsPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new SettingsPage());
-        }, () => PageSourceShortName != "SettingsPage");       
+        }, () => PageSourceTitle != "SettingsPage");
 
         public async void WindowClosing_StopReceivingBot(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            if (App.Api.IsReceiving && StopBot.CanExecute(null))
             {
-                if (App.Api.IsReceiving)
-                {
-                    if (MessageBox.Show("The bot is still running, are you sure you want to shut down the bot and close the application?", Application.Current.MainWindow.Title, MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
-                    {
-                        await ExecuteLaunchBot.StopBotAsync();
-                        Application.Current.Shutdown(0);
-                    }
-                    else
-                        e.Cancel = true;
-                }
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("The bot will be stopping. Try again for closing app.", HorizontalAlignment.Center));
+                StopBot.Execute(null);
+                e.Cancel = true;
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Завершение приложения произошло с системной ошибкой: {ex.Message}");
+                UsersFunc.SaveRefresh();
+                Environment.Exit(0);
             }
         }
 
-        public ICommand StartBot => new AsyncCommand(async () =>
+        public ICommand StartBot => new AsyncCommand(StartBotCommand, () => !App.Api.IsReceiving);
+
+        private async Task StartBotCommand()
         {
             try
             {
-                await messageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
-                await Task.Run(() => ExecuteLaunchBot.RunBotAsync());
-                if (App.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot launched successfully", HorizontalAlignment.Right));
+                await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage("Start bot", HorizontalAlignment.Center));
+                await ExecutionBot.StartReceivingBotAsync();
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new TextMessage($"При запуске бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage($"An error occurred while starting the bot: " + HandlerException.GetExceptionMessage(ex), HorizontalAlignment.Right));
             }
-        }, () => !App.Api.IsReceiving);
+        }
 
         public ICommand StopBot => new AsyncCommand(async () =>
         {
             try
             {
-                await messageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
-                await Task.Run(() => ExecuteLaunchBot.StopBotAsync());
-                if (!App.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully stopped", HorizontalAlignment.Right));
+                await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage("Stop bot", HorizontalAlignment.Center));
+                await ExecutionBot.StopBotAsync();
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new TextMessage($"При остановке бота произошла ошибка: {ex.Message}", HorizontalAlignment.Right));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage($"An error occurred while stopping the bot: " + HandlerException.GetExceptionMessage(ex), HorizontalAlignment.Right));
             }
         }, () => App.Api.IsReceiving);
 
@@ -108,13 +104,11 @@ namespace HamstiBotWPF.ViewModels
             try
             {
                 await messageBus.SendTo<LogsViewModel>(new TextMessage("Restart bot", HorizontalAlignment.Center));
-                await Task.Run(() => ExecuteLaunchBot.RestartBotAsync());
-                if (App.Api.IsReceiving)
-                    await messageBus.SendTo<LogsViewModel>(new TextMessage("Bot successfully restarted", HorizontalAlignment.Right));
+                await ExecutionBot.RestartBotAsync();
             }
             catch (Exception ex)
             {
-                await messageBus.SendTo<LogsViewModel>(new TextMessage("При попытке перезапуска бота произошла ошибка:" + ex.Message, HorizontalAlignment.Right));
+                await messageBus.SendTo<LogsViewModel>(new TextMessage("An error occurred while trying to restart the bot: " + HandlerException.GetExceptionMessage(ex), HorizontalAlignment.Right));
             }
         }, () => App.Api.IsReceiving);
     }

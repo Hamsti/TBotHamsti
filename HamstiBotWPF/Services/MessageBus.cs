@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using HamstiBotWPF.Messages;
+using TBotHamsti.Models.Messages;
 
-namespace HamstiBotWPF.Services
+namespace TBotHamsti.Services
 {
     public class MessageBus
     {

@@ -1,22 +1,40 @@
 ﻿using DevExpress.Mvvm;
 using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using HamstiBotWPF.Services;
-using HamstiBotWPF.Messages;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Services;
+using Settings = TBotHamsti.Properties.Settings;
 
-namespace HamstiBotWPF.ViewModels
+namespace TBotHamsti.ViewModels
 {
     public class SettingsViewModel : BindableBase
     {
         private readonly MessageBus messageBus;
+        private static readonly Regex regex;
+        private static bool isEnabledAutoStartBotDefault;
+        private static bool isShowLogsTimeDefault;
+        private static double secondsDelayOnReceiveError;
+        private static string savePathDefault;
+        private bool IsDefaultSettings =>
+            isEnabledAutoStartBotDefault.Equals(Settings.Default.IsEnabledAutoStartBot)
+            && isShowLogsTimeDefault.Equals(Settings.Default.IsShowLogsTime)
+            && secondsDelayOnReceiveError.Equals(Settings.Default.SecondsDelayOnReceiveError)
+            && savePathDefault.Equals(Settings.Default.SavePath);
+
 
         static SettingsViewModel()
         {
-            if (Properties.Settings.Default.UsedDarkTheme)
-                ChangeTheInterfaceForDarkTheme();
-            else
-                ChangeTheInterfaceForLightTheme();
+            isShowLogsTimeDefault = Settings.Default.IsShowLogsTime;
+            isEnabledAutoStartBotDefault = Settings.Default.IsEnabledAutoStartBot;
+            secondsDelayOnReceiveError = Settings.Default.SecondsDelayOnReceiveError;
+            savePathDefault = Settings.Default.SavePath;
+            regex = new Regex("[^1-9]");
+
+            Settings.Default.UsedDarkTheme = !Settings.Default.UsedDarkTheme;
+            ChangeTheInterfaceTheme();
         }
 
         public SettingsViewModel(MessageBus messageBus)
@@ -24,50 +42,59 @@ namespace HamstiBotWPF.ViewModels
             this.messageBus = messageBus;
         }
 
-        public ICommand ChangeForDarkTheme => new AsyncCommand(async () =>
-        {
-            ChangeTheInterfaceForDarkTheme();
-            await messageBus.SendTo<LogsViewModel>(new TextMessage("Changed theme on \"Dark\"", HorizontalAlignment.Center));
-        }, () => !Properties.Settings.Default.UsedDarkTheme);
+        public ICommand ChangeForDarkTheme => new AsyncCommand(ChangeThemeCommandAction, () => !Settings.Default.UsedDarkTheme);
+        public ICommand ChangeForLightTheme => new AsyncCommand(ChangeThemeCommandAction, () => Settings.Default.UsedDarkTheme);
 
-        public ICommand ChangeForLightTheme => new AsyncCommand(async () =>
+        public ICommand SaveSettingsBot => new AsyncCommand(() =>
         {
-            ChangeTheInterfaceForLightTheme();
-            await messageBus.SendTo<LogsViewModel>(new TextMessage("Changed theme on \"Light\"", HorizontalAlignment.Center));
-        }, () => Properties.Settings.Default.UsedDarkTheme);
+            isShowLogsTimeDefault = Settings.Default.IsShowLogsTime;
+            isEnabledAutoStartBotDefault = Settings.Default.IsEnabledAutoStartBot;
+            secondsDelayOnReceiveError = Settings.Default.SecondsDelayOnReceiveError;
+            savePathDefault = Settings.Default.SavePath;
+            Settings.Default.Save();
+            return messageBus.SendTo<LogsViewModel>(new TextMessage($"Settings saved successfully", HorizontalAlignment.Center));
+        }, () => !IsDefaultSettings);
 
-        public ICommand SaveSettingsBot => new DelegateCommand(() =>
+        public ICommand DefaultSettingBot => new AsyncCommand(() =>
         {
-            Properties.Settings.Default.Save();
+            Settings.Default.IsShowLogsTime = isShowLogsTimeDefault;
+            Settings.Default.IsEnabledAutoStartBot = isEnabledAutoStartBotDefault;
+            Settings.Default.SecondsDelayOnReceiveError = secondsDelayOnReceiveError;
+            Settings.Default.SavePath = savePathDefault;
+            Settings.Default.Save();
+            return messageBus.SendTo<LogsViewModel>(new TextMessage($"Settings restored successfully", HorizontalAlignment.Center));
+        }, () => !IsDefaultSettings);
+
+        public ICommand ChangeSavePath => new AsyncCommand(() =>
+        {
+            using (var fbd = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = fbd.ShowDialog();
+
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    Settings.Default.SavePath = fbd.SelectedPath;
+                    return messageBus.SendTo<LogsViewModel>(new TextMessage($"Save path changed successfully", HorizontalAlignment.Center));
+                }
+
+                return messageBus.SendTo<LogsViewModel>(new TextMessage($"Save path changing canceled", HorizontalAlignment.Center));
+            }
         });
 
-        public ICommand DefaultSettingBot => new DelegateCommand(() =>
+        public void NumberValidationTextBox(object sender, TextCompositionEventArgs e) => e.Handled = regex.IsMatch(e.Text);
+        private static void ChangeTheInterfaceTheme()
         {
-            
-        });
-
-        private static void ChangeTheInterfaceForDarkTheme()
-        {
-            Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
+            Settings.Default.UsedDarkTheme = !Settings.Default.UsedDarkTheme;
+            Uri uri = new Uri("pack://application:,,,/TBotHamsti;component/Views/Themes/" + (Settings.Default.UsedDarkTheme ? "Dark" : "Light") + ".xaml");
             Application.Current.Resources.MergedDictionaries.RemoveAt(1);
             Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri("pack://application:,,,/HamstiBotWPF;component/Themes/Dark.xaml");
-            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
-            Properties.Settings.Default.UsedDarkTheme = true;
-            Properties.Settings.Default.Save();
+            Settings.Default.Save();
         }
 
-        private static void ChangeTheInterfaceForLightTheme()
+        private Task ChangeThemeCommandAction()
         {
-            Uri uri = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
-            Application.Current.Resources.MergedDictionaries.RemoveAt(1);
-            Application.Current.Resources.MergedDictionaries.Insert(1, new ResourceDictionary() { Source = uri });
-            uri = new Uri($"pack://application:,,,/HamstiBotWPF;component/Themes/Light.xaml");
-            Application.Current.Resources.MergedDictionaries.RemoveAt(3);
-            Application.Current.Resources.MergedDictionaries.Insert(3, new ResourceDictionary() { Source = uri });
-            Properties.Settings.Default.UsedDarkTheme = false;
-            Properties.Settings.Default.Save();
+            ChangeTheInterfaceTheme();
+            return messageBus.SendTo<LogsViewModel>(new TextMessage($"Changed theme on \"{(Settings.Default.UsedDarkTheme ? "Dark" : "Light")}\"", HorizontalAlignment.Center));
         }
     }
 }

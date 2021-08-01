@@ -1,24 +1,26 @@
 ﻿using System.Windows;
+using Telegram.Bot;
+using System.Threading;
 
-namespace HamstiBotWPF
+namespace TBotHamsti
 {
     /// <summary>
     /// Логика взаимодействия для App.xaml
     /// </summary>
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            ViewModelLocator.Init();
-            LogicRepository.RepCommands.Refresh();
-            LogicRepository.RepUsers.Upload();
-            base.OnStartup(e);
-        }
-
         /// <summary>
         /// Creating a bot and working with it
         /// </summary>
-        public static Telegram.Bot.TelegramBotClient Api { get; } = new Telegram.Bot.TelegramBotClient(HamstiBotWPF.Properties.Settings.Default.ApiBot);
+        public static TelegramBotClient Api { get; } = new TelegramBotClient(TBotHamsti.Properties.Settings.Default.ApiBot);
+        public static SynchronizationContext UiContext { get; private set; }
+        
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            UiContext = SynchronizationContext.Current;
+            Services.ViewModelLocator.Init();
+            Models.CollectionCommands.Init();
+            base.OnStartup(e);
+        }
     }
-   
 }

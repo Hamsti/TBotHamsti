@@ -1,0 +1,253 @@
+﻿<Page x:Class="TBotHamsti.Views.UsersControlPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:TBotHamsti.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      DataContext="{Binding CommonControlUserDataViewModel, Source={StaticResource ViewModelLocator}}"
+      Title="UsersControlPage">
+
+    <Page.Resources>
+        <Style x:Key="PathStyle" TargetType="Path">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
+            <Setter Property="Fill" Value="{StaticResource OrangeColor}" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TransformGroup>
+                        <TranslateTransform X="-2" Y="-1"/>
+                        <ScaleTransform ScaleY="0.9" ScaleX="0.9"/>
+                    </TransformGroup>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <ListView ItemsSource="{Binding ListUsers}" 
+                  ScrollViewer.VerticalScrollBarVisibility="Visible">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Id}"
+                                    Header="Id"/>
+                    
+                    <GridViewColumn DisplayMemberBinding="{Binding Username, TargetNullValue=null}" 
+                                    Width="245"
+                                    Header="Nickname" />
+
+                    <GridViewColumn DisplayMemberBinding="{Binding Status}"
+                                    Header="Status" />
+
+                    <GridViewColumn Header="B" Width="35">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button x:Name="BookmarkButton" 
+                                        Style="{StaticResource ButtonIconStyle}"  
+                                        Command="{Binding CommonControlUserDataViewModel.SetBookmark, Source={StaticResource ViewModelLocator}}" 
+                                        CommandParameter="{Binding}" >
+                                    <Path x:Name="BookmarkIcon" Style="{StaticResource PathStyle}" />
+                                </Button>
+                                <DataTemplate.Triggers>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=BookmarkButton, Path=IsMouseOver}" Value="True" />
+                                            <Condition Binding="{Binding IsSetBookmark}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="BookmarkButton" Property="Content">
+                                                <Setter.Value>
+                                                    <Canvas Style="{StaticResource CanvasForListIcons}" >
+                                                        <Path Fill="{StaticResource OrangeColor}" Data="M13 14L13 11 16 11 16 9 13 9 13 6 11 6 11 9 8 9 8 11 11 11 11 14z"/>
+                                                        <Path Fill="{StaticResource OrangeColor}" Data="M20 22V10V9.276V4c0-1.103-0.897-2-2-2H6C4.897 2 4 2.897 4 4v5.276V10v12l8-4.572L20 22z M6 10V9.276V4h12v5.276V10v8.553 l-6-3.428l-6 3.428V10z"/>
+                                                    </Canvas>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=BookmarkButton, Path=IsMouseOver}" Value="False" />
+                                            <Condition Binding="{Binding IsSetBookmark}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="BookmarkIcon" Property="Data" Value="M18 2H6C4.897 2 4 2.897 4 4v5.276V10v12l8-4.572L20 22V10V9.276V4C20 2.897 19.103 2 18 2z M18 18.553l-6-3.428l-6 3.428 V10V9.276V4h12v5.276V10V18.553z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=BookmarkButton, Path=IsMouseOver}" Value="True" />
+                                            <Condition Binding="{Binding IsSetBookmark}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="BookmarkButton" Property="Content">
+                                                <Setter.Value>
+                                                    <Canvas Style="{StaticResource CanvasForListIcons}" >
+                                                        <Path Fill="{StaticResource OrangeColor}" Data="M8 9H16V11H8z"/>
+                                                        <Path Fill="{StaticResource OrangeColor}" Data="M20 22V10V9.276V4c0-1.103-0.897-2-2-2H6C4.897 2 4 2.897 4 4v5.276V10v12l8-4.572L20 22z M6 10V9.276V4h12v5.276V10v8.553 l-6-3.428l-6 3.428V10z"/>
+                                                    </Canvas>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=BookmarkButton, Path=IsMouseOver}" Value="False" />
+                                            <Condition Binding="{Binding IsSetBookmark}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="BookmarkIcon" Property="Data" Value="M 18 2 H 6 C 4.897 2 4 2.897 4 4 V 9.276 10 22 L 12 17.428 20 22 V 10 9.276 4 C 20 2.897 19.103 2 18 2 Z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    
+                    
+                    <GridViewColumn Header="L" Width="35">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource ButtonIconStyle}"
+                                        Command="{Binding CommonControlUserDataViewModel.BlockUser, Source={StaticResource ViewModelLocator}}" 
+                                        CommandParameter="{Binding}" >
+                                    <Path x:Name="LockIcon" Style="{StaticResource PathStyle}" >
+                                        <!--<Path.RenderTransform>
+                                            <TransformGroup>
+                                                <TranslateTransform X="-1.5" Y="-1"/>
+                                                <ScaleTransform ScaleY="0.8" ScaleX="0.8"/>
+                                            </TransformGroup>
+                                        </Path.RenderTransform>-->
+                                    </Path>
+                                </Button>
+                                <DataTemplate.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <!--<Condition Binding="{Binding ElementName=LockIcon, Path=IsMouseOver}" Value="True" />-->
+                                            <Condition Binding="{Binding IsBlocked}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="LockIcon" Property="Data" Value="M20 12c0-1.103-0.897-2-2-2h-1V7c0-2.757-2.243-5-5-5S7 4.243 7 7v3H6c-1.103 0-2 0.897-2 2v8c0 1.103 0.897 2 2 2h12 c1.103 0 2-0.897 2-2V12z M9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <!--<Condition Binding="{Binding ElementName=LockIcon, Path=IsMouseOver}" Value="False" />-->
+                                            <Condition Binding="{Binding IsBlocked}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="LockIcon" Property="Data" Value="M17 8V7c0-2.757-2.243-5-5-5S7 4.243 7 7v3H6c-1.103 0-2 0.897-2 2v8c0 1.103 0.897 2 2 2h12c1.103 0 2-0.897 2-2v-8 c0-1.103-0.897-2-2-2H9V7c0-1.654 1.346-3 3-3s3 1.346 3 3v1H17z M18 12l0.002 8H6v-8H18z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <!--<MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=LockIcon, Path=IsMouseOver}" Value="True" />
+                                            <Condition Binding="{Binding IsBlocked}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="LockIcon" Property="Data" Value="M17 8V7c0-2.757-2.243-5-5-5S7 4.243 7 7v3H6c-1.103 0-2 0.897-2 2v8c0 1.103 0.897 2 2 2h12c1.103 0 2-0.897 2-2v-8 c0-1.103-0.897-2-2-2H9V7c0-1.654 1.346-3 3-3s3 1.346 3 3v1H17z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ElementName=LockIcon, Path=IsMouseOver}" Value="False" />
+                                            <Condition Binding="{Binding IsBlocked}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter TargetName="LockIcon" Property="Data" Value="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 0.897-2 2v8c0 1.103 0.897 2 2 2h12c1.103 0 2-0.897 2-2v-8c0-1.103-0.897-2-2-2 h-1V7C17 4.243 14.757 2 12 2z M18 12l0.002 8H6v-8H18z M9 10V7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9z" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>-->
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="E" Width="35">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding CommonControlUserDataViewModel.ModifyUserPageChange, Source={StaticResource ViewModelLocator}}"
+                                        CommandParameter="{Binding}" >
+
+                                    <Button.Style>
+                                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonIconStyle}">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
+                                                    <Path Data="M19.045 7.401c.378-.378.586-.88.586-1.414s-.208-1.036-.586-1.414l-1.586-1.586c-.378-.378-.88-.586-1.414-.586s-1.036.208-1.413.585L4 13.585V18h4.413L19.045 7.401zM16.045 4.401l1.587 1.585-1.59 1.584-1.586-1.585L16.045 4.401zM6 16v-1.585l7.04-7.018 1.586 1.586L7.587 16H6zM4 20H20V22H4z"
+                                                          Style="{StaticResource PathStyle}" />
+                                                </Setter.Value>
+                                            </Setter>
+
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Content">
+                                                        <Setter.Value>
+                                                            <Path Data="m 19.045 7.401 c 0.378 -0.378 0.586 -0.88 0.586 -1.414 0 -0.534 -0.208 -1.036 -0.586 -1.414 L 17.459 2.987 c -0.378 -0.378 -0.88 -0.586 -1.414 -0.586 -0.534 0 -1.036 0.208 -1.413 0.585 L 4 13.585 V 18 H 8.413 Z M 4 20 h 16 v 2 H 4 Z" 
+                                                                  Style="{StaticResource PathStyle}"  />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="D" Width="35">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding CommonControlUserDataViewModel.DeleteUserPageChange, Source={StaticResource ViewModelLocator}}"
+                                        CommandParameter="{Binding}" >
+
+                                    <Button.Style>
+                                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonIconStyle}">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
+                                                    <Path Data="M15 2H9C7.897 2 7 2.897 7 4v2H3v2h2v12c0 1.103 0.897 2 2 2h10c1.103 0 2-0.897 2-2V8h2V6h-4V4C17 2.897 16.103 2 15 2z M9 4h6v2H9V4z M17 20H7V8h1h8h1V20z"
+                                                          Style="{StaticResource PathStyle}" />
+                                                </Setter.Value>
+                                            </Setter>
+
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Content">
+                                                        <Setter.Value>
+                                                            <Path Data="m 5.003 20 c 0 1.103 0.897 2 2 2 h 10 c 1.103 0 2 -0.897 2 -2 V 8 h 2 V 6 h -3 -1 V 4 c 0 -1.103 -0.897 -2 -2 -2 h -6 c -1.103 0 -2 0.897 -2 2 v 2 h -1 -3 v 2 h 2 z m 4 -16 h 6 v 2 h -6 z" 
+                                                                  Style="{StaticResource PathStyle}" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <TextBlock Text="Not found users">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockMessageStyle}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ListUsers.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+</Page>

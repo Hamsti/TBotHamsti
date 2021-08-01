@@ -1,0 +1,404 @@
+﻿<Window x:Class="TBotHamsti.Views.Main"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:local="clr-namespace:TBotHamsti.Views"
+        mc:Ignorable="d"
+        Title="Control HamstiBot" Height="400" Width="610" 
+        MinHeight="400" MinWidth="610" 
+        FontFamily="Helvetica" 
+        WindowStyle="ToolWindow" 
+        BorderThickness="1.5"
+        BorderBrush="#ff8906"
+        DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <ei:CallMethodAction TargetObject="{Binding}" MethodName="WindowClosing_StopReceivingBot"  />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid Background="{DynamicResource BackgroundColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal" >
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource ButtonLeftMenuStyle}" />
+                </StackPanel.Resources>
+
+                <!--Background="{StaticResource OrangeColor}" >-->
+                <Button Command="{Binding LogsPageChange}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <!--<Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M16 2H8C4.691 2 2 4.691 2 8v13c0 0.553 0.447 1 1 1h13c3.309 0 6-2.691 6-6V8C22 4.691 19.309 2 16 2z M20 16 c0 2.206-1.794 4-4 4H4V8c0-2.206 1.794-4 4-4h8c2.206 0 4 1.794 4 4V16z"/>
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M7 9H17V11H7zM7 13H14V15H7z"/>
+                                    </Canvas>-->
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M 20 1.4349209 H 4 c -1.103 0 -2 1.0529862 -2 2.3477954 V 20.217284 c 0 1.294808 0.897 2.347795 2 2.347795 h 16 c 1.103 0 2 -1.052987 2 -2.347795 V 3.7827163 C 22 2.4879071 21.103 1.4349209 20 1.4349209 Z M 4 20.217284 V 3.7827163 h 16 l 0.002 16.4345677 z"/>
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M 6 6.1305116 H 18 V 8.4783069 H 6 Z m 0 4.6955904 h 12 v 2.347796 H 6 Z m 0 4.695591 h 6 v 2.347796 H 6 Z"/>
+                                    </Canvas>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="LogsPage">
+                                    <Setter Property="Content" Value="Logs" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Command="{Binding UserControlPageChange}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Ellipse Stroke="{DynamicResource BackgroundColor}"
+                                                 StrokeThickness="0.1"
+                                                 Canvas.Left="9" 
+                                                 Canvas.Top="4" 
+                                                 Width="6" 
+                                                 Height="6" />
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M12 2C9.243 2 7 4.243 7 7s2.243 5 5 5 5-2.243 5-5S14.757 2 12 2zM12 10c-1.654 0-3-1.346-3-3s1.346-3 3-3 3 1.346 3 3S13.654 10 12 10zM21 21v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h2v-1c0-2.757 2.243-5 5-5h4c2.757 0 5 2.243 5 5v1H21z" />
+                                    </Canvas>
+
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="ChangeUserDataPage">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Setter Property="Content" Value="Users" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="UsersControlPage">
+                                    <Setter Property="Content" Value="Users" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Command="{Binding CommandsControlPageChange}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M19 2H6C4.794 2 3 2.799 3 5v3v6v3v2c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.806 5 19s0.55-0.988 1.012-1H19h1 h1v-1v-2V4C21 2.897 20.103 2 19 2z M19 16H5v-2V8V5c0-0.806 0.55-0.988 1-1h13v11V16z"/>
+                                    </Canvas>
+                                    <!--<Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M 20 1.4349209 H 4 c -1.103 0 -2 1.0529862 -2 2.3477954 V 20.217284 c 0 1.294808 0.897 2.347795 2 2.347795 h 16 c 1.103 0 2 -1.052987 2 -2.347795 V 3.7827163 C 22 2.4879071 21.103 1.4349209 20 1.4349209 Z M 4 20.217284 V 3.7827163 h 16 l 0.002 16.4345677 z"/>
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M 6 6.1305116 H 18 V 8.4783069 H 6 Z m 0 4.6955904 h 12 v 2.347796 H 6 Z m 0 4.695591 h 6 v 2.347796 H 6 Z"/>
+                                    </Canvas>-->
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="CommandsControlPage">
+                                    <Setter Property="Content" Value="Commnads" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Command="{Binding SettingsPageChange}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <!--<Path Fill="{DynamicResource BackgroundColor}"-->
+                                        <!--Data="M13 5H22V7H13zM2 7L9 7 9 9 11 9 11 3 9 3 9 5 2 5zM9 17H22V19H9zM19 11H22V13H19zM17 15L17 9.012 15 9.012 15 11 2 11 2 13 15 13 15 15zM7 21L7 15 5 15 5 17 2 17 2 19 5 19 5 21z" />-->
+                                        <Path Stroke="{DynamicResource BackgroundColor}"  
+                                              StrokeThickness="2"
+                                              StrokeLineJoin="Round" 
+                                              StrokeStartLineCap="Round" 
+                                              StrokeEndLineCap="Round" 
+                                              Data="M10 6h11M3 6h3M20 12h1M19 12h2M3 12h12M13 18h8M3 18h6M8 8c1.1046 0 2-.8954 2-2s-.8954-2-2-2-2 .8954-2 2 .8954 2 2 2zM17 14c1.1046 0 2-.8954 2-2s-.8954-2-2-2-2 .8954-2 2 .8954 2 2 2zM11 20c1.1046 0 2-.8954 2-2s-.8954-2-2-2-2 .8954-2 2 .8954 2 2 2z"/>
+                                    </Canvas>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="SettingsPage">
+                                    <Setter Property="Content" Value="Settings" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+            
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource ButtonLeftMenuStyle}" />
+                </StackPanel.Resources>
+                
+                <Button Command="{Binding LogsViewModel.ClearLogsBot, Source={StaticResource ViewModelLocator}}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonLeftMenuStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Canvas.Left="-1" 
+                                              Fill="{DynamicResource BackgroundColor}"
+                                              Data="M12 8L12 13 17 13 17 11 14 11 14 8z" />
+                                        <Path Canvas.Left="-1" 
+                                              Fill="{DynamicResource BackgroundColor}"
+                                              Data="M21.292 8.497c-0.226-0.535-0.505-1.05-0.829-1.529c-0.322-0.478-0.691-0.926-1.099-1.333S18.51 4.86 18.032 4.537 c-0.482-0.326-0.997-0.604-1.528-0.829c-0.545-0.23-1.114-0.407-1.69-0.525c-1.181-0.243-2.444-0.244-3.626 0 c-0.579 0.118-1.147 0.295-1.69 0.524c-0.531 0.225-1.045 0.503-1.529 0.83C7.492 4.859 7.043 5.229 6.636 5.636 C6.229 6.043 5.859 6.492 5.537 6.968C5.211 7.452 4.932 7.966 4.708 8.496c-0.23 0.544-0.407 1.113-0.525 1.69 C4.062 10.778 4 11.388 4 12c0 0.008 0.001 0.017 0.001 0.025H2L5 16l3-3.975H6.001C6.001 12.017 6 12.008 6 12 c0-0.477 0.048-0.952 0.142-1.412c0.092-0.449 0.229-0.89 0.408-1.313c0.174-0.412 0.391-0.813 0.645-1.188 C7.445 7.716 7.733 7.368 8.05 7.05s0.666-0.605 1.036-0.855c0.376-0.254 0.777-0.471 1.19-0.646 c0.421-0.179 0.863-0.316 1.313-0.408c0.919-0.189 1.904-0.188 2.823 0c0.447 0.092 0.89 0.229 1.313 0.408 c0.413 0.174 0.813 0.392 1.188 0.644c0.37 0.251 0.72 0.539 1.037 0.856c0.317 0.316 0.604 0.665 0.855 1.037 c0.252 0.372 0.469 0.772 0.645 1.189c0.178 0.417 0.314 0.858 0.408 1.311C19.952 11.049 20 11.524 20 12 s-0.048 0.951-0.142 1.41c-0.094 0.455-0.23 0.896-0.408 1.314c-0.176 0.416-0.393 0.815-0.646 1.189 c-0.25 0.371-0.537 0.72-0.854 1.036c-0.317 0.317-0.667 0.605-1.036 0.855c-0.376 0.253-0.775 0.471-1.189 0.646 c-0.423 0.179-0.865 0.316-1.313 0.408c-0.918 0.188-1.902 0.189-2.823 0c-0.449-0.092-0.89-0.229-1.313-0.408 c-0.412-0.174-0.813-0.391-1.188-0.645c-0.371-0.25-0.719-0.538-1.037-0.855l-1.414 1.414c0.407 0.408 0.855 0.777 1.332 1.099 c0.483 0.326 0.998 0.605 1.528 0.829c0.544 0.23 1.113 0.407 1.69 0.525C11.778 20.938 12.388 21 13 21 c0.612 0 1.223-0.062 1.813-0.183c0.577-0.118 1.146-0.294 1.69-0.524c0.532-0.225 1.047-0.504 1.531-0.831 c0.476-0.322 0.923-0.691 1.33-1.098s0.776-0.855 1.098-1.331c0.325-0.48 0.604-0.995 0.83-1.529 c0.228-0.538 0.405-1.106 0.525-1.692C21.938 13.22 22 12.61 22 12s-0.062-1.22-0.183-1.814 C21.697 9.602 21.52 9.034 21.292 8.497z" />
+                                    </Canvas>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <Canvas Style="{StaticResource CanvasForIcons}">
+                                                <Path Canvas.Left="-1" 
+                                                      Fill="{DynamicResource OrangeColor}"
+                                                      Data="M12 8L12 13 17 13 17 11 14 11 14 8z" />
+                                                <Path Canvas.Left="-1" 
+                                                      Fill="{DynamicResource OrangeColor}"
+                                                      Data="M21.292 8.497c-0.226-0.535-0.505-1.05-0.829-1.529c-0.322-0.478-0.691-0.926-1.099-1.333S18.51 4.86 18.032 4.537 c-0.482-0.326-0.997-0.604-1.528-0.829c-0.545-0.23-1.114-0.407-1.69-0.525c-1.181-0.243-2.444-0.244-3.626 0 c-0.579 0.118-1.147 0.295-1.69 0.524c-0.531 0.225-1.045 0.503-1.529 0.83C7.492 4.859 7.043 5.229 6.636 5.636 C6.229 6.043 5.859 6.492 5.537 6.968C5.211 7.452 4.932 7.966 4.708 8.496c-0.23 0.544-0.407 1.113-0.525 1.69 C4.062 10.778 4 11.388 4 12c0 0.008 0.001 0.017 0.001 0.025H2L5 16l3-3.975H6.001C6.001 12.017 6 12.008 6 12 c0-0.477 0.048-0.952 0.142-1.412c0.092-0.449 0.229-0.89 0.408-1.313c0.174-0.412 0.391-0.813 0.645-1.188 C7.445 7.716 7.733 7.368 8.05 7.05s0.666-0.605 1.036-0.855c0.376-0.254 0.777-0.471 1.19-0.646 c0.421-0.179 0.863-0.316 1.313-0.408c0.919-0.189 1.904-0.188 2.823 0c0.447 0.092 0.89 0.229 1.313 0.408 c0.413 0.174 0.813 0.392 1.188 0.644c0.37 0.251 0.72 0.539 1.037 0.856c0.317 0.316 0.604 0.665 0.855 1.037 c0.252 0.372 0.469 0.772 0.645 1.189c0.178 0.417 0.314 0.858 0.408 1.311C19.952 11.049 20 11.524 20 12 s-0.048 0.951-0.142 1.41c-0.094 0.455-0.23 0.896-0.408 1.314c-0.176 0.416-0.393 0.815-0.646 1.189 c-0.25 0.371-0.537 0.72-0.854 1.036c-0.317 0.317-0.667 0.605-1.036 0.855c-0.376 0.253-0.775 0.471-1.189 0.646 c-0.423 0.179-0.865 0.316-1.313 0.408c-0.918 0.188-1.902 0.189-2.823 0c-0.449-0.092-0.89-0.229-1.313-0.408 c-0.412-0.174-0.813-0.391-1.188-0.645c-0.371-0.25-0.719-0.538-1.037-0.855l-1.414 1.414c0.407 0.408 0.855 0.777 1.332 1.099 c0.483 0.326 0.998 0.605 1.528 0.829c0.544 0.23 1.113 0.407 1.69 0.525C11.778 20.938 12.388 21 13 21 c0.612 0 1.223-0.062 1.813-0.183c0.577-0.118 1.146-0.294 1.69-0.524c0.532-0.225 1.047-0.504 1.531-0.831 c0.476-0.322 0.923-0.691 1.33-1.098s0.776-0.855 1.098-1.331c0.325-0.48 0.604-0.995 0.83-1.529 c0.228-0.538 0.405-1.106 0.525-1.692C21.938 13.22 22 12.61 22 12s-0.062-1.22-0.183-1.814 C21.697 9.602 21.52 9.034 21.292 8.497z" />
+                                            </Canvas>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <Canvas Style="{StaticResource CanvasForIcons}">
+                                                <Path Fill="{DynamicResource BackgroundColor}"
+                                                      Data="M15 2H9C7.897 2 7 2.897 7 4v2H3v2h2v12c0 1.103 0.897 2 2 2h10c1.103 0 2-0.897 2-2V8h2V6h-4V4C17 2.897 16.103 2 15 2z M9 4h6v2H9V4z M17 20H7V8h1h8h1V20z" />
+                                            </Canvas>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="LogsPage">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Command="{Binding CommonControlUserDataViewModel.CreateUserPageChange, Source={StaticResource ViewModelLocator}}" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}">
+                                        <Path Stroke="{DynamicResource BackgroundColor}"
+                                              StrokeThickness="0.1"
+                                              Data="M6 8c0 1.178 0.822 2 2 2s2-0.822 2-2S9.178 6 8 6S6 6.822 6 8z" />
+                                        <Path Fill="{DynamicResource BackgroundColor}"
+                                              Data="M19 8L17 8 17 11 14 11 14 13 17 13 17 16 19 16 19 13 22 13 22 11 19 11zM4 8c0 2.28 1.72 4 4 4s4-1.72 4-4-1.72-4-4-4S4 5.72 4 8zM10 8c0 1.178-.822 2-2 2S6 9.178 6 8s.822-2 2-2S10 6.822 10 8zM4 18c0-1.654 1.346-3 3-3h2c1.654 0 3 1.346 3 3v1h2v-1c0-2.757-2.243-5-5-5H7c-2.757 0-5 2.243-5 5v1h2V18z" />
+                                    </Canvas>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <Canvas Style="{StaticResource CanvasForIcons}">
+                                                <Path Fill="{DynamicResource BackgroundColor}"
+                                                      Data="M19 11L13 11 13 5 11 5 11 11 5 11 5 13 11 13 11 19 13 19 13 13 19 13z" />
+                                            </Canvas>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding MainViewModel.PageSourceTitle, Source={StaticResource ViewModelLocator}}" Value="UsersControlPage">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button IsEnabled="False">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Canvas Style="{StaticResource CanvasForIcons}" x:Uid="Broadcast">
+                                        <Path Fill="{StaticResource OrangeColor}" Data="M19.707 4.293l-1.414 1.414c2.733 2.733 2.733 7.353 0 10.086l1.414 1.414C23.207 13.707 23.207 7.793 19.707 4.293zM15.293 8.707c.566.566.879 1.292.879 2.043s-.313 1.477-.879 2.043l1.414 1.414c.944-.943 1.465-2.172 1.465-3.457s-.521-2.514-1.465-3.457L15.293 8.707zM6.207 5.707L4.793 4.293c-3.5 3.5-3.5 9.414 0 12.914l1.414-1.414C3.474 13.06 3.474 8.44 6.207 5.707z"/>
+                                        <Path Fill="{StaticResource OrangeColor}" Data="M7.293 7.293C6.349 8.236 5.828 9.465 5.828 10.75s.521 2.514 1.465 3.457l1.414-1.414c-.566-.566-.879-1.292-.879-2.043s.313-1.477.879-2.043L7.293 7.293zM14 10.5c0-1.104-.896-2-2-2s-2 .896-2 2c-.001.695.355 1.308.895 1.666L10.002 22h3.996l-.893-9.835C13.645 11.807 14 11.195 14 10.5z"/>
+                                    </Canvas>
+                                </Setter.Value>
+                            </Setter>
+                            <!--NOT IMPLEMENTED-->
+                            <!--<Style.Triggers>
+                                <DataTrigger Binding="{Binding MainViewModel.ConnectionStatus, Source={StaticResource ViewModelLocator}}" Value="Lost">
+                                    -->
+                            <!--ANIMATE CHANGING ICON-->
+                            <!--<Canvas Style="{StaticResource CanvasForIcons}" x:Uid="Linked">
+                                        <Path Fill="{StaticResource OrangeColor}" Data="M8.465 11.293c1.133-1.133 3.109-1.133 4.242 0L13.414 12l1.414-1.414l-0.707-0.707c-0.943-0.944-2.199-1.465-3.535-1.465 S7.994 8.935 7.051 9.879L4.929 12c-1.948 1.949-1.948 5.122 0 7.071c0.975 0.975 2.255 1.462 3.535 1.462 c1.281 0 2.562-0.487 3.536-1.462l0.707-0.707l-1.414-1.414l-0.707 0.707c-1.17 1.167-3.073 1.169-4.243 0 c-1.169-1.17-1.169-3.073 0-4.243L8.465 11.293z"/>
+                                        <Path Fill="{StaticResource OrangeColor}" Data="M12 4.929l-0.707 0.707l1.414 1.414l0.707-0.707c1.169-1.167 3.072-1.169 4.243 0c1.169 1.17 1.169 3.073 0 4.243 l-2.122 2.121c-1.133 1.133-3.109 1.133-4.242 0L10.586 12l-1.414 1.414l0.707 0.707c0.943 0.944 2.199 1.465 3.535 1.465 s2.592-0.521 3.535-1.465L19.071 12c1.948-1.949 1.948-5.122 0-7.071C17.121 2.979 13.948 2.98 12 4.929z"/>
+                                    </Canvas>
+                                    <Canvas Style="{StaticResource CanvasForIcons}" x:Uid="Unlinked">
+                                        <Path Fill="{StaticResource OrangeColor}" Data="M16.949 14.121L19.071 12c1.948-1.949 1.948-5.122 0-7.071-1.95-1.95-5.123-1.948-7.071 0l-.707.707 1.414 1.414.707-.707c1.169-1.167 3.072-1.169 4.243 0 1.169 1.17 1.169 3.073 0 4.243l-2.122 2.121c-.247.247-.534.435-.844.57L13.414 12l1.414-1.414-.707-.707c-.943-.944-2.199-1.465-3.535-1.465-.235 0-.464.032-.691.066L3.707 2.293 2.293 3.707l18 18 1.414-1.414-5.536-5.536C16.448 14.573 16.709 14.361 16.949 14.121zM10.586 17.657c-1.169 1.167-3.072 1.169-4.243 0-1.169-1.17-1.169-3.073 0-4.243l1.476-1.475-1.414-1.414L4.929 12c-1.948 1.949-1.948 5.122 0 7.071.975.975 2.255 1.462 3.535 1.462 1.281 0 2.562-.487 3.536-1.462l.707-.707-1.414-1.414L10.586 17.657z"/>
+                                    </Canvas>-->
+                            <!--
+                                </DataTrigger>
+                            </Style.Triggers>-->
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <ToggleButton x:Name="HideControlBotPanel"
+                              IsChecked="True"
+                              BorderThickness="0"
+                              Margin="5,7"
+                              Background="{StaticResource OrangeColor}"
+                              Foreground="{DynamicResource BackgroundColor}" >
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border BorderThickness="0"
+                                    CornerRadius="8" 
+                                    Background="{TemplateBinding Background}" >
+                                <Canvas Style="{StaticResource CanvasForIcons}" Margin="9,4">
+                                    <Path x:Name="FirstIconPart"
+                                          Fill="{TemplateBinding Foreground}"
+                                          Data="M4 6H6V18H4zM14 11L8 11 8 13 14 13 14 18 20 12 14 6z" />
+                                    <Path x:Name="SecondIconPart"
+                                          Visibility="Collapsed"
+                                          Fill="{TemplateBinding Foreground}"
+                                          Data="M11 2H13V12H11z" />
+                                </Canvas>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="FirstIconPart" 
+                                            Property="Data" 
+                                            Value="M12 21c4.411 0 8-3.589 8-8c0-3.35-2.072-6.221-5-7.411v2.223c1.79 1.04 3 2.973 3 5.188c0 3.309-2.691 6-6 6s-6-2.691-6-6 c0-2.215 1.21-4.149 3-5.188V5.589C6.072 6.779 4 9.65 4 13C4 17.411 7.589 21 12 21z" />
+                                    <Setter TargetName="SecondIconPart"
+                                            Property="Visibility"
+                                            Value="Visible" />
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True" />
+                                        <Condition Property="IsChecked" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="SecondIconPart"
+                                                Property="Visibility"
+                                                Value="Collapsed" />
+                                        <Setter TargetName="FirstIconPart" 
+                                                Property="Data" 
+                                                Value="M18 6H20V18H18zM10 18L10 13 16 13 16 11 10 11 10 6 4 12z" />
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=HideControlBotPanel, Path=IsChecked}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Button Command="{Binding StartBot}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <Canvas Style="{StaticResource CanvasForIcons}">
+                                            <Path Canvas.Left="1"
+                                                      Stroke="{DynamicResource BackgroundColor}"  
+                                                      StrokeStartLineCap="Round" 
+                                                      StrokeEndLineCap="Round" 
+                                                      Data="M5 4v16l14-8L5 4z"/>
+                                        </Canvas>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Content" Value="Start" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding StopBot}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <Canvas Style="{StaticResource CanvasForIcons}">
+                                            <Path Stroke="{DynamicResource BackgroundColor}"
+                                                    Data="M 4.4999998 4.5000001 H 19.5 V 19.5 H 4.4999998 Z"/>
+                                        </Canvas>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Content" Value="Stop" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding RestartBot}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <Canvas Style="{StaticResource CanvasForIcons}">
+                                            <Path Fill="{DynamicResource BackgroundColor}"  
+                                                    Data="M12 16c1.671 0 3-1.331 3-3s-1.329-3-3-3s-3 1.331-3 3S10.329 16 12 16z"/>
+                                            <Path Fill="{DynamicResource BackgroundColor}"  
+                                                    Data="M20.817 11.186c-0.12-0.583-0.297-1.151-0.525-1.688c-0.225-0.532-0.504-1.046-0.83-1.531 c-0.324-0.479-0.693-0.926-1.098-1.329c-0.404-0.406-0.853-0.776-1.332-1.101c-0.483-0.326-0.998-0.604-1.528-0.829 c-0.538-0.229-1.106-0.405-1.691-0.526c-0.6-0.123-1.219-0.182-1.838-0.18V2L8 5l3.975 3V6.002C12.459 6 12.943 6.046 13.41 6.142 c0.454 0.094 0.896 0.231 1.314 0.409c0.413 0.174 0.813 0.392 1.188 0.644c0.373 0.252 0.722 0.54 1.038 0.857 c0.315 0.314 0.604 0.663 0.854 1.035c0.254 0.376 0.471 0.776 0.646 1.191c0.178 0.417 0.314 0.859 0.408 1.311 C18.952 12.048 19 12.523 19 13s-0.048 0.952-0.142 1.41c-0.094 0.454-0.23 0.896-0.408 1.315 c-0.175 0.413-0.392 0.813-0.644 1.188c-0.253 0.373-0.542 0.722-0.858 1.039c-0.315 0.316-0.663 0.603-1.036 0.854 c-0.372 0.251-0.771 0.468-1.189 0.645c-0.417 0.177-0.858 0.314-1.311 0.408c-0.92 0.188-1.906 0.188-2.822 0 c-0.454-0.094-0.896-0.231-1.314-0.409c-0.416-0.176-0.815-0.393-1.189-0.645c-0.371-0.25-0.719-0.538-1.035-0.854 c-0.315-0.316-0.604-0.665-0.855-1.036c-0.254-0.376-0.471-0.776-0.646-1.19c-0.178-0.418-0.314-0.86-0.408-1.312 C5.048 13.952 5 13.477 5 13H3c0 0.611 0.062 1.221 0.183 1.814c0.12 0.582 0.297 1.15 0.525 1.689 c0.225 0.532 0.504 1.046 0.831 1.531c0.323 0.477 0.692 0.924 1.097 1.329c0.406 0.407 0.854 0.777 1.331 1.099 c0.479 0.325 0.994 0.604 1.529 0.83c0.538 0.229 1.106 0.405 1.691 0.526C10.779 21.938 11.389 22 12 22s1.221-0.062 1.814-0.183 c0.583-0.121 1.151-0.297 1.688-0.525c0.537-0.227 1.052-0.506 1.53-0.83c0.478-0.322 0.926-0.692 1.331-1.099 c0.405-0.405 0.774-0.853 1.1-1.332c0.325-0.483 0.604-0.998 0.829-1.528c0.229-0.54 0.405-1.108 0.525-1.692 C20.938 14.221 21 13.611 21 13S20.938 11.779 20.817 11.186z"/>
+                                        </Canvas>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Content" Value="Restart" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <Frame Content="{Binding PageSource}"
+               NavigationUIVisibility="Hidden" />
+        
+    </Grid>
+</Window>

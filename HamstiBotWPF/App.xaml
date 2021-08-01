@@ -1,18 +1,17 @@
-﻿<Application x:Class="HamstiBotWPF.App"
+﻿<Application x:Class="TBotHamsti.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:HamstiBotWPF"
-             xmlns:properties="clr-namespace:HamstiBotWPF.Properties"
-             StartupUri="Main.xaml">
+             xmlns:local="clr-namespace:TBotHamsti"
+             xmlns:services="clr-namespace:TBotHamsti.Services"
+             xmlns:properties="clr-namespace:TBotHamsti.Properties"
+             StartupUri="Views/Main.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <local:ViewModelLocator x:Key="ViewModelLocator" />
+            <services:ViewModelLocator x:Key="ViewModelLocator" />
             <properties:Settings x:Key="Settings" />
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/HamstiBotWPF;component/Themes/CommonDictionary.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/HamstiBotWPF;component/Themes/Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TBotHamsti;component/Views/Themes/CommonDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TBotHamsti;component/Views/Themes/Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
