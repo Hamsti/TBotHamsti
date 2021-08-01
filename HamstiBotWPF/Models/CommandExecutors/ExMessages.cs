@@ -10,47 +10,61 @@ namespace TBotHamsti.Models.CommandExecutors
 {
     public static class ExMessages
     {
-        private static string RandomString(int length)
+        public static async Task SentToAdmins(ICommand model, User user, Message message)
         {
-            Random random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
+            string recivedMessage = model.GetOriginalArgs(message);
+            await StatusUser.Admin.SendMessageAsync($"Message from user [{user.Id_Username} | {nameof(user.IsBlocked)}: {user.IsBlocked}):\n\"{recivedMessage}\"");
+            await user.SendMessageAsync("The message was successfully sent to the administrators of the " + App.Api.GetMeAsync().Result);
         }
 
-        public static async Task UserSentToAdmin(ICommand model, User user, Message message)
+        public static async Task SentByStatus(ICommand model, User user, Message message)
         {
-            await StatusUser.Admin.SendMessageAsync($"Сообщение от пользователя \n[{user.IdUser_Nickname} | blocked: {user.IsBlocked}):\n\"{ExCommon.GetOriginalArgs(model, message)}\"");
-            await user.SendMessageAsync("Сообщение успешно отправлено админу бота " + App.Api.GetMeAsync().Result);
-        }
-
-        public static async Task AdminSentToUser(User userSource, User userDestination, string[] args)
-        {
-            if (userDestination is null)
+            if (!Enum.TryParse(model.GetArg(0), true, out StatusUser status))
             {
-                throw new ArgumentNullException(nameof(userDestination));
+                throw new ArgumentOutOfRangeException($"Status {model.Args[0]} doesn't exist.");
             }
 
-            await userDestination.SendMessageAsync($"Сообщение от администратора бота {App.Api.GetMeAsync().Result}: \n\"{string.Join(" ", args.Skip(1))}\"" +
-                $"\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
-            await userSource.SendMessageAsync($"Сообщение успешно отправлено пользователю \"{userDestination.IdUser_Nickname}\"");
+            string recivedMessage = model.GetOriginalArgs(message, 1);
+            await status.SendMessageAsync($"Message from user [{user.Id_Username} | {nameof(user.IsBlocked)}: {user.IsBlocked}):\n\"{recivedMessage}\"");
+            await user.SendMessageAsync($"The message was successfully sent to the {status} group of the {App.Api.GetMeAsync().Result}");
         }
 
-        public static async Task UserSpamFromAdmin(User userSource, User userDestination, int countMessages)
+        public static async Task SentById(ICommand model, User user, Message message)
         {
-            if (userDestination is null)
-            {
-                throw new ArgumentNullException(nameof(userDestination));
-            }
-
+            string recivedMessage = model.GetOriginalArgs(message, 1);
+            User userDestination = UsersFunc.GetUser(ExUsers.IdStrToInt(model.GetArg(0)));
             await userDestination.SendMessageAsync(
-                $"Вы были выбраны жертвой для спама от администратора бота {await App.Api.GetMeAsync()}:\n" +
-                $"\nВы можете написать администратору бота используя команду \"/sentToAdmin YourMessage\"");
+                $"Message from the {App.Api.GetMeAsync().Result} administrator: \n\"{recivedMessage}\"\n\n" +
+                "You can write to the bot administrator using the command " + CollectionCommands.SendMessageToAdminCommand.ExampleCommand);
+            await user.SendMessageAsync($"The message has been successfully sent to the [{userDestination.Id_Username}] user");
+        }
+
+        public static async Task UserSpam(ICommand model, User user)
+        {
+            if (!int.TryParse(model.GetArg(1), out int countMessages))
+            {
+                throw new ArgumentException("Wrong type of number", nameof(countMessages));
+            }
+
+            User userDestination = UsersFunc.GetUser(ExUsers.IdStrToInt(model.GetArg(0)));
+            await userDestination.SendMessageAsync(
+                $"You have been selected as a spam victim by the {await App.Api.GetMeAsync()} admin\n\n" +
+                $"You can write to the bot administrator using the command " + CollectionCommands.SendMessageToAdminCommand.ExampleCommand);
+            
             for (int i = 0; i < countMessages; i++)
             {
                 await userDestination.SendMessageAsync(RandomString(new Random().Next(5, 40)));
             }
-            await userDestination.SendMessageAsync("Спам успешно завершён. Хорошего дня ;>");
-            await userSource.SendMessageAsync("Спам пользователя \"" + userDestination.IdUser_Nickname + "\" успешно завершён.");
+
+            await userDestination.SendMessageAsync("Spam completed successfully. Have a nice day😉");
+            await user.SendMessageAsync("Spam user [" + userDestination.Id_Username + "] successfully finished");
+        }
+
+        private static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

@@ -1,20 +1,21 @@
 ﻿using DevExpress.Mvvm;
 using System;
-using System.Windows;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
-using TBotHamsti.Services;
+using TBotHamsti.Models;
 using TBotHamsti.Models.Messages;
 using TBotHamsti.Models.Users;
-using TBotHamsti.Models;
-using Telegram.Bot.Types.Enums;
+using TBotHamsti.Services;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types.Enums;
 
 namespace TBotHamsti.ViewModels
 {
     public class LogsViewModel : BindableBase
     {
+        private static int MillisecondsDelayOnReceiveError => (int)(Properties.Settings.Default.SecondsDelayOnReceiveError * 1000);
         public static MessageBus MessageBus { get; private set; }
         public ObservableCollection<TextMessage> ListLogs { get; private set; }
 
@@ -22,91 +23,76 @@ namespace TBotHamsti.ViewModels
         {
             ListLogs = new ObservableCollection<TextMessage>();
             MessageBus = messageBus;
-            MessageBus.Receive<TextMessage>(this, message => AddLog(new TextMessage(message.Text, message.HorizontalAlignment)));
+            MessageBus.Receive<TextMessage>(this, AddLog_Text);
 
-            App.Api.OnMessageEdited += BotOnMessageReceived;
-            App.Api.OnMessage += BotOnMessageReceived;
+            App.Api.OnMessage += AddLog_BotOnMessageRecived_EditedAlso;
+            App.Api.OnMessage += AnalysisMessage_BotOnMessageRecived_EditedAlso;
+            App.Api.OnMessageEdited += AddLog_BotOnMessageRecived_EditedAlso;
+            App.Api.OnMessageEdited += AnalysisMessage_BotOnMessageRecived_EditedAlso;
             App.Api.OnReceiveError += BotOnReceiveError;
             App.Api.OnReceiveGeneralError += Api_OnReceiveGeneralError;
-            App.Api.OnMessage += Api_AdapterOnMessage_EditedAlso;
-            App.Api.OnMessageEdited += Api_AdapterOnMessage_EditedAlso;
         }
 
-        public ICommand ClearLogsBot => new DelegateCommand(() => ListLogs.Clear(), () => ListLogs.Count > 0);
+        public ICommand ClearLogsBot => new DelegateCommand(() =>
+            {
+                ListLogs.Clear();
+                GC.Collect();
+            }, () => ListLogs.Count > 0);
 
         /// <summary>
         /// Adapter for processing message (new and edited)
         /// </summary>
-        private async void Api_AdapterOnMessage_EditedAlso(object sender, MessageEventArgs e)
+        private async void AnalysisMessage_BotOnMessageRecived_EditedAlso(object sender, MessageEventArgs e)
         {
-            User user = UsersFunc.GetUser(e.Message.From.Id);
+            User user = null;
             try
             {
-                await ExecutionBot.CheckMessage(e.Message, user);
+                await ExecutionBot.CheckMessage(ref user, e.Message);
             }
             catch (Exception ex)
             {
-                await AddLog(new TextMessage(ex.Message, HorizontalAlignment.Right));
-                await (user?.SendMessageAsync(ex.Message) ??
-                    AddLog(new TextMessage("User is null, message did't send: \"" + e.Message.Text + "\"", HorizontalAlignment.Right)));
+                string exMessage = HandlerException.GetExceptionMessage(ex);
+                await AddLog_Text(new TextMessage(exMessage, HorizontalAlignment.Right));
+                await (user?.SendMessageAsync(exMessage)
+                    ?? AddLog_Text(new TextMessage("User is null, message did't send: \"" + exMessage + "\"", HorizontalAlignment.Right)));
             }
         }
 
-        private Task AddLog(TextMessage message) => Application.Current.Dispatcher.InvokeAsync(() => ListLogs.Insert(0, message)).Task;
+        private Task AddLog_Text(IMessage message)
+        {
+            App.UiContext.Post(_ => ListLogs.Insert(0, (TextMessage)message), null);
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// Adding to the log notification of an incoming message
         /// </summary>
-        private void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
+        private void AddLog_BotOnMessageRecived_EditedAlso(object sender, MessageEventArgs messageEventArgs)
         {
             var message = messageEventArgs.Message;
-            AddLog(new TextMessage(message.Type switch
+            AddLog_Text(new TextMessage($"[{message.From.Id}]: " + (message.Type switch
             {
-                MessageType.Text => $"[{message.From.Id}]: {message.Text}",
-                MessageType.Photo => $"Получено изображение: {message.Photo}",
-                MessageType.Document => $"Получен документ: {message.Document}",
-                MessageType.Audio => throw new NotImplementedException(),
-                MessageType.Video => throw new NotImplementedException(),
-                MessageType.Voice => throw new NotImplementedException(),
-                MessageType.Sticker => throw new NotImplementedException(),
-                MessageType.Location => throw new NotImplementedException(),
-                MessageType.Contact => throw new NotImplementedException(),
-                MessageType.Venue => throw new NotImplementedException(),
-                MessageType.Game => throw new NotImplementedException(),
-                MessageType.VideoNote => throw new NotImplementedException(),
-                MessageType.Invoice => throw new NotImplementedException(),
-                MessageType.SuccessfulPayment => throw new NotImplementedException(),
-                MessageType.WebsiteConnected => throw new NotImplementedException(),
-                MessageType.ChatMembersAdded => throw new NotImplementedException(),
-                MessageType.ChatMemberLeft => throw new NotImplementedException(),
-                MessageType.ChatTitleChanged => throw new NotImplementedException(),
-                MessageType.ChatPhotoChanged => throw new NotImplementedException(),
-                MessageType.MessagePinned => throw new NotImplementedException(),
-                MessageType.ChatPhotoDeleted => throw new NotImplementedException(),
-                MessageType.GroupCreated => throw new NotImplementedException(),
-                MessageType.SupergroupCreated => throw new NotImplementedException(),
-                MessageType.ChannelCreated => throw new NotImplementedException(),
-                MessageType.MigratedToSupergroup => throw new NotImplementedException(),
-                MessageType.MigratedFromGroup => throw new NotImplementedException(),
-                MessageType.Poll => throw new NotImplementedException(),
-                MessageType.Dice => throw new NotImplementedException(),
-                MessageType.Unknown => throw new NotImplementedException(),
-                _ => $"Пришло сообщение формата: {message.Type}",
-            })).Wait();
+                MessageType.Text => $"{message.Text}",
+                MessageType.Photo => $"The image is downloaded: {message.Photo}",
+                MessageType.Document => $"The document is downloaded: {message.Document}",
+                _ => $"Received a message of the format: {message.Type}",
+            }))).Wait();
         }
 
         private void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)
         {
-            AddLog(new TextMessage(string.Format("Произошла ошибка при прослушивании: {0} — {1}",
+            AddLog_Text(new TextMessage(string.Format("An error occured while listening: {0} — {1}",
                 receiveErrorEventArgs.ApiRequestException.ErrorCode,
                 receiveErrorEventArgs.ApiRequestException.Message),
                 HorizontalAlignment.Right)).Wait();
+            Task.Delay(MillisecondsDelayOnReceiveError).Wait();
         }
 
         private void Api_OnReceiveGeneralError(object sender, ReceiveGeneralErrorEventArgs e)
         {
-            AddLog(new TextMessage("Произошла ошибка при событии OnReceiveGeneralError: " + e.Exception.Message,
+            AddLog_Text(new TextMessage("An error occurred on the event OnReceiveGeneralError: " + e.Exception.Message,
                 HorizontalAlignment.Right)).Wait();
+            Task.Delay(MillisecondsDelayOnReceiveError).Wait();
         }
     }
 }

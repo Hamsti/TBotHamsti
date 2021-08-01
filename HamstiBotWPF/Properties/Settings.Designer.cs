@@ -12,7 +12,7 @@ namespace TBotHamsti.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -32,21 +32,15 @@ namespace TBotHamsti.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\bos10\\OneDrive\\Pictures\\HamstiBot\\")]
         public string SavePath {
             get {
                 return ((string)(this["SavePath"]));
             }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("406777030")]
-        public int RecoverIdAdmin {
-            get {
-                return ((int)(this["RecoverIdAdmin"]));
+            set {
+                this["SavePath"] = value;
             }
         }
         
@@ -68,6 +62,42 @@ namespace TBotHamsti.Properties {
         public string JsonFileName {
             get {
                 return ((string)(this["JsonFileName"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsEnabledAutoStartBot {
+            get {
+                return ((bool)(this["IsEnabledAutoStartBot"]));
+            }
+            set {
+                this["IsEnabledAutoStartBot"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsShowLogsTime {
+            get {
+                return ((bool)(this["IsShowLogsTime"]));
+            }
+            set {
+                this["IsShowLogsTime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public double SecondsDelayOnReceiveError {
+            get {
+                return ((double)(this["SecondsDelayOnReceiveError"]));
+            }
+            set {
+                this["SecondsDelayOnReceiveError"] = value;
             }
         }
     }

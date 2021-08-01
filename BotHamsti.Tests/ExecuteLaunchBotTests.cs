@@ -9,6 +9,7 @@ using TBotHamsti.Properties;
 using Telegram.Bot.Types;
 using static TBotHamsti.Models.ExecutionBot;
 using BotCommand = TBotHamsti.Models.Commands.BotCommand;
+using User = TBotHamsti.Models.Users.User;
 
 namespace TBotHamsti.Tests
 {
@@ -37,7 +38,7 @@ namespace TBotHamsti.Tests
         public async Task ExecCommand_IsNormalExecute(int indexCommand, int indexUser)
         {
             // Act
-            Assert.DoesNotThrow(async () => await ExecuteTextCommand(CollectionCommands[indexCommand],
+            Assert.DoesNotThrow(async () => await HandleTextCommand(CollectionCommands[indexCommand],
                                             AuthUsers[indexUser],
                                             new Message()
                                             {

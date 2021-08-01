@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Telegram.Bot.Types;
 using TBotHamsti.Models.Messages;
 using TBotHamsti.Models.Users;
+using Telegram.Bot.Types;
 using StatusUser = TBotHamsti.Models.Users.StatusUser;
 using User = TBotHamsti.Models.Users.User;
 
@@ -56,7 +56,7 @@ namespace TBotHamsti.Models.Commands
             Args = args.Where(w => !w.Equals(command) || !string.IsNullOrWhiteSpace(w)).Select(s => ARG_START + s + ARG_END).ToArray();
             if (Args.Length.Equals(0))
             {
-                throw new ArgumentException(nameof(Args) + " is empty, use " + nameof(BotCommand) + " (command) or correct args", nameof(Args));
+                throw new ArgumentException(nameof(Args) + " is empty, use " + nameof(BotCommand) + "(command) or correct args", nameof(Args));
             }
 
             this.isLimitCountArgs = isLimitCountArgs;
@@ -74,22 +74,20 @@ namespace TBotHamsti.Models.Commands
         /// <returns>Returns a command in normal form or emptiness in case of failure</returns>
         public static BotCommand ParseMessage(Message message)
         {
-            string messageText = message.Text;
+            string messageText = message.Text ?? throw new ArgumentNullException(nameof(message.Text));
             if (!messageText.StartsWith("/"))
             {
-                throw new ArgumentException($"\"{messageText}\" - incorrect command syntax. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
+                throw new ArgumentException($"\"{messageText}\" - incorrect command syntax.\nTo get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
             }
 
-            string[] splits = messageText.Split(' ');
-            return new BotCommand(splits?.FirstOrDefault().ToLower())
+            string[] splits = messageText.Split(' ') ?? throw new ArgumentNullException(nameof(splits));
+            return new BotCommand(splits.FirstOrDefault().ToLower())
             {
                 Args = splits.Skip(1).Take(splits.Count()).ToArray()
             };
         }
 
-        private static string DefaultErrorMessage(Message message)
-        {
-            return $"An error occurred while execute \"{message.Text}\" command. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}";
-        }
+        private static string DefaultErrorMessage(Message message) =>
+            $"An error occurred while execute \"{message.Text}\" command. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}";
     }
 }

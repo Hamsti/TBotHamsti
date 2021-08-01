@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TBotHamsti.Views"
+      xmlns:prop="clr-namespace:TBotHamsti.Properties"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="LogsPage"
@@ -13,19 +14,38 @@
         <ListView ItemsSource="{Binding ListLogs}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   HorizontalContentAlignment="Stretch" >
+            
             <ListView.Resources>
                 <Style TargetType="{x:Type ListViewItem}" >
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                <Border Margin="1,0" BorderBrush="{DynamicResource OrangeColor}" >
-                                    <TextBlock Text="{Binding Text}"
-                                           HorizontalAlignment="{Binding HorizontalAlignment}"
-                                           TextAlignment="Justify"
-                                           TextWrapping="WrapWithOverflow"
-                                           Margin="3, 2.5"
-                                           />
-                                    
+                                <Border Margin="1,2" BorderBrush="{DynamicResource OrangeColor}" >
+                                    <StackPanel>
+                                        <TextBlock HorizontalAlignment="{Binding HorizontalAlignment}"
+                                                   TextAlignment="Justify"
+                                                   TextWrapping="WrapWithOverflow"
+                                                   Margin="3, 2.5" >
+                                            <TextBlock.Resources>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="{Binding Text}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsShowLogsTime, Source={x:Static prop:Settings.Default}}" Value="True">
+                                                            <Setter Property="Text">
+                                                                <Setter.Value>
+                                                                    <MultiBinding StringFormat="{}{0:T}: {1}">
+                                                                        <Binding Path="DateTimeGetMessage" />
+                                                                        <Binding Path="Text" />
+                                                                    </MultiBinding>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Resources>
+                                        </TextBlock>
+                                    </StackPanel>
+
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Style.Triggers>

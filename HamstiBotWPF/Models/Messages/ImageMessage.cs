@@ -1,7 +1,9 @@
 ﻿namespace TBotHamsti.Models.Messages
 {
-    abstract class ImageMessage : IMessage
-    {
+    // Temporary deleted for future implementation 
+    //
+    //abstract class ImageMessage : IMessage
+    //{
 
-    }
+    //}
 }

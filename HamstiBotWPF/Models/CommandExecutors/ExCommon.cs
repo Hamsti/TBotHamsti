@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,100 +16,66 @@ namespace TBotHamsti.Models.CommandExecutors
     /// </summary>
     public static class ExCommon
     {
+        public static readonly string ArgForKeysWithArguments = "All";
+        private static Exception ExceptionWrongNumberOfArgs => new ArgumentOutOfRangeException("Invalid number of arguments\nTo get a list of commands: " + CollectionCommands.HelpCommand.ExampleCommand);
         public static string GetHelp(User user) => string.Join("\n", BotLevelCommand.GetBotLevelCommand(user).CommandsOfLevel.Where(w => w.StatusUser <= user.Status).Select(s => s.ExampleCommand));
+        public static Task HelpBot(User user) => user.SendMessageAsync("List of commands:\n" + GetHelp(user));
+        public static string GetOriginalArgs(this ICommand model, Message message, int skipArgs = 0) => model.Args.Length > skipArgs
+                ? message.Text.Substring(message.Text.LastIndexOf(model.Args[skipArgs]))
+                : throw ExceptionWrongNumberOfArgs;
 
-        public static Task HelpBot(User user) => user.SendMessageAsync("Список команд у бота:\n" + GetHelp(user));
-
-        private static Exception ExceptionWrongNumberOfArgs => new ArgumentOutOfRangeException("Не верное кол-во агрументов\nСписок комманд: /help");
-        public static string GetOriginalArgs(ICommand model, Message message, int skipArgs = 0)
-        {
-            if (model.Args.Length > skipArgs)
-                return message.Text.Substring(message.Text.LastIndexOf(model.Args[skipArgs]));
-            else
-                throw ExceptionWrongNumberOfArgs;
-        }
-
-        public static async Task ImageUploader(User user, Message message)
-        {
-            try
-            {
-                var file = await App.Api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
-                var filename = file.FileId + "." + file.FilePath.Split('.').Last();
-                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePath + @"photos\" + filename, FileMode.Create))
-                {
-                    await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
-                }
-                await user.SendMessageAsync("Загрузка изображения успешно завершена");
-            }
-            catch (Exception ex)
-            {
-                await user.SendMessageAsync($"При загрузке изображения произошла ошибка: {ex.Message}");
-            }
-        }
-
-        public static async Task DocumentUploader(User user, Message message)
-        {
-            try
-            {
-                var file = await App.Api.GetFileAsync(message.Document.FileId);
-                using (var saveImageStream = System.IO.File.Open(Properties.Settings.Default.SavePath + @"documents\" + message.Document.FileName, FileMode.Create))
-                {
-                    await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
-                }
-                await user.SendMessageAsync("Загрузка документа успешно завершена");
-            }
-            catch (Exception ex)
-            {
-                await user.SendMessageAsync($"При загрузке документа произошла ошибка: {ex.Message}");
-            }
-        }
+        public static string GetArg(this ICommand model, int indexArg) => indexArg < model.CountArgsCommand
+                ? model?.Args[indexArg] ?? throw new ArgumentNullException(nameof(model))
+                : throw ExceptionWrongNumberOfArgs;
 
         public static async Task ComStopApp(User user)
         {
-            await user.SendMessageAsync($"Принудительное завершение работы приложения пользователем: " + user.IdUser_Nickname);
+            await user.SendMessageAsync($"Force the user [{user.Id_Username}] to terminate the application");
             await ExecutionBot.StopBotAsync();
-            Application.Current.Dispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background);
+            App.UiContext.Send(x => Application.Current.Shutdown(0), null);
         }
 
         public static Task ShowScreenButtons(User user, string arg)
         {
-            ParserKeys(out string[] keys, arg, user);
-
-            if (keys == null)
-                return user.SendMessageAsync("Не найден аргумент для выполнения команды");
+            string[] keys = ParserKeys(arg, user.Status);
 
             int countColsKeys = 3;
             var rkm = new ReplyKeyboardMarkup();
             var rows = new List<KeyboardButton[]>();
             var cols = new List<KeyboardButton>();
 
-            for (var i = 0; i < keys.Count(); i++)
+            for (int i = 0; i < keys.Count(); i++)
             {
                 cols.Add(new KeyboardButton(keys[i]));
-                if ((i + 1) % countColsKeys != 0 && i + 1 != keys.Count()) continue;
-                rows.Add(cols.ToArray());
-                cols = new List<KeyboardButton>();
+                if ((i + 1) % countColsKeys == 0 || i + 1 == keys.Count())
+                {
+                    rows.Add(cols.ToArray());
+                    cols = new List<KeyboardButton>();
+                }
             }
-            rkm.Keyboard = rows.ToArray();
 
+            rkm.Keyboard = rows.ToArray();
             rkm.OneTimeKeyboard = true;
 
-            //if (keys.Count() == 0)
-            //    return App.Api.SendTextMessageAsync(message.Chat.Id, "Экранная клавиатура успешно удалена.", replyMarkup: new ReplyKeyboardRemove());
-            //else
-            //    return App.Api.SendTextMessageAsync(message.Chat.Id, $"Количество добавленных кнопок: {keys.Count()}", replyMarkup: rkm);
-            if (keys.Count() == 0)
-                return App.Api.SendTextMessageAsync(user.Id, "Экранная клавиатура успешно удалена.", replyMarkup: new ReplyKeyboardRemove());
-            else
-                return App.Api.SendTextMessageAsync(user.Id, $"Количество добавленных кнопок: {keys.Count()}", replyMarkup: rkm);
+            return keys.Count() == 0
+                ? user.SendMessageAsync("The on-screen keyboard was successfully removed", new ReplyKeyboardRemove())
+                : user.SendMessageAsync("Number of buttons added: " + keys.Count(), replyMarkup: rkm);
         }
 
-        private static void ParserKeys(out string[] keys, string arg, User user)
+        private static string[] ParserKeys(string arg, StatusUser status)
         {
             if (bool.TryParse(arg, out bool isShowKeys))
-                keys = isShowKeys ? CollectionCommands.RootLevel.CommandsOfLevel.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= user.Status).Select(s => s.Command).ToArray() : new string[0];
+            {
+                return isShowKeys ? CollectionCommands.RootLevel.CommandsOfLevel.Where(x => x.CountArgsCommand == 0 && x.StatusUser <= status)
+                    .Select(s => s.Command)
+                    .ToArray() : new string[0];
+            }
             else
-                keys = arg.ToLower() == "all" ? CollectionCommands.RootLevel.CommandsOfLevel.Where(w => w.StatusUser <= user.Status).Select(s => s.Command).ToArray() : null;
+            {
+                return arg.ToLower() == ArgForKeysWithArguments ? CollectionCommands.RootLevel.CommandsOfLevel.Where(w => w.StatusUser <= status)
+                    .Select(s => s.Command)
+                    .ToArray() : throw new ArgumentException("No argument found to execute command", nameof(arg));
+            }
         }
     }
 }

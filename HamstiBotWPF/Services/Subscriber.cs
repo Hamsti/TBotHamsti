@@ -2,24 +2,6 @@
 
 namespace TBotHamsti.Services
 {
-    class EventSubscriber : IDisposable
-    {
-        private readonly Action<EventSubscriber> _action;
-
-        public Type MessageType { get; }
-
-        public EventSubscriber(Type messageType, Action<EventSubscriber> action)
-        {
-            MessageType = messageType;
-            _action = action;
-        }
-
-        public void Dispose()
-        {
-            _action?.Invoke(this);
-        }
-    }
-
     class MessageSubscriber : IDisposable
     {
         private readonly Action<MessageSubscriber> _action;
@@ -34,9 +16,6 @@ namespace TBotHamsti.Services
             _action = action;
         }
 
-        public void Dispose()
-        {
-            _action?.Invoke(this);
-        }
+        public void Dispose() => (_action ?? throw new ArgumentNullException(nameof(_action))).Invoke(this);
     }
 }

@@ -1,4 +1,9 @@
-﻿namespace TBotHamsti.Models.Messages
+﻿using System;
+
+namespace TBotHamsti.Models.Messages
 {
-    public interface IMessage { }
+    public interface IMessage
+    {
+        DateTime DateTimeGetMessage { get; }
+    }
 }

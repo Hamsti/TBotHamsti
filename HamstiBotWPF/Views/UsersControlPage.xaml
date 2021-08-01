@@ -31,11 +31,11 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Id}"
-                                    Header="Id user"/>
+                                    Header="Id"/>
                     
-                    <GridViewColumn DisplayMemberBinding="{Binding LocalNickname, TargetNullValue=null}" 
+                    <GridViewColumn DisplayMemberBinding="{Binding Username, TargetNullValue=null}" 
                                     Width="245"
-                                    Header="Local nickname" />
+                                    Header="Nickname" />
 
                     <GridViewColumn DisplayMemberBinding="{Binding Status}"
                                     Header="Status" />

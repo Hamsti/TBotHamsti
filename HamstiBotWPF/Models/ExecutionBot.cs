@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Windows;
 using System.Threading.Tasks;
+using System.Windows;
+using TBotHamsti.Models.CommandExecutors;
+using TBotHamsti.Models.Commands;
+using TBotHamsti.Models.Messages;
+using TBotHamsti.Models.Users;
+using TBotHamsti.ViewModels;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using TBotHamsti.ViewModels;
-using TBotHamsti.Models.CommandExecutors;
-using TBotHamsti.Models.Messages;
-using TBotHamsti.Models.Commands;
-using TBotHamsti.Models.Users;
 using BotCommand = TBotHamsti.Models.Commands.BotCommand;
 using User = TBotHamsti.Models.Users.User;
 
@@ -22,58 +22,56 @@ namespace TBotHamsti.Models
         /// <summary>
         /// Listening to all incoming messages
         /// </summary>
-        public static async Task CheckMessage(Message message, User user = null)
+        public static Task CheckMessage(ref User user, Message message)
         {
+            static Task TextMessage(User user, Message message)
+            {
+                try
+                {
+                    var model = BotCommand.ParseMessage(message) ?? throw new ArgumentNullException(nameof(BotCommand.ParseMessage));
+                    return user.IsBlocked && model.Command != CollectionCommands.SendMessageToAdminCommand.Command
+                        ? user.SendMessageAsync($"You're [{user.Id}] locked out now. Ask the bot admin {App.Api.GetMeAsync().Result} to add you to the list of allowed users\n\n" +
+                            $"To write the bot admin: \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"")
+                        : HandleTextCommand(model, user, message);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    // The trying to find a command at all levels and send result
+                    // search CLR by tree in deep
+                    throw ex;
+                }
+            }
+
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var model = BotCommand.ParseMessage(message) ?? throw new ArgumentNullException("Parse message");
             if (user is null)
             {
-                await ExUsers.StartCommandUser(message);
-            }
-            else if (user.IsBlocked && model.Command != CollectionCommands.SendMessageToAdminCommand.Command)
-            {
-                await user.SendMessageAsync($"You're [{user.Id}] locked out now. Ask the bot admin {await App.Api.GetMeAsync()} to add you to the list of allowed users\n\nTo write the bot admin: \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"");
-            }
-            else
-            {
-                switch (message.Type)
+                try
                 {
-                    case MessageType.Text:
-                        try
-                        {
-                            await ExecuteTextCommand(model, user, message);
-                        }
-                        catch (ArgumentOutOfRangeException ex)
-                        {
-                            // The trying to find a command at all levels and send result
-                            // search CLR by tree in deep
-                            throw ex;
-                        }
-                        break;
-                    //Image received from user
-                    case MessageType.Photo:
-                        await ExCommon.ImageUploader(user, message); break;
-                    //Document received from user
-                    case MessageType.Document:
-                        await ExCommon.DocumentUploader(user, message); break;
-                    default:
-                        await user.SendMessageAsync($"\"{message.Type}\" - unknown type of message"); break;
+                    user = UsersFunc.GetUser(message.From.Id);
+                    return CheckMessage(ref user, message);
+                }
+                catch (ArgumentNullException)
+                {
+                    return ExUsers.StartCommandUser(message);
                 }
             }
+
+            return message.Type switch
+            {
+                MessageType.Text => TextMessage(user, message),
+                MessageType.Photo => ExPC.ImageUploaderAsync(user, message),
+                MessageType.Document => ExPC.DocumentUploaderAsync(user, message),
+                _ => user.SendMessageAsync($"\"{message.Type}\" - unknown type of message"),
+            };
         }
 
-        internal static async Task ExecuteTextCommand(ICommand model, User user, Message message)
+        internal static Task HandleTextCommand(ICommand model, User user, Message message)
         {
-            //System.Collections.Generic.List<Task> IsAllTasksCompleted = new System.Collections.Generic.List<Task>();  ///implement after
-
             var commands = BotLevelCommand.GetBotLevelCommand(user).CommandsOfLevel.Where(w => w.Command.Equals(model.Command));
-            var lastCommand = commands.DefaultIfEmpty(null)?.Last() ?? throw new ArgumentOutOfRangeException(nameof(commands),
-                $"The command \"{message.Text}\" wasn't found. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
-
             foreach (ICommand tCommand in commands)
             {
                 if (tCommand.CountArgsCommand == model.CountArgsCommand ||
@@ -83,34 +81,33 @@ namespace TBotHamsti.Models
                     {
                         try
                         {
-                            await LogsViewModel.MessageBus.SendTo<LogsViewModel>(
-                                new TextMessage($"The command \"{message.Text}\" execution for [{user.IdUser_Nickname}]", HorizontalAlignment.Right));
+                            LogsViewModel.MessageBus.SendTo<LogsViewModel>(
+                                new TextMessage($"The command \"{message.Text}\" execution for [{user.Id_Username}]", HorizontalAlignment.Right)).Wait();
 
-                            await tCommand.Execute?.Invoke(model, user, message);
+                            return tCommand.Execute.Invoke(model, user, message);
                         }
                         catch (Exception ex)
                         {
-                            string exMessage = ex.InnerException?.Message ?? ex.Message;
-                            await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(
+                            string exMessage = HandlerException.GetExceptionMessage(ex);
+                            LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(
                                 $"An error occurred by message: \"{message.Text}\".\n" +
-                                $"The user: [{user.IdUser_Nickname}]\n" +
-                                $"Execution interrupted of the command: {model.ExampleCommand}\n" +
-                                $"The exception: \"{exMessage}\"", HorizontalAlignment.Right));
+                                $"The user: [{user.Id_Username}]\n" +
+                                $"Execution interrupted of the command: {model.ExampleCommand}\n{exMessage}", HorizontalAlignment.Right)).Wait();
 
-                            await tCommand.OnError?.Invoke(new TextMessage(exMessage), user, message);
+                            return tCommand.OnError.Invoke(new TextMessage(exMessage), user, message);
                         }
-                        return;
                     }
 
                     throw new ArgumentException($"To execute the command \"{model.Command}\", the user status is required " +
                             $"\"{tCommand.StatusUser}\"{(Enum.GetValues(typeof(StatusUser)).Cast<int>().Max() != (int)tCommand.StatusUser ? " and higher" : string.Empty)}",
                             nameof(user.Status));
                 }
-                else if (lastCommand.Equals(tCommand))
-                {
-                    throw new ArgumentException("Wrong count of args", nameof(model.CountArgsCommand));
-                }
             }
+
+            throw commands.Any()
+                ? new ArgumentException("Wrong count of args", nameof(model.CountArgsCommand))
+                : new ArgumentOutOfRangeException(nameof(commands),
+                    $"The command \"{message.Text}\" wasn't found. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}");
         }
 
 
@@ -118,47 +115,45 @@ namespace TBotHamsti.Models
         /// To launch this bot
         /// </summary>
         /// <param name="Attempt">The number of attempts to launch the bot</param>
-        public async static Task RunBotAsync(int numberAttempt = 1)
+        public static async Task StartReceivingBotAsync()
         {
-            if (numberAttempt <= 0)
-            {
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} failed to start");
-                return;
-            }
-
+            string message;
+            UsersFunc.Upload();
             if (!App.Api.IsReceiving)
             {
                 App.Api.StartReceiving(Array.Empty<UpdateType>());
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} has started by user: {Environment.UserDomainName}");
+                message = $"The bot {await App.Api.GetMeAsync()} started receiving successfully";
             }
             else
             {
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} is running already");
-                await RunBotAsync(--numberAttempt);
+                message = $"The bot {await App.Api.GetMeAsync()} is receiving already";
             }
+
+            await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(message, HorizontalAlignment.Right));
+            await StatusUser.Admin.SendMessageAsync(message);
         }
 
         /// <summary>
         /// To stop this bot
         /// </summary>
         /// <param name="Attempt">The number of attempts to stop the bot</param>
-        public async static Task StopBotAsync(int numberAttempt = 1)
+        public static async Task StopBotAsync()
         {
-            if (numberAttempt <= 0)
+            UsersFunc.SaveRefresh();
+            try
             {
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} failed to stop");
-                return;
+                string message = App.Api.IsReceiving
+                    ? $"The bot {await App.Api.GetMeAsync()} stopped receiving successfully"
+                    : $"The bot {await App.Api.GetMeAsync()} has already been stopped";
+                await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(message, HorizontalAlignment.Right));
+                await StatusUser.Admin.SendMessageAsync(message);
             }
-
-            if (App.Api.IsReceiving)
+            finally
             {
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} was successfully stopped by user: {Environment.UserDomainName}");
-                App.Api.StopReceiving();
-            }
-            else
-            {
-                await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} has already been stopped");
-                await StopBotAsync(--numberAttempt);
+                if (App.Api.IsReceiving)
+                {
+                    App.Api.StopReceiving();
+                }
             }
         }
 
@@ -166,17 +161,19 @@ namespace TBotHamsti.Models
         /// To reload this bot
         /// </summary>
         /// <param name="numberAttempt">The number of attempts to reload the bot</param>
-        public static async Task RestartBotAsync(int numberAttempt = 1)
+        public static async Task RestartBotAsync()
         {
-            await StatusUser.Admin.SendMessageAsync($"The bot {App.Api.GetMeAsync().Result} is restarting");
-
-            if (App.Api.IsReceiving)
+            try
             {
-                await StopBotAsync(numberAttempt);
-                await RunBotAsync(numberAttempt);
+                await StopBotAsync();
             }
-            else
-                await RunBotAsync(numberAttempt);
+            finally
+            {
+                await StartReceivingBotAsync();
+                string message = $"The bot {await App.Api.GetMeAsync()} restarted receiving successfully";
+                await LogsViewModel.MessageBus.SendTo<LogsViewModel>(new TextMessage(message, HorizontalAlignment.Right));
+                await StatusUser.Admin.SendMessageAsync(message);
+            }
         }
     }
 }

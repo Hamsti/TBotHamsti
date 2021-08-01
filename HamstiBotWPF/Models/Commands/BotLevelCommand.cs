@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TBotHamsti.Models.CommandExecutors;
 using TBotHamsti.Models.Messages;
@@ -53,28 +54,26 @@ namespace TBotHamsti.Models.Commands
             NameOfLevel = nameOfLevel;
             commandsOfLevel = new List<ICommand>();
             Command = "/" + nameOfLevel.ToString().ToLower();
-            Execute = ChangeLevel;
+            Execute = ChangeLevelAsync;
         }
 
         public void AppendOnlyToThisLevel(ICommand tCommand)
         {
             static bool isSetMoreThanOneBit(int number) => (number != 0) && ((number & (number - 1)) != 0);
-            if (commandsOfLevel.Contains(tCommand))
-            {
-                throw new ArgumentException($"{NameOfLevel} contain {tCommand.ExampleCommand} already", nameof(commandsOfLevel));
-            }
+            CheckContainsCommand(this, tCommand);
 
             switch (tCommand)
             {
                 case BotCommand botCommand: botCommand.NameOfLevel |= NameOfLevel; break;
                 case BotLevelCommand botLevel:
-                    botLevel.ParrentLevel = this;
-                    allAddedLevels.Add(botLevel); break;
+                    botLevel.ParrentLevel = !allAddedLevels.Contains(botLevel) ? this : throw new ArgumentException(botLevel.NameOfLevel + " level added already", nameof(allAddedLevels));
+                    allAddedLevels.Add(botLevel);
+                    break;
             }
 
             if (isSetMoreThanOneBit((int)tCommand.NameOfLevel))
             {
-                throw new ArgumentException($"\"{tCommand.Command}\" has set more than 1 level! Use for setting 2 and more levels \"AppendToSomeLevels\"", nameof(tCommand.NameOfLevel));
+                throw new ArgumentException($"\"{tCommand.Command}\" has set more than 1 level! Use for setting 2 and more levels \"{nameof(AppendToSomeLevels)}\"", nameof(tCommand.NameOfLevel));
             }
 
             commandsOfLevel.Add(tCommand);
@@ -90,7 +89,8 @@ namespace TBotHamsti.Models.Commands
 
             foreach (var botLevel in allAddedLevels)
             {
-                if (tCommand.NameOfLevel.HasFlag(botLevel.NameOfLevel) && !botLevel.commandsOfLevel.Contains(tCommand))
+                CheckContainsCommand(botLevel, tCommand);
+                if (tCommand.NameOfLevel.HasFlag(botLevel.NameOfLevel)) // !botLevel.commandsOfLevel.Contains(tCommand))
                 {
                     botLevel.commandsOfLevel.Add(tCommand);
                     checkCorrectLevelAddition ^= botLevel.NameOfLevel;
@@ -120,15 +120,39 @@ namespace TBotHamsti.Models.Commands
             return botLevel;
         }
 
-        private async Task ChangeLevel(ICommand model, User user, Message message)
+        public static void SortCommandsOfAllLevels()
+        {
+            foreach (var botLevel in allAddedLevels)
+            {
+                var sortedCommands = botLevel.commandsOfLevel.OrderBy(o => o is BotCommand ? 1 : -1)
+                                                             .ThenBy(t => t.CountArgsCommand == -1 ? 1 : -1)
+                                                             .ThenBy(t => t.CountArgsCommand)
+                                                             .ThenBy(t => t.ExampleCommand)
+                                                             .ToArray();
+                for (int i = 0; i < sortedCommands.Length; i++)
+                {
+                    botLevel.commandsOfLevel[i] = sortedCommands[i];
+                }
+            }
+        }
+
+        private Task ChangeLevelAsync(ICommand model, User user, Message message)
         {
             if (!user.CurrentLevel.HasFlag(ParrentLevel.NameOfLevel))
             {
                 throw new ArgumentException(DefaultErrorMessage, nameof(user.CurrentLevel));
             }
-            
+
             user.CurrentLevel = NameOfLevel;
-            await user.SendMessageAsync(MessageWhenLevelChanges(user));
+            return user.SendMessageAsync(MessageWhenLevelChanges(user));
+        }
+
+        private static void CheckContainsCommand(BotLevelCommand botLevel, ICommand tCommand)
+        {
+            if (botLevel.commandsOfLevel.Any(p => p.Command.Equals(tCommand.Command) && p.CountArgsCommand.Equals(tCommand.CountArgsCommand)))
+            {
+                throw new ArgumentException($"Level {botLevel.NameOfLevel} contains {tCommand.ExampleCommand} already", nameof(commandsOfLevel));
+            }
         }
 
         private static string MessageWhenLevelChanges(User user) => "Current level: " + user.CurrentLevel + "\n\nList of commands:\n" + ExCommon.GetHelp(user);

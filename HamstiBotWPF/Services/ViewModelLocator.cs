@@ -11,17 +11,16 @@ namespace TBotHamsti.Services
         {
             var services = new ServiceCollection();
 
-            services.AddTransient<MainViewModel>();
+            services.AddSingleton<MainViewModel>();
             services.AddTransient<CommandsControlViewModel>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddScoped<LogsViewModel>();
             services.AddScoped<CommonControlUserDataViewModel>();
+            services.AddScoped<SettingsViewModel>();
+            services.AddScoped<LogsViewModel>();
 
             services.AddSingleton<PageService>();
             services.AddSingleton<MessageBus>();
 
             _provider = services.BuildServiceProvider();
-
             foreach (var item in services)
             {
                 _provider.GetRequiredService(item.ServiceType);

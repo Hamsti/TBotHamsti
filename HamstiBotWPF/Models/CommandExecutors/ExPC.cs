@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ using System.Windows;
 using TBotHamsti.Models.Commands;
 using TBotHamsti.Models.Users;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
+using File = System.IO.File;
 using User = TBotHamsti.Models.Users.User;
 
 namespace TBotHamsti.Models.CommandExecutors
@@ -17,12 +20,8 @@ namespace TBotHamsti.Models.CommandExecutors
         public static Task ExecuteUrl(ICommand model, User user, Message message)
         {
             string url = model.Args.FirstOrDefault();
-            if (!url.StartsWith("https://") || !url.StartsWith("http://"))
-            {
-                Process.Start(url.Insert(0, "https://"));
-                return user.SendMessageAsync($"Message: {message.Text.Split(' ').FirstOrDefault()} || Arg: {url}");
-            }
-            return Task.CompletedTask;
+            Process.Start(url = !url.StartsWith("https://") || !url.StartsWith("http://") ? "https://" + url : url);
+            return user.SendMessageAsync($"Opening a site by link: " + url);
         }
 
         public static Task TurnOff(User user, int tMin, int tSec)
@@ -32,20 +31,102 @@ namespace TBotHamsti.Models.CommandExecutors
                 tSec -= 60;
                 tMin++;
             }
-            Process.Start(@"C:\Windows\System32\shutdown.exe", "/s /t " + (tMin * 60 + tSec));
-            return user.SendMessageAsync($"Таймер успешно установлен.\nЧерез {tMin} мин. {tSec} сек. ваш ПК будет выключен.");
+
+            ExecuteCmdCommand(@"C:\Windows\System32\shutdown.exe", "/s /t " + (tMin * 60 + tSec));
+            return user.SendMessageAsync($"Timer set successfully.\nIn {tMin} min. {tSec} sec. the workstation will be turned off.");
         }
 
-        public static bool ExecuteCmdCommand(string programmPath, string cmdArgs)
+        public static void ExecuteCmdCommand(string programmPath, string cmdArgs)
         {
             try
             {
                 Process.Start(programmPath, cmdArgs);
-                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                ex.AppendExceptionMessage("An error occurred while executing the console command");
+                throw;
+            }
+        }
+
+        public static async Task ImageUploaderAsync(User user, Message message, StatusUser requiredStatusUser = StatusUser.User)
+        {
+            CheckDirectoryExists();
+            if (user.Status < requiredStatusUser)
+            {
+                throw new ArgumentException($"To execute, the user status is required {requiredStatusUser} and higher", nameof(user.Status));
+            }
+
+            try
+            {
+                var file = await App.Api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
+                var filename = file.FileId + "." + file.FilePath.Split('.').Last();
+                using (var saveImageStream = File.Open(Properties.Settings.Default.SavePath + @"photos\" + filename, FileMode.Create))
+                {
+                    await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
+                }
+                await user.SendMessageAsync("Image upload completed successfully");
+            }
+            catch (Exception ex)
+            {
+                ex.AppendExceptionMessage("An error occurred while loading the image");
+                throw;
+            }
+        }
+
+        public static async Task DocumentUploaderAsync(User user, Message message, StatusUser requiredStatusUser = StatusUser.User)
+        {
+            CheckDirectoryExists();
+            if (user.Status < requiredStatusUser)
+            {
+                throw new ArgumentException($"To execute, the user status is required {requiredStatusUser} and higher", nameof(user.Status));
+            }
+
+            try
+            {
+                var file = await App.Api.GetFileAsync(message.Document.FileId);
+                using (var saveImageStream = File.Open(Properties.Settings.Default.SavePath + @"documents\" + message.Document.FileName, FileMode.Create))
+                {
+                    await App.Api.DownloadFileAsync(file.FilePath, saveImageStream);
+                }
+                await user.SendMessageAsync("Document upload completed successfully");
+            }
+            catch (Exception ex)
+            {
+                ex.AppendExceptionMessage($"An error occurred while loading the document");
+                throw;
+            }
+        }
+
+        public static Task GetScreenshot(User user)
+        {
+            CheckDirectoryExists();
+            try
+            {
+                string fileName = "screen-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
+                string fullFilePath = Properties.Settings.Default.SavePath + "\\" + fileName;
+                using (Bitmap bmp = new Bitmap((int)SystemParameters.VirtualScreenWidth, (int)SystemParameters.VirtualScreenHeight))
+                {
+                    using Graphics graph = Graphics.FromImage(bmp);
+                    graph.CopyFromScreen((int)SystemParameters.VirtualScreenLeft, (int)SystemParameters.VirtualScreenTop, 0, 0, bmp.Size);
+                    bmp.Save(fullFilePath);
+                }
+
+                App.Api.SendDocumentAsync(user.Id, new InputOnlineFile(File.OpenRead(fullFilePath), fileName)).Wait();
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                ex.AppendExceptionMessage("An error occurred while working with the screenshot");
+                throw;
+            }
+        }
+
+        private static void CheckDirectoryExists()
+        {
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.SavePath) || !Directory.Exists(Properties.Settings.Default.SavePath))
+            {
+                throw new ArgumentException("The path for saving files is incorrectly configured", nameof(Properties.Settings.Default.SavePath));
             }
         }
 
@@ -60,50 +141,35 @@ namespace TBotHamsti.Models.CommandExecutors
             private static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
 
-            public static Task ChangeVolume(User user, string strValue)
+            public static Task ChangeVolume(User user, string arg)
             {
-                if (int.TryParse(strValue, out int value))
-                {
-                    if (value == 0) return user.SendMessageAsync($"Изменение громкости на: {value} не является допустимым");
-                    if (value >= -100 && value <= 100)
-                    {
-                        if (value >= 0)
-                            for (double i = 0; i < Math.Ceiling((double)value / 2); i++)
-                                SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)APPCOMMAND_VOLUME_UP);
-                        if (value <= 0)
-                            for (double i = 0; i > Math.Floor((double)value / 2); i--)
-                                SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-                        return user.SendMessageAsync($"Громкость изменена на: {value}");
-                    }
-                    return user.SendMessageAsync("Выход за пределы: [-100;100] при изменении громкости");
-                }
-                if (strValue.ToLower() == "mute")
-                {
-                    SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)APPCOMMAND_VOLUME_MUTE);
-                    return user.SendMessageAsync($"Громкость изменена на: {strValue}");
-                }
-                return Task.CompletedTask;
-            }
-        }
+                static void ChangeVolume(int appCommand) =>
+                    SendMessageW(Process.GetCurrentProcess().MainWindowHandle, WM_APPCOMMAND, Process.GetCurrentProcess().MainWindowHandle, (IntPtr)appCommand);
 
-        public async static Task GetScreenshot(User user)
-        {
-            try
-            {
-                string filename = "ScreenCapture-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
-                using (Bitmap bmp = new Bitmap((int)SystemParameters.VirtualScreenWidth, (int)SystemParameters.VirtualScreenHeight))
+                switch (arg)
                 {
-                    using Graphics graph = Graphics.FromImage(bmp);
-                    graph.CopyFromScreen((int)SystemParameters.VirtualScreenLeft, (int)SystemParameters.VirtualScreenTop, 0, 0, bmp.Size);
-                    bmp.Save(Properties.Settings.Default.SavePath + "\\" + filename);
+                    case "0": throw new ArgumentOutOfRangeException($"Volume change to \"{arg}\" is not valid");
+                    case "mute":
+                        ChangeVolume(APPCOMMAND_VOLUME_MUTE);
+                        break;
+                    case var _ when int.TryParse(arg, out int vol):
+                        if (vol < -100 || vol > 100)
+                        {
+                            throw new ArgumentOutOfRangeException("Out of bounds: [-100; 100]");
+                        }
+
+                        bool isVolumeUp = vol > 0;
+                        vol = (int)Math.Abs(Math.Round((double)vol / 2, 0, MidpointRounding.AwayFromZero));
+
+                        for (int i = 0; i < vol; i++)
+                        {
+                            ChangeVolume(isVolumeUp ? APPCOMMAND_VOLUME_UP : APPCOMMAND_VOLUME_DOWN);
+                        }
+                        break;
+                    default: throw new ArgumentException("Invalid argument", nameof(arg));
                 }
 
-                using var stream = System.IO.File.OpenRead(Properties.Settings.Default.SavePath + "\\" + filename);
-                await App.Api.SendDocumentAsync(user.Id, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stream, stream.Name));
-            }
-            catch (Exception ex)
-            {
-                await user.SendMessageAsync($"При работе со скриншотом, произошла ошибка: {ex.Message}");
+                return user.SendMessageAsync($"Volume changed to: {arg}");
             }
         }
     }

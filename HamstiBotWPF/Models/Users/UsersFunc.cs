@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using File = System.IO.File;
 
 namespace TBotHamsti.Models.Users
 {
@@ -18,15 +20,7 @@ namespace TBotHamsti.Models.Users
         /// <summary>
         /// List of all authorized users
         /// </summary>
-        public static ObservableCollection<User> AuthUsers
-        {
-            get
-            {
-                if (authUsers is null)
-                    authUsers = new ObservableCollection<User>();
-                return authUsers;
-            }
-        }
+        public static ObservableCollection<User> AuthUsers => authUsers ??= new ObservableCollection<User>();
 
         static UsersFunc()
         {
@@ -35,72 +29,61 @@ namespace TBotHamsti.Models.Users
 
         public static async Task SendMessageAsync(this StatusUser status, string message)
         {
-            IEnumerable<User> findedUsers = AuthUsers.Where(user => user.Status == status);
-
-            foreach (var user in findedUsers)
+            IEnumerable<User> foundUsers = AuthUsers.Where(user => user.Status == status);
+            if (foundUsers.Any())
             {
-                await user.SendMessageAsync(message);
+                throw new ArgumentNullException(nameof(foundUsers), $"No users with {status} status were found. Message not sent");
+            }
+
+            Exception exUsers = null;
+            foreach (var user in foundUsers)
+            {
+                try
+                {
+                    await user.SendMessageAsync(message);
+                }
+                catch (Exception ex)
+                {
+                    (exUsers ??= ex).AppendExceptionMessage("Message didn't send to user [" + user.Id + "]");
+                }
+            }
+
+            if (exUsers != null)
+            {
+                throw exUsers;
             }
         }
 
-        public static async Task<Telegram.Bot.Types.Message> SendMessageAsync(this User user, string message)
+        public static Task<Message> SendMessageAsync(this User user, string message) => user.SendMessageAsync(message, null);
+
+        public static async Task<Message> SendMessageAsync(this User user, string message, IReplyMarkup replyMarkup)
         {
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user), "User is null, message did't send: \"" + message + "\"");
-            }
-
-            if (message is null)
-            {
-                throw new ArgumentNullException(nameof(message), "Message is null, it doesn't send to user " + user.IdUser_Nickname);
-            }
-
-            return await App.Api.SendTextMessageAsync(user.Id, message);
+            return await App.Api.SendTextMessageAsync(
+                user?.Id ?? throw new ArgumentNullException(nameof(user), "User is null, message did't send: \"" + message + "\""),
+                message ?? throw new ArgumentNullException(nameof(message), "Message is null, it doesn't send to user " + user.Id_Username),
+                replyMarkup: replyMarkup);
         }
 
         /// <summary>
         /// Adding all authorized users from a file, including sorting
         /// </summary>
         /// <returns>Successful upload</returns>
-        public static bool Upload()
+        public static void Upload()
         {
-            try
-            {
-                Update(File.Exists(Properties.Settings.Default.JsonFileName) ?
-                            JsonConvert.DeserializeObject<ObservableCollection<User>>(File.ReadAllText(Properties.Settings.Default.JsonFileName)) :
-                            new ObservableCollection<User>() { new User { Id = Properties.Settings.Default.RecoverIdAdmin } }
-                );
-
-                Refresh();
-                return true;
-            }
-            catch (Exception)
-            {
-                //MessageBox.Show("При загрузке данных, произошла ошибка: " + ex.Message);
-                return false;
-            }
+            Update(File.Exists(Properties.Settings.Default.JsonFileName) 
+                ? JsonConvert.DeserializeObject<ObservableCollection<User>>(File.ReadAllText(Properties.Settings.Default.JsonFileName)) 
+                : new ObservableCollection<User>());
+            Refresh();
         }
 
         /// <summary>
         /// Saving user data changes to a file
         /// </summary>
         /// <returns>Successful save</returns>
-        public static bool SaveRefresh()
+        public static void SaveRefresh()
         {
-            try
-            {
-                if (AuthUsers == null) return false;
-
-                File.WriteAllText(Properties.Settings.Default.JsonFileName, JsonConvert.SerializeObject(AuthUsers));
-
-                Refresh();
-                return true;
-            }
-            catch (Exception)
-            {
-                //MessageBox.Show("При сохранении данных, произошла ошибка: " + ex.Message);
-                return false;
-            }
+            File.WriteAllText(Properties.Settings.Default.JsonFileName, JsonConvert.SerializeObject(AuthUsers ?? throw new ArgumentNullException(nameof(AuthUsers))));
+            Refresh();
         }
 
         /// <summary>
@@ -111,8 +94,18 @@ namespace TBotHamsti.Models.Users
         /// <summary>
         /// Checks if this user is in the list of authorized users
         /// </summary>
-        /// <param name="id">Message.From.Id</param>
-        public static User GetUser(int id) => AuthUsers.Where(user => user.Id == id).FirstOrDefault();
+        public static User GetUser(int id) => AuthUsers.Where(user => user.Id == id).DefaultIfEmpty(null).FirstOrDefault()
+            ?? throw new ArgumentNullException(nameof(id), $"User [{id}] isn't found");
+
+        /// <summary>
+        /// Checks if this user is in the list of authorized users
+        /// </summary>
+        public static User GetUser(string localNickame)
+        {
+            localNickame = localNickame?.ToLower() ?? throw new ArgumentNullException(nameof(localNickame));
+            return AuthUsers.Where(user => (user?.Username?.ToLower() ?? string.Empty) == localNickame).DefaultIfEmpty(null)?.FirstOrDefault()
+                ?? throw new ArgumentNullException(nameof(localNickame), $"User [{localNickame}] isn't found");
+        }
 
         /// <summary>
         /// Replace items in source collection with does creating new
@@ -120,13 +113,14 @@ namespace TBotHamsti.Models.Users
         /// <param name="items">New collection</param>
         private static void Update<T>(T items) where T : IOrderedEnumerable<User>, IEnumerable<User>
         {
-            var localItems = new ObservableCollection<User>(items);
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
+            var tempCollection = new ObservableCollection<User>(items);
+            App.UiContext.Send(x => {
                 AuthUsers.Clear();
-                foreach (var User in localItems)
-                    AuthUsers.Add(User);
-            });
+                for (int i = 0; i < tempCollection.Count; i++)
+                {
+                    AuthUsers.Add(tempCollection[i]);
+                }
+            }, null);
         }
 
         /// <summary>
@@ -135,10 +129,12 @@ namespace TBotHamsti.Models.Users
         /// <param name="items">New collection</param>
         private static void Update(ObservableCollection<User> items)
         {
-            var localItems = new ObservableCollection<User>(items);
+            var tempCollection = new ObservableCollection<User>(items);
             AuthUsers.Clear();
-            foreach (var User in localItems)
-                AuthUsers.Add(User);
+            for (int i = 0; i < tempCollection.Count; i++)
+            {
+                AuthUsers.Add(tempCollection[i]);
+            }
         }
     }
 }

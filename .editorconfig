@@ -41,3 +41,9 @@ dotnet_diagnostic.CA2235.severity = warning
 
 # CA2237: Mark ISerializable types with SerializableAttribute.
 dotnet_diagnostic.CA2237.severity = warning
+
+# Default severity for analyzer diagnostics with category 'Style'
+dotnet_analyzer_diagnostic.category-Style.severity = none
+
+# Default severity for all analyzer diagnostics
+dotnet_analyzer_diagnostic.severity = silent

@@ -106,7 +106,7 @@
                        VerticalAlignment="Bottom"
                        Grid.Row="2" />
             <TextBox Grid.Row="3"  
-                     Text="{Binding SelectedUserItem.LocalNickname}" />
+                     Text="{Binding SelectedUserItem.Username}" />
 
             
             <StackPanel Orientation="Horizontal"

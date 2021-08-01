@@ -2,51 +2,42 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using TBotHamsti.Models.Messages;
 using TBotHamsti.Models.Users;
-using TBotHamsti.Views;
 using TBotHamsti.Services;
+using TBotHamsti.Views;
 
 namespace TBotHamsti.ViewModels
 {
-    public enum ModeEditUser
-    { 
-        Create,
-        Edit,
-        Delete
-    }
-
     public class CommonControlUserDataViewModel : BindableBase
     {
         private readonly PageService pageService;
         private readonly MessageBus messageBus;
-        private readonly System.Text.RegularExpressions.Regex regex;
-        public static ObservableCollection<User> ListUsers => UsersFunc.AuthUsers;
-
+        private static readonly Regex regex;
         private User selectedUserItem;
         private User selectedUserBeforeModify;
-
+        public static ObservableCollection<User> ListUsers => UsersFunc.AuthUsers;
         public User SelectedUserItem => selectedUserItem;
+        public ModeEditUser ModeEditUser { get; set; }
 
-        public ModeEditUser ModeEditUser
-        {
-            get; set;
+        static CommonControlUserDataViewModel()
+        { 
+            regex = new Regex("[^0-9]+");
         }
 
         public CommonControlUserDataViewModel(PageService pageService, MessageBus messageBus)
         {
             this.pageService = pageService;
             this.messageBus = messageBus;
-            
-            regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
         }
 
         /// Below the commands to page of changing user data 
         public ICommand CreateUser => new AsyncCommand(async () =>
         {
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserItem.IdUser_Nickname}", HorizontalAlignment.Right));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserItem.Id_Username}", HorizontalAlignment.Right));
             ListUsers.Add(new User(SelectedUserItem));
             UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
@@ -54,7 +45,7 @@ namespace TBotHamsti.ViewModels
 
         public ICommand ModifyUser => new AsyncCommand(async () =>
         {
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.IdUser_Nickname} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.Id_Username} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
             UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
         });
@@ -62,17 +53,9 @@ namespace TBotHamsti.ViewModels
         public ICommand ConfirmDeleteUser => new AsyncCommand(async () =>
         {
             ListUsers.Remove(SelectedUserItem);
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}", HorizontalAlignment.Right));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}", HorizontalAlignment.Right));
             UsersFunc.SaveRefresh();
             pageService.ChangePage(new UsersControlPage());
-        });
-
-        public ICommand ChangeUserBlock => new DelegateCommand<object>((obj) =>
-        {
-            if (bool.TryParse(obj.ToString(), out bool isBlocked))
-            {
-                SelectedUserItem.IsBlocked = isBlocked;
-            }
         });
 
         public ICommand CancelEditingUser => new DelegateCommand<object>((obj) =>
@@ -86,11 +69,27 @@ namespace TBotHamsti.ViewModels
             pageService.ChangePage(new UsersControlPage());
         });
 
+        public ICommand ChangeUserBlock => new DelegateCommand<object>((obj) =>
+        {
+            if (bool.TryParse(obj.ToString(), out bool isBlocked))
+            {
+                SelectedUserItem.IsBlocked = isBlocked;
+            }
+            else
+            { 
+                throw new ArgumentException("invalid parameter value", nameof(isBlocked));
+            }
+        });
+
         public ICommand ChangeUserBookmark => new DelegateCommand<object>((obj) =>
         {
             if (bool.TryParse(obj.ToString(), out bool isSetBookmark))
             {
                 SelectedUserItem.IsSetBookmark = isSetBookmark;
+            }
+            else
+            { 
+                throw new ArgumentException("invalid parameter value", nameof(isSetBookmark));
             }
         });
 
@@ -102,7 +101,7 @@ namespace TBotHamsti.ViewModels
             }
             else
             {
-                throw new Exception("Not found selected status. Check please on corrent CommandParameter");
+                throw new ArgumentException("Not found selected status. Check please on corrent CommandParameter", nameof(status));
             }
         });
         
@@ -131,14 +130,14 @@ namespace TBotHamsti.ViewModels
         public ICommand SetBookmark => new AsyncCommand<object>(async (obj) =>
         {
             SetUser(obj).IsSetBookmark = !SelectedUserItem.IsSetBookmark;
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Set bookmark user: ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Set bookmark user: ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
             UsersFunc.SaveRefresh();
         });
 
         public ICommand BlockUser => new AsyncCommand<object>(async (obj) =>
         {
             SetUser(obj).IsBlocked = !SelectedUserItem.IsBlocked;
-            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Block user: ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.IdUser_Nickname} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
+            await messageBus.SendTo<LogsViewModel>(new TextMessage($"Block user: ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
             UsersFunc.SaveRefresh();
         });
 

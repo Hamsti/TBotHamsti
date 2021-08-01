@@ -27,18 +27,16 @@ namespace TBotHamsti.Models.Users
         /// <summary>
         /// Local nickname for the bot
         /// </summary>
-        public string LocalNickname { get; set; }
-
+        public string Username { get; set; }
         public StatusUser Status { get; set; }
         public LevelCommand CurrentLevel { get; set; }
-
-        public string IdUser_Nickname => Id.ToString() + " | " + (string.IsNullOrWhiteSpace(LocalNickname) ? "null" : LocalNickname);
+        public string Id_Username => Id.ToString() + " | " + (string.IsNullOrWhiteSpace(Username) ? "null" : Username);
 
         public User()
         {
             IsBlocked = false;
             IsSetBookmark = false;
-            LocalNickname = null;
+            Username = null;
             Status = StatusUser.None;
             CurrentLevel = BotLevelCommand.RootLevel.NameOfLevel;
         }
@@ -48,7 +46,7 @@ namespace TBotHamsti.Models.Users
             Id = user.Id;
             IsBlocked = user.IsBlocked;
             IsSetBookmark = user.IsSetBookmark;
-            LocalNickname = user.LocalNickname;
+            Username = user.Username;
             Status = user.Status;
             CurrentLevel = user.CurrentLevel;
         }
