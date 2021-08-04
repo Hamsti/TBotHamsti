@@ -10,6 +10,10 @@ namespace TBotHamsti.Models.CommandExecutors
 {
     public static class ExMessages
     {
+        /// <summary>
+        /// Sending a <see cref="Message"/> to all users with <see cref="StatusUser.Admin"/> by <see cref="ICommand"/>
+        /// </summary>
+        /// <inheritdoc cref="ExUsers.DeauthUser(ICommand, User, Message)"/>
         public static async Task SentToAdmins(ICommand model, User user, Message message)
         {
             string recivedMessage = model.GetOriginalArgs(message);
@@ -17,6 +21,11 @@ namespace TBotHamsti.Models.CommandExecutors
             await user.SendMessageAsync("The message was successfully sent to the administrators of the " + App.Api.GetMeAsync().Result);
         }
 
+        /// <summary>
+        /// Sending a <see cref="Message"/> to a group of users with <see cref="StatusUser"/> by <see cref="ICommand"/>
+        /// </summary>
+        /// <exception cref=" ArgumentOutOfRangeException">If status isn't found</exception>
+        /// <inheritdoc cref="SentToAdmins(ICommand, User, Message)"/>
         public static async Task SentByStatus(ICommand model, User user, Message message)
         {
             if (!Enum.TryParse(model.GetArg(0), true, out StatusUser status))
@@ -29,6 +38,10 @@ namespace TBotHamsti.Models.CommandExecutors
             await user.SendMessageAsync($"The message was successfully sent to the {status} group of the {App.Api.GetMeAsync().Result}");
         }
 
+        /// <summary>
+        /// Sending a <see cref="Message"/> to a user with <see cref="User.Id"/> by <see cref="ICommand"/>
+        /// </summary>
+        /// <inheritdoc cref="SentToAdmins(ICommand, User, Message)"/>
         public static async Task SentById(ICommand model, User user, Message message)
         {
             string recivedMessage = model.GetOriginalArgs(message, 1);
@@ -39,6 +52,11 @@ namespace TBotHamsti.Models.CommandExecutors
             await user.SendMessageAsync($"The message has been successfully sent to the [{userDestination.Id_Username}] user");
         }
 
+        /// <summary>
+        /// Spam a user by <see cref="ICommand"/>
+        /// </summary>
+        /// <exception cref="ArgumentException">If wrong type of number messages</exception>
+        /// <inheritdoc cref="SentToAdmins(ICommand, User, Message)"/>
         public static async Task UserSpam(ICommand model, User user)
         {
             if (!int.TryParse(model.GetArg(1), out int countMessages))
@@ -60,6 +78,11 @@ namespace TBotHamsti.Models.CommandExecutors
             await user.SendMessageAsync("Spam user [" + userDestination.Id_Username + "] successfully finished");
         }
 
+        /// <summary>
+        /// Creating a string with a random set of characters
+        /// </summary>
+        /// <param name="length">Output string length</param>
+        /// <returns>A string with random characters of a certain length</returns>
         private static string RandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

@@ -52,7 +52,7 @@ namespace TBotHamsti.Models
                 Execute = (model, user, message) => ExUsers.StartCommandUser(message)
             });
 
-            BotLevelCommand.AppendToSomeLevels(new BotCommand("/keyboard", string.Join("; ", bool.TrueString, bool.FalseString, ExCommon.ArgForKeysWithArguments))
+            BotLevelCommand.AppendToSomeLevels(new BotCommand("/keyboard", string.Join("; ", bool.TrueString, bool.FalseString, ExCommon.ARG_FULL_KEYBOARD))
             {
                 NameOfLevel = LevelCommand.All,
                 Execute = (model, user, message) => ExCommon.ShowScreenButtons(user, model.GetArg(0))

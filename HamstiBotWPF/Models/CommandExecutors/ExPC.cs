@@ -17,6 +17,10 @@ namespace TBotHamsti.Models.CommandExecutors
 {
     public static class ExPC
     {
+        /// <summary>
+        /// Opening a website in a browser by a link
+        /// </summary>
+        /// <inheritdoc cref="ExUsers.DeauthUser(ICommand, User, Message)"/>
         public static Task ExecuteUrl(ICommand model, User user, Message message)
         {
             string url = model.Args.FirstOrDefault();
@@ -24,6 +28,12 @@ namespace TBotHamsti.Models.CommandExecutors
             return user.SendMessageAsync($"Opening a site by link: " + url);
         }
 
+        /// <summary>
+        /// Setting a timer to shutdown the computer
+        /// </summary>
+        /// <param name="tMin">Number of minutes</param>
+        /// <param name="tSec">Number of seconds</param>
+        /// <inheritdoc cref="ExecuteUrl(ICommand, User, Message)"/>
         public static Task TurnOff(User user, int tMin, int tSec)
         {
             while (tSec >= 60)
@@ -36,6 +46,12 @@ namespace TBotHamsti.Models.CommandExecutors
             return user.SendMessageAsync($"Timer set successfully.\nIn {tMin} min. {tSec} sec. the workstation will be turned off.");
         }
 
+        /// <summary>
+        /// Launching the application with arguments
+        /// </summary>
+        /// <param name="programmPath">Path to the program</param>
+        /// <param name="cmdArgs">Arguments to execute</param>
+        /// <exception cref="Exception"/>
         public static void ExecuteCmdCommand(string programmPath, string cmdArgs)
         {
             try
@@ -49,6 +65,13 @@ namespace TBotHamsti.Models.CommandExecutors
             }
         }
 
+        /// <summary>
+        /// Loading the image received from the <paramref name="user"/> by <paramref name="message"/>
+        /// </summary>
+        /// <inheritdoc cref="ExecuteUrl(ICommand, User, Message)"/>
+        /// <param name="requiredStatusUser">Minimum <see cref="User.Status"/> to perform a function</param>
+        /// <exception cref="ArgumentException">If <see cref="User.Status"/> lower than <paramref name="requiredStatusUser"/></exception>
+        /// <exception cref="Exception">Exception while working with a file</exception>
         public static async Task ImageUploaderAsync(User user, Message message, StatusUser requiredStatusUser = StatusUser.User)
         {
             CheckDirectoryExists();
@@ -74,6 +97,10 @@ namespace TBotHamsti.Models.CommandExecutors
             }
         }
 
+        /// <summary>
+        /// Loading the document received from the <paramref name="user"/> by <paramref name="message"/>
+        /// </summary>
+        /// <inheritdoc cref="ImageUploaderAsync(User, Message, StatusUser)"/>
         public static async Task DocumentUploaderAsync(User user, Message message, StatusUser requiredStatusUser = StatusUser.User)
         {
             CheckDirectoryExists();
@@ -98,6 +125,11 @@ namespace TBotHamsti.Models.CommandExecutors
             }
         }
 
+        /// <summary>
+        /// Sending a screenshot to the <paramref name="user"/>
+        /// </summary>
+        /// <inheritdoc cref="ExecuteUrl(ICommand, User, Message)"/>
+        /// <exception cref="Exception">Exception while working with a file</exception>
         public static Task GetScreenshot(User user)
         {
             CheckDirectoryExists();
@@ -112,8 +144,7 @@ namespace TBotHamsti.Models.CommandExecutors
                     bmp.Save(fullFilePath);
                 }
 
-                App.Api.SendDocumentAsync(user.Id, new InputOnlineFile(File.OpenRead(fullFilePath), fileName)).Wait();
-                return Task.CompletedTask;
+                return App.Api.SendDocumentAsync(user.Id, new InputOnlineFile(File.OpenRead(fullFilePath), fileName));
             }
             catch (Exception ex)
             {
@@ -122,6 +153,10 @@ namespace TBotHamsti.Models.CommandExecutors
             }
         }
 
+        /// <summary>
+        /// Сheck if a directory exists, otherwise throws an <see cref="ArgumentException"/>
+        /// </summary>
+        /// <exception cref="ArgumentException"/>
         private static void CheckDirectoryExists()
         {
             if (string.IsNullOrWhiteSpace(Properties.Settings.Default.SavePath) || !Directory.Exists(Properties.Settings.Default.SavePath))
@@ -130,6 +165,9 @@ namespace TBotHamsti.Models.CommandExecutors
             }
         }
 
+        /// <summary>
+        /// This class is for changing pc volume
+        /// </summary>
         public static class ContolVolume
         {
             private const int APPCOMMAND_VOLUME_MUTE = 0x80000;
@@ -140,7 +178,11 @@ namespace TBotHamsti.Models.CommandExecutors
             [DllImport("user32.dll")]
             private static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
-
+            /// <summary>
+            /// Changing the volume of the computer
+            /// </summary>
+            /// <param name="arg">Value ([-100..100]; mute) to change the volume</param>
+            /// <inheritdoc cref="ExecuteUrl(ICommand, User, Message)"/>
             public static Task ChangeVolume(User user, string arg)
             {
                 static void ChangeVolume(int appCommand) =>
