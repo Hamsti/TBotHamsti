@@ -30,7 +30,7 @@ namespace TBotHamsti.Models.Users
         public static async Task SendMessageAsync(this StatusUser status, string message)
         {
             IEnumerable<User> foundUsers = AuthUsers.Where(user => user.Status == status);
-            if (foundUsers.Any())
+            if (!foundUsers.Any())
             {
                 throw new ArgumentNullException(nameof(foundUsers), $"No users with {status} status were found. Message not sent");
             }
