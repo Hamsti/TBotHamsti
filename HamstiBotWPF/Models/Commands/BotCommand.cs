@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using TBotHamsti.Models.Messages;
 using TBotHamsti.Models.Users;
 using Telegram.Bot.Types;
-using StatusUser = TBotHamsti.Models.Users.StatusUser;
-using User = TBotHamsti.Models.Users.User;
 
 namespace TBotHamsti.Models.Commands
 {
@@ -16,18 +14,27 @@ namespace TBotHamsti.Models.Commands
     {
         private const char ARG_START = '[';
         private const char ARG_END = ']';
-        private readonly bool isLimitCountArgs = true;
 
+        /// <summary>
+        /// Is the <see cref="CountArgsCommand"/> limited?
+        /// </summary>
+        private readonly bool isLimitCountArgs = true;
         public string Command { get; }
         public string ExampleCommand { get; }
         public string[] Args { get; private set; }
         public int CountArgsCommand => isLimitCountArgs ? Args.Length : -1;
         public StatusUser StatusUser { get; set; }
         public LevelCommand NameOfLevel { get; set; }
-        public Func<ICommand, User, Message, Task> Execute { get; set; }
-        public Func<TextMessage, User, Message, Task> OnError { get; set; } = async (messageError, user, message)
+        public Func<ICommand, Users.User, Message, Task> Execute { get; set; }
+        public Func<TextMessage, Users.User, Message, Task> OnError { get; set; } = async (messageError, user, message)
             => await user.SendMessageAsync(messageError?.Text ?? DefaultErrorMessage(message));
 
+        /// <summary>
+        /// Creating a <paramref name="command"/> with no arguments
+        /// </summary>
+        /// <param name="command">Value of form: /<paramref name="command"/></param>
+        /// <exception cref="ArgumentException"><paramref name="command"/> is empty or white space</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="command"/> is null</exception>
         public BotCommand(string command)
         {
             if (command is null)
@@ -46,6 +53,14 @@ namespace TBotHamsti.Models.Commands
             StatusUser = StatusUser.User;
         }
 
+        /// <summary>
+        /// Creating a <paramref name="command"/> with <paramref name="args"/>
+        /// </summary>
+        /// <param name="args">An item of <paramref name="args"/> of the form: <see cref="ARG_START"/> + <paramref name="args"/>[0] + <see cref="ARG_END"/></param>
+        /// <param name="isLimitCountArgs">Is the <see cref="CountArgsCommand"/> limited?</param>
+        /// <exception cref="ArgumentException"><paramref name="args"/> is empty</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="args"/> is null</exception>
+        /// <inheritdoc cref="BotCommand(string)"/>
         public BotCommand(string command, string[] args, bool isLimitCountArgs = true) : this(command)
         {
             if (args is null)
@@ -63,15 +78,17 @@ namespace TBotHamsti.Models.Commands
             ExampleCommand = string.Concat(command, ' ', string.Join(" ", Args));
         }
 
+        /// <param name="args">A single <paramref name="args"/> of the form: <see cref="ARG_START"/> + <paramref name="args"/> + <see cref="ARG_END"/></param>
+        /// <inheritdoc cref="BotCommand(string, string[], bool"/>
         public BotCommand(string command, string args, bool isLimitCountArgs = true) :
             this(command, new string[] { args ?? throw new ArgumentNullException(nameof(args)) }, isLimitCountArgs)
         { }
 
         /// <summary>
-        /// Command converter to normal view
+        /// Parse a user <paramref name="message"/> to <see cref="BotCommand"/>
         /// </summary>
-        /// <param name="messageText">Text of the incoming message from telegrams</param>
-        /// <returns>Returns a command in normal form or emptiness in case of failure</returns>
+        /// <param name="message">A <paramref name="message"/> from a telegram user</param>
+        /// <returns>A <see cref="BotCommand"/> for interacting with any <see cref="ICommand"/> in <see cref="CollectionCommands"/> of the bot</returns>
         public static BotCommand ParseMessage(Message message)
         {
             string messageText = message.Text ?? throw new ArgumentNullException(nameof(message.Text));
@@ -87,6 +104,11 @@ namespace TBotHamsti.Models.Commands
             };
         }
 
+        /// <summary>
+        /// Generating a default error message during executing a command
+        /// </summary>
+        /// <param name="message">The <paramref name="message"/> that caused the error</param>
+        /// <returns>An error message</returns>
         private static string DefaultErrorMessage(Message message) =>
             $"An error occurred while execute \"{message.Text}\" command. To get the list of commands: {CollectionCommands.HelpCommand.ExampleCommand}";
     }

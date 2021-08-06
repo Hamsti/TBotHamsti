@@ -12,25 +12,64 @@ namespace TBotHamsti.Models.Commands
 {
     public class BotLevelCommand : ICommand
     {
+        /// <summary>
+        /// All added <see cref="BotLevelCommand"/>
+        /// </summary>
         private static readonly List<BotLevelCommand> allAddedLevels;
+        
+        /// <inheritdoc cref="CommandsOfLevel"/>
         private readonly List<ICommand> commandsOfLevel;
+
+        /// <summary>
+        /// Generating a default error message during changing <see cref="User.CurrentLevel"/>
+        /// </summary>
         private static string DefaultErrorMessage => "An error occurred while changing the command level. To get the list of commands: " + CollectionCommands.HelpCommand.ExampleCommand;
 
+        /// <summary>
+        /// <inheritdoc cref="UPLevel"/>, adding automatically
+        /// </summary>
+        /// <remarks>
+        /// Using the <see cref="RootLevel"/> as starting level for any <see cref="ICommand"/>
+        /// </remarks>
         public static BotLevelCommand RootLevel { get; }
-        public static BotLevelCommand UPLevel { get; }
 
+        /// <summary>
+        /// Default <see cref="BotLevelCommand"/>
+        /// </summary>
+        /// <remarks>
+        /// <see cref="BotLevelCommand"/> for return on the <see cref="BotLevelCommand.ParrentLevel"/><br/>
+        /// Adding by <see cref="AppendToSomeLevels(ICommand)"/> to <see cref="allAddedLevels"/>, exclude <see cref="RootLevel"/>
+        /// </remarks>
+        public static BotLevelCommand UPLevel { get; }
         public string Command { get; private set; }
         public string ExampleCommand => Command.ToUpper();
         public string[] Args => Array.Empty<string>();
         public int CountArgsCommand => default;
         public StatusUser StatusUser { get; set; } = StatusUser.User;
-        public LevelCommand NameOfLevel { get; private set; } //id
+        public LevelCommand NameOfLevel { get; private set; }
+
+        /// <summary>
+        /// Each added <see cref="ICommand"/> per <see cref="BotLevelCommand"/>
+        /// </summary>
+        /// <value>
+        /// <see cref="ICommand"/> at the current <see cref="BotLevelCommand"/>
+        /// </value>
         public IList<ICommand> CommandsOfLevel => commandsOfLevel.AsReadOnly(); //children
+
+        /// <summary>
+        /// Contains the previous <see cref="BotLevelCommand"/> to return by <see cref="UPLevel"/> command
+        /// </summary>
+        /// <value>
+        /// previous level (parent level)
+        /// </value>
         public BotLevelCommand ParrentLevel { get; set; } = null; //parrent
-        public Func<ICommand, User, Message, Task> Execute { get; private set; }
-        public Func<TextMessage, User, Message, Task> OnError { get; private set; } = async (messageError, user, message)
+        public Func<ICommand, Users.User, Message, Task> Execute { get; private set; }
+        public Func<TextMessage, Users.User, Message, Task> OnError { get; private set; } = async (messageError, user, message)
             => await user.SendMessageAsync(messageError?.Text ?? DefaultErrorMessage);
 
+        /// <summary>
+        /// Implements default and return levels
+        /// </summary>
         static BotLevelCommand()
         {
             RootLevel = new BotLevelCommand(LevelCommand.Root);
@@ -49,6 +88,10 @@ namespace TBotHamsti.Models.Commands
             };
         }
 
+        /// <summary>
+        /// Adding a new command level: /<paramref name="nameOfLevel"/>
+        /// </summary>
+        /// <param name="nameOfLevel">Name of the added <see cref="BotLevelCommand"/></param>
         public BotLevelCommand(LevelCommand nameOfLevel)
         {
             NameOfLevel = nameOfLevel;
@@ -57,6 +100,14 @@ namespace TBotHamsti.Models.Commands
             Execute = ChangeLevelAsync;
         }
 
+        /// <summary>
+        /// Adding a <paramref name="tCommand"/> only for the current <see cref="BotLevelCommand"/>
+        /// </summary>
+        /// <param name="tCommand">Added <paramref name="tCommand"/> by <see cref="ICommand.NameOfLevel"/></param>
+        /// <exception cref="ArgumentException">If <see cref="BotLevelCommand"/> added already<para/>
+        /// or<para/>
+        /// <paramref name="tCommand"/> has set more than 1 <see cref="BotLevelCommand"/> (use <see cref="AppendToSomeLevels(ICommand)"/> instead or change <see cref="ICommand.NameOfLevel"/>)
+        /// </exception>
         public void AppendOnlyToThisLevel(ICommand tCommand)
         {
             static bool isSetMoreThanOneBit(int number) => (number != 0) && ((number & (number - 1)) != 0);
@@ -79,6 +130,15 @@ namespace TBotHamsti.Models.Commands
             commandsOfLevel.Add(tCommand);
         }
 
+        /// <summary>
+        /// Adding a <paramref name="tCommand"/> for multiple <see cref="BotLevelCommand"/>
+        /// </summary>
+        /// <exception cref="ArgumentException">
+        /// If try to add <see cref="BotLevelCommand"/> (excluding the <see cref="UPLevel"/>) - use <see cref="AppendOnlyToThisLevel(ICommand)"/> instead<para/>
+        /// or<para/>
+        /// if the <paramref name="tCommand"/> isn't added to the required <see cref="BotLevelCommand"/> (<see cref="ICommand.NameOfLevel"/>)
+        /// </exception>
+        /// <inheritdoc cref="AppendOnlyToThisLevel(ICommand)"/>
         public static void AppendToSomeLevels(ICommand tCommand)
         {
             LevelCommand checkCorrectLevelAddition = tCommand.NameOfLevel;
@@ -90,7 +150,7 @@ namespace TBotHamsti.Models.Commands
             foreach (var botLevel in allAddedLevels)
             {
                 CheckContainsCommand(botLevel, tCommand);
-                if (tCommand.NameOfLevel.HasFlag(botLevel.NameOfLevel)) // !botLevel.commandsOfLevel.Contains(tCommand))
+                if (tCommand.NameOfLevel.HasFlag(botLevel.NameOfLevel))
                 {
                     botLevel.commandsOfLevel.Add(tCommand);
                     checkCorrectLevelAddition ^= botLevel.NameOfLevel;
@@ -103,6 +163,14 @@ namespace TBotHamsti.Models.Commands
             }
         }
 
+
+        /// <summary>
+        /// Getting a <see cref="BotLevelCommand"/> from a <paramref name="user"/>
+        /// </summary>
+        /// <param name="user"><paramref name="user"/> to search</param>
+        /// <returns>Current <see cref="BotLevelCommand"/> of the <paramref name="user"/></returns>
+        /// <exception cref="ArgumentException">If <paramref name="user"/> <see cref="BotLevelCommand"/> doesn't exist (it don't added to <see cref="allAddedLevels"/>)</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="user"/> is null</exception>
         public static BotLevelCommand GetBotLevelCommand(User user)
         {
             if (user is null)
@@ -120,6 +188,9 @@ namespace TBotHamsti.Models.Commands
             return botLevel;
         }
 
+        /// <summary>
+        /// Foreach of <see cref="allAddedLevels"/> and sorting of their <see cref="CommandsOfLevel"/>
+        /// </summary>
         public static void SortCommandsOfAllLevels()
         {
             foreach (var botLevel in allAddedLevels)
@@ -136,6 +207,11 @@ namespace TBotHamsti.Models.Commands
             }
         }
 
+        /// <summary>
+        /// Changing the <paramref name="user"/> <see cref="BotLevelCommand"/> to the current <see cref="BotLevelCommand"/>
+        /// </summary>
+        /// <inheritdoc cref="CommandExecutors.ExUsers.DeauthUser(ICommand, User, Message)"/>
+        /// <exception cref="ArgumentException">If the <paramref name="user"/> is on the wrong level to change it</exception>
         private Task ChangeLevelAsync(ICommand model, User user, Message message)
         {
             if (!user.CurrentLevel.HasFlag(ParrentLevel.NameOfLevel))
@@ -147,6 +223,12 @@ namespace TBotHamsti.Models.Commands
             return user.SendMessageAsync(MessageWhenLevelChanges(user));
         }
 
+        /// <summary>
+        /// Checking for added <paramref name="tCommand"/> per <paramref name="botLevel"/>
+        /// </summary>
+        /// <param name="botLevel"><paramref name="botLevel"/> to check</param>
+        /// <param name="tCommand"><paramref name="tCommand"/> to check</param>
+        /// <exception cref="ArgumentException">If <paramref name="botLevel"/> contains <paramref name="tCommand"/> already</exception>
         private static void CheckContainsCommand(BotLevelCommand botLevel, ICommand tCommand)
         {
             if (botLevel.commandsOfLevel.Any(p => p.Command.Equals(tCommand.Command) && p.CountArgsCommand.Equals(tCommand.CountArgsCommand)))
@@ -155,6 +237,11 @@ namespace TBotHamsti.Models.Commands
             }
         }
 
+        /// <summary>
+        /// Generating a default error message during changing a <see cref="BotLevelCommand"/> of the <paramref name="user"/>
+        /// </summary>
+        /// <param name="user">Who changing his <see cref="BotLevelCommand"/></param>
+        /// <returns>An error message</returns>
         private static string MessageWhenLevelChanges(User user) => "Current level: " + user.CurrentLevel + "\n\nList of commands:\n" + ExCommon.GetHelp(user);
     }
 }
