@@ -139,7 +139,7 @@ namespace TBotHamsti.Models
         /// <param name="Attempt">The number of attempts to stop the bot</param>
         public static async Task StopBotAsync()
         {
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
             try
             {
                 string message = App.Api.IsReceiving

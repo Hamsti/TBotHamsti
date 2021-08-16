@@ -11,22 +11,36 @@ using File = System.IO.File;
 namespace TBotHamsti.Models.Users
 {
     /// <summary>
-    /// To work with a list of authorized users
+    /// Authorized <see cref="User"/>s of the bot and a set of functions for interacting with them
     /// </summary>
     public static class UsersFunc
     {
         private static ObservableCollection<User> authUsers;
 
         /// <summary>
-        /// List of all authorized users
+        /// List of all authorized <see cref="User"/> of the bot
         /// </summary>
+        /// <value>
+        /// Returns a collection of users, otherwise creates a new one and return it
+        /// </value>
         public static ObservableCollection<User> AuthUsers => authUsers ??= new ObservableCollection<User>();
 
+        /// <summary>
+        /// Fisrt uploading of the <see cref="AuthUsers"/> 
+        /// </summary>
         static UsersFunc()
         {
             Upload();
         }
 
+        /// <summary>
+        /// Send <paramref name="message"/> to the group <see cref="User"/> with <paramref name="status"/>
+        /// </summary>
+        /// <param name="status">Group users status</param>
+        /// <param name="message">Message text</param>
+        /// <returns>A <see cref="Task"/> to wait for all messages to be sent</returns>
+        /// <exception cref="ArgumentNullException">If users with this <paramref name="status"/> don't exist</exception>
+        /// <exception cref="Exception">If a <paramref name="message"/> hasn't been sent to some user</exception>
         public static async Task SendMessageAsync(this StatusUser status, string message)
         {
             IEnumerable<User> foundUsers = AuthUsers.Where(user => user.Status == status);
@@ -54,87 +68,80 @@ namespace TBotHamsti.Models.Users
             }
         }
 
+        /// <summary>
+        /// Send <paramref name="message"/> to the <paramref name="user"/>
+        /// </summary>
+        /// <param name="user">To whom the <paramref name="message"/> will be sent</param>
+        /// <param name="message">Message text</param>
+        /// <returns>A <see cref="Task{TResult}"/> waiting for a <paramref name="message"/> to be sent</returns>
         public static Task<Message> SendMessageAsync(this User user, string message) => user.SendMessageAsync(message, null);
 
-        public static async Task<Message> SendMessageAsync(this User user, string message, IReplyMarkup replyMarkup)
-        {
-            return await App.Api.SendTextMessageAsync(
+        /// <param name="replyMarkup"><inheritdoc cref="Telegram.Bot.Types.ReplyMarkups.IReplyMarkup" path="/summary"/></param>
+        /// <inheritdoc cref="SendMessageAsync(User, string)"/>
+        public static async Task<Message> SendMessageAsync(this User user, string message, IReplyMarkup replyMarkup) => await App.Api.SendTextMessageAsync(
                 user?.Id ?? throw new ArgumentNullException(nameof(user), "User is null, message did't send: \"" + message + "\""),
                 message ?? throw new ArgumentNullException(nameof(message), "Message is null, it doesn't send to user " + user.Id_Username),
                 replyMarkup: replyMarkup);
-        }
 
         /// <summary>
-        /// Adding all authorized users from a file, including sorting
+        /// Uploading, sorting and updating a collection <see cref="AuthUsers"/> from a file, if it does not exist, creating a new one
         /// </summary>
-        /// <returns>Successful upload</returns>
         public static void Upload()
         {
-            Update(File.Exists(Properties.Settings.Default.JsonFileName) 
-                ? JsonConvert.DeserializeObject<ObservableCollection<User>>(File.ReadAllText(Properties.Settings.Default.JsonFileName)) 
+            SortUpdate(File.Exists(Properties.Settings.Default.JsonFileName)
+                ? JsonConvert.DeserializeObject<ObservableCollection<User>>(File.ReadAllText(Properties.Settings.Default.JsonFileName))
                 : new ObservableCollection<User>());
-            Refresh();
         }
 
         /// <summary>
-        /// Saving user data changes to a file
+        /// Saving the collection <see cref="AuthUsers"/> to a file, then sorting and updating it
         /// </summary>
-        /// <returns>Successful save</returns>
-        public static void SaveRefresh()
+        public static void SaveToFile()
         {
             File.WriteAllText(Properties.Settings.Default.JsonFileName, JsonConvert.SerializeObject(AuthUsers ?? throw new ArgumentNullException(nameof(AuthUsers))));
-            Refresh();
+            SortUpdate();
         }
 
         /// <summary>
-        /// Sorting and refresh users without of save
+        /// Sorting and updating objects of the collection <see cref="AuthUsers"/>
         /// </summary>
-        public static void Refresh() => Update(AuthUsers.OrderByDescending(o => o.Status).ThenBy(t1 => t1.IsBlocked).ThenBy(t2 => t2.Id));
+        public static void SortUpdate(ObservableCollection<User> sourseCollection = null) =>
+            Update((sourseCollection ?? AuthUsers).OrderByDescending(o => o.IsSetBookmark).ThenByDescending(t => t.Status).ThenBy(t => t.IsBlocked).ThenBy(t => t.Id));
 
         /// <summary>
-        /// Checks if this user is in the list of authorized users
+        /// Search for a <see cref="User"/> by criterion in the collection <see cref="AuthUsers"/>
         /// </summary>
+        /// <param name="id">Search by <see cref="User.Id"/></param>
+        /// <returns>The first <see cref="User"/> found, otherwise throws an exception <see cref="ArgumentNullException"/></returns>
+        /// <exception cref="ArgumentNullException">If an <see cref="User"/> ins't found</exception>
         public static User GetUser(int id) => AuthUsers.Where(user => user.Id == id).DefaultIfEmpty(null).FirstOrDefault()
             ?? throw new ArgumentNullException(nameof(id), $"User [{id}] isn't found");
 
-        /// <summary>
-        /// Checks if this user is in the list of authorized users
-        /// </summary>
-        public static User GetUser(string localNickame)
+        /// <param name="username">Search by <see cref="User.Username"/></param>
+        /// <exception cref="ArgumentNullException">If <paramref name="username"/> is null</exception>
+        /// <inheritdoc cref="GetUser(int)"/>
+        public static User GetUser(string username)
         {
-            localNickame = localNickame?.ToLower() ?? throw new ArgumentNullException(nameof(localNickame));
-            return AuthUsers.Where(user => (user?.Username?.ToLower() ?? string.Empty) == localNickame).DefaultIfEmpty(null)?.FirstOrDefault()
-                ?? throw new ArgumentNullException(nameof(localNickame), $"User [{localNickame}] isn't found");
+            username = username?.ToLower() ?? throw new ArgumentNullException(nameof(username));
+            return AuthUsers.Where(user => (user?.Username?.ToLower() ?? string.Empty) == username).DefaultIfEmpty(null)?.FirstOrDefault()
+                ?? throw new ArgumentNullException(nameof(username), $"User [{username}] isn't found");
         }
 
         /// <summary>
-        /// Replace items in source collection with does creating new
+        /// Replacing all items of the collection <see cref="AuthUsers"/> without creating a link to a new one
         /// </summary>
-        /// <param name="items">New collection</param>
-        private static void Update<T>(T items) where T : IOrderedEnumerable<User>, IEnumerable<User>
+        /// <param name="enumerator"><paramref name="enumerator"/> of the modified collection</param>
+        private static void Update(IEnumerable<User> enumerator)
         {
-            var tempCollection = new ObservableCollection<User>(items);
-            App.UiContext.Send(x => {
+            App.UiContext.Send(x =>
+            {
+                var tempArray = Enumerable.ToArray(enumerator);
                 AuthUsers.Clear();
-                for (int i = 0; i < tempCollection.Count; i++)
+                foreach (var user in tempArray)
                 {
-                    AuthUsers.Add(tempCollection[i]);
+                    AuthUsers.Add(user);
                 }
             }, null);
-        }
-
-        /// <summary>
-        /// Replace items in source collection with does creating new
-        /// </summary>
-        /// <param name="items">New collection</param>
-        private static void Update(ObservableCollection<User> items)
-        {
-            var tempCollection = new ObservableCollection<User>(items);
-            AuthUsers.Clear();
-            for (int i = 0; i < tempCollection.Count; i++)
-            {
-                AuthUsers.Add(tempCollection[i]);
-            }
         }
     }
 }

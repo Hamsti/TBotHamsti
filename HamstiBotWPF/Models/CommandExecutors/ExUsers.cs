@@ -27,7 +27,7 @@ namespace TBotHamsti.Models.CommandExecutors
         /// <inheritdoc cref="DeauthUser(ICommand, User, Message)"/>
         public static Task SaveChanges(User user)
         {
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
             return user.SendMessageAsync("Save changes successfully");
         }
 
@@ -204,7 +204,7 @@ namespace TBotHamsti.Models.CommandExecutors
 
             int indexUser = 0;
             StringBuilder messageText = new StringBuilder($"A list of users {App.Api.GetMeAsync().Result}:\n\n");
-            UsersFunc.Refresh();
+            UsersFunc.SortUpdate();
             foreach (User user in UsersFunc.AuthUsers)
             {
                 messageText.Append($"{++indexUser}) {user.Id_Username} | {nameof(user.IsBlocked)}: {user.IsBlocked} | {nameof(user.Status)}: {user.Status}\n");

@@ -43,7 +43,7 @@ namespace TBotHamsti.ViewModels
         public ICommand UserControlPageChange => new DelegateCommand(() =>
         {
             pageService.ChangePage(new UsersControlPage());
-            UsersFunc.Refresh();
+            UsersFunc.SortUpdate();
         }, () => PageSourceTitle != "UsersControlPage");
 
         public ICommand CommandsControlPageChange => new DelegateCommand(() =>
@@ -66,7 +66,7 @@ namespace TBotHamsti.ViewModels
             }
             else
             {
-                UsersFunc.SaveRefresh();
+                UsersFunc.SaveToFile();
                 Environment.Exit(0);
             }
         }

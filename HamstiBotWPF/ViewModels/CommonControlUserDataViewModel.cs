@@ -39,14 +39,14 @@ namespace TBotHamsti.ViewModels
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Added new user: {SelectedUserItem.Id_Username}", HorizontalAlignment.Right));
             ListUsers.Add(new User(SelectedUserItem));
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
             pageService.ChangePage(new UsersControlPage());
         });
 
         public ICommand ModifyUser => new AsyncCommand(async () =>
         {
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Modify user: ({selectedUserBeforeModify.Id_Username} | {selectedUserBeforeModify.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
             pageService.ChangePage(new UsersControlPage());
         });
 
@@ -54,7 +54,7 @@ namespace TBotHamsti.ViewModels
         {
             ListUsers.Remove(SelectedUserItem);
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Deleted user: {SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}", HorizontalAlignment.Right));
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
             pageService.ChangePage(new UsersControlPage());
         });
 
@@ -63,7 +63,7 @@ namespace TBotHamsti.ViewModels
             if (ListUsers.Remove(SelectedUserItem))
             {
                 ListUsers.Add(selectedUserBeforeModify);
-                UsersFunc.Refresh();
+                UsersFunc.SortUpdate();
             }
 
             pageService.ChangePage(new UsersControlPage());
@@ -131,14 +131,14 @@ namespace TBotHamsti.ViewModels
         {
             SetUser(obj).IsSetBookmark = !SelectedUserItem.IsSetBookmark;
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Set bookmark user: ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
         });
 
         public ICommand BlockUser => new AsyncCommand<object>(async (obj) =>
         {
             SetUser(obj).IsBlocked = !SelectedUserItem.IsBlocked;
             await messageBus.SendTo<LogsViewModel>(new TextMessage($"Block user: ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked}) => ({SelectedUserItem.Id_Username} | {SelectedUserItem.IsBlocked})", HorizontalAlignment.Right));
-            UsersFunc.SaveRefresh();
+            UsersFunc.SaveToFile();
         });
 
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e) => e.Handled = regex.IsMatch(e.Text);

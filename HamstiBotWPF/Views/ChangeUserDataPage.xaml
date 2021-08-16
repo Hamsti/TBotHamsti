@@ -67,7 +67,7 @@
                          HorizontalAlignment="Left"
                          Width="97" 
                          Text="{Binding SelectedUserItem.Id}" 
-                         MaxLength="{Binding SelectedUserItem.MaxLenghtIdUser}">
+                         MaxLength="{Binding SelectedUserItem.IdMaxLenght}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewTextInput" >
                             <ei:CallMethodAction TargetObject="{Binding}" MethodName="NumberValidationTextBox"  />
@@ -77,7 +77,7 @@
                 
                 <TextBlock Margin="4,0,1,0" Text="{Binding ElementName=idUserTextBox, Path=Text.Length}" />
                 <TextBlock Text="/" />
-                <TextBlock Text="{Binding SelectedUserItem.MaxLenghtIdUser}" />
+                <TextBlock Text="{Binding SelectedUserItem.IdMaxLenght}" />
                 <TextBlock Text="- lenght less than 9 numbers!">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
