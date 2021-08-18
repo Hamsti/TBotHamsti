@@ -56,7 +56,7 @@ namespace TBotHamsti.Models.Users
             IsSetBookmark = false;
             Username = null;
             Status = StatusUser.None;
-            CurrentLevel = BotLevelCommand.RootLevel.NameOfLevel;
+            CurrentLevel = CollectionCommands.RootLevel.NameOfLevel;
         }
 
         /// <summary>

@@ -19,7 +19,6 @@ namespace TBotHamsti
         {
             UiContext = SynchronizationContext.Current;
             Services.ViewModelLocator.Init();
-            Models.CollectionCommands.Init();
             base.OnStartup(e);
         }
     }

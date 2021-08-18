@@ -6,7 +6,7 @@ using TBotHamsti.Models.Users;
 namespace TBotHamsti.Models
 {
     /// <summary>
-    /// To work with a list of commands
+    /// Initialization of all <see cref="ICommand"/>
     /// </summary>
     public static class CollectionCommands
     {
@@ -14,17 +14,24 @@ namespace TBotHamsti.Models
         private static BotLevelCommand usersLevel;
         private static BotLevelCommand pcLevel;
         private static BotLevelCommand botLevel;
-        /// <summary>
-        /// List of all commands for working with the bot
-        /// </summary>
+
+        /// <inheritdoc cref="BotLevelCommand.RootLevel"/>
         public static BotLevelCommand RootLevel => BotLevelCommand.RootLevel;
+
+        /// <summary>
+        /// <see cref="BotCommand"/> to get help from the bot at the current <see cref="BotLevelCommand"/>
+        /// </summary>
         public static BotCommand HelpCommand { get; private set; }
+
+        /// <summary>
+        /// <see cref="BotCommand"/> to send a message to all bot administrators
+        /// </summary>
         public static BotCommand SendMessageToAdminCommand { get; private set; }
 
         /// <summary>
-        /// Add all commands to the command list
+        /// Initialization and sorting of all <see cref="BotCommand"/> and <see cref="BotLevelCommand"/>
         /// </summary>
-        public static void Init()
+        static CollectionCommands()
         {
             InitMessageLevel();
             InitUsersLevel();
@@ -76,6 +83,9 @@ namespace TBotHamsti.Models
             BotLevelCommand.SortCommandsOfAllLevels();
         }
 
+        /// <summary>
+        /// Initialization of all <see cref="ICommand"/> of the <see cref="LevelCommand.Bot"/>
+        /// </summary>
         private static void InitBotLevel()
         {
             botLevel = new BotLevelCommand(LevelCommand.Bot) { StatusUser = StatusUser.Admin };
@@ -98,6 +108,9 @@ namespace TBotHamsti.Models
             });
         }
 
+        /// <summary>
+        /// Initialization of all <see cref="ICommand"/> of the <see cref="LevelCommand.PC"/>
+        /// </summary>
         private static void InitPCLevel()
         {
             pcLevel = new BotLevelCommand(LevelCommand.PC);
@@ -151,6 +164,9 @@ namespace TBotHamsti.Models
             });
         }
 
+        /// <summary>
+        /// Initialization of all <see cref="ICommand"/> of the <see cref="LevelCommand.Users"/>
+        /// </summary>
         private static void InitUsersLevel()
         {
             usersLevel = new BotLevelCommand(LevelCommand.Users) { StatusUser = StatusUser.Admin };
@@ -209,6 +225,9 @@ namespace TBotHamsti.Models
             });
         }
 
+        /// <summary>
+        /// Initialization of all <see cref="ICommand"/> of the <see cref="LevelCommand.Messages"/>
+        /// </summary>
         private static void InitMessageLevel()
         {
             messagesLevel = new BotLevelCommand(LevelCommand.Messages);

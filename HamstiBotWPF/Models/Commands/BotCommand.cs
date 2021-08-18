@@ -89,6 +89,8 @@ namespace TBotHamsti.Models.Commands
         /// </summary>
         /// <param name="message">A <paramref name="message"/> from a telegram user</param>
         /// <returns>A <see cref="BotCommand"/> for interacting with any <see cref="ICommand"/> in <see cref="CollectionCommands"/> of the bot</returns>
+        /// <exception cref="ArgumentException">If <paramref name="message"/> doesn't start with '/'</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="message"/> text is null</exception>
         public static BotCommand ParseMessage(Message message)
         {
             string messageText = message.Text ?? throw new ArgumentNullException(nameof(message.Text));

@@ -15,20 +15,24 @@ using User = TBotHamsti.Models.Users.User;
 namespace TBotHamsti.Models
 {
     /// <summary>
-    /// To control the bot (reading messages, start, stop, reload)
+    /// Main bot control (checking <see cref="Message"/>, handling <see cref="ICommand"/>, starting, stopping, reloading the bot)
     /// </summary>
-    public static class ExecutionBot
+    internal static class ExecutionBot
     {
         /// <summary>
-        /// Listening to all incoming messages
+        /// Taking further actions based on the <paramref name="user"/> and the <paramref name="message"/> type
         /// </summary>
-        public static Task CheckMessage(ref User user, Message message)
+        /// <param name="user">by whom the execution of the function was called</param>
+        /// <param name="message"><paramref name="message"/> for analysis</param>
+        /// <returns><see cref="Task"/> of waiting for the complete execution</returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="message"/> is null</exception>
+        internal static Task CheckMessage(ref User user, Message message)
         {
             static Task TextMessage(User user, Message message)
             {
                 try
                 {
-                    var model = BotCommand.ParseMessage(message) ?? throw new ArgumentNullException(nameof(BotCommand.ParseMessage));
+                    var model = BotCommand.ParseMessage(message);
                     return user.IsBlocked && model.Command != CollectionCommands.SendMessageToAdminCommand.Command
                         ? user.SendMessageAsync($"You're [{user.Id}] locked out now. Ask the bot admin {App.Api.GetMeAsync().Result} to add you to the list of allowed users\n\n" +
                             $"To write the bot admin: \"{CollectionCommands.SendMessageToAdminCommand.ExampleCommand}\"")
@@ -69,6 +73,15 @@ namespace TBotHamsti.Models
             };
         }
 
+        /// <summary>
+        /// Starting execution of the found match of the <see cref="ICommand"/> in the <see cref="CollectionCommands"/> and the <paramref name="model"/>
+        /// </summary>
+        /// <param name="model"><paramref name="message"/> from the <paramref name="user"/> converted to an object of the type <see cref="ICommand"/><para/>
+        /// Using to search for a command and analyze its correctness</param>
+        /// <inheritdoc cref="CheckMessage(ref User, Message)" path="/param"/>
+        /// <exception cref="ArgumentException">If <see cref="StatusUser"/> of the <paramref name="user"/> is lower than required</exception>
+        /// <exception cref="ArgumentException">If the wrong number of arguments in the <paramref name="model"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <see cref="ICommand"/> wasn't found at <paramref name="user"/> <see cref="BotLevelCommand"/></exception>
         internal static Task HandleTextCommand(ICommand model, User user, Message message)
         {
             var commands = BotLevelCommand.GetBotLevelCommand(user).CommandsOfLevel.Where(w => w.Command.Equals(model.Command));
@@ -112,10 +125,10 @@ namespace TBotHamsti.Models
 
 
         /// <summary>
-        /// To launch this bot
+        /// Start receiving messages by the bot
         /// </summary>
-        /// <param name="Attempt">The number of attempts to launch the bot</param>
-        public static async Task StartReceivingBotAsync()
+        /// <returns><see cref="Task"/> of waiting for the complete execution</returns>
+        internal static async Task StartReceivingBotAsync()
         {
             string message;
             UsersFunc.Upload();
@@ -134,10 +147,10 @@ namespace TBotHamsti.Models
         }
 
         /// <summary>
-        /// To stop this bot
+        /// Stop receiving messages by the bot
         /// </summary>
-        /// <param name="Attempt">The number of attempts to stop the bot</param>
-        public static async Task StopBotAsync()
+        /// <inheritdoc cref="StartReceivingBotAsync" path="/returns"/>
+        internal static async Task StopBotAsync()
         {
             UsersFunc.SaveToFile();
             try
@@ -158,10 +171,10 @@ namespace TBotHamsti.Models
         }
 
         /// <summary>
-        /// To reload this bot
+        /// Restart receiving messages by the bot
         /// </summary>
-        /// <param name="numberAttempt">The number of attempts to reload the bot</param>
-        public static async Task RestartBotAsync()
+        /// <inheritdoc cref="StartReceivingBotAsync" path="/returns"/>
+        internal static async Task RestartBotAsync()
         {
             try
             {
